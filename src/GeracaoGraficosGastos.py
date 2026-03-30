@@ -8,7 +8,7 @@ deputados = respostas["dados"]
 
 gastos_deputados = {}
 
-for deputado in deputados[:8]:
+for deputado in deputados[:10]:
 
     idDeputado = deputado["id"]
     nome = deputado["nome"]
