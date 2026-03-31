@@ -31,7 +31,7 @@ O objetivo geral do projeto Radar Cidadão – Avaliação de Deputados Federais
 * BootsTrap
 
 
-#Product BackLog
+# Product BackLog
 | Rank | Prioridade | User Story                                                                                                                                              | Estimativa | Sprint |
 |------|------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|------------|--------|
 | 1    | Alta/Meta  | Como eleitor, quero filtrar deputados candidatos à reeleição por estado, partido ou nome, para encontrar rapidamente o candidato de minha preferência.  | 8          | 1      |
@@ -39,7 +39,7 @@ O objetivo geral do projeto Radar Cidadão – Avaliação de Deputados Federais
 | 3    | Alta       | Como eleitor, quero visualizar uma síntese do deputado, contendo foto, nome, partido, classificação de desempenho e gráficos de barras horizontais dos índices de presença, gastos, projetos e coerência, para decidir meu voto com agilidade.                                                                                         | 13         | 1      |
 | 4   | Baixa      | Como eleitor, quero visualizar o percentual de presença do deputado, comparado à média estadual e ao ranking, para avaliar seu comprometimento.          | 8          | 1      |
 
-#Registro das Sprints
+# Registro das Sprints
 
 | Sprint            | Previsão   | Status   | Histórico |
 |-------------------|------------|----------|-----------|
