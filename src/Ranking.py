@@ -64,10 +64,10 @@ def ranking_estadual(uf, ano=datetime.now().year):
 
     df = df.sort_values(by='Presença (%)', ascending=False)
 
-    print("\n🏆 RANKING DE PRESENÇA\n")
+    print("\n RANKING DE PRESENÇA\n")
     print(df.to_string(index=False))
 
 
-# --- EXECUÇÃO ---
+# EXECUÇÃO
 uf = input("Digite a sigla do estado (ex: SP, RJ, MG): ").upper()
 ranking_estadual(uf)
