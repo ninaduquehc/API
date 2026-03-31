@@ -25,7 +25,6 @@ O objetivo geral do projeto Radar Cidadão – Avaliação de Deputados Federais
 
 * Jira Software
 * Python (Google Colab)
-* Flask
 * HTML 5
 * CSS
 * BootsTrap
