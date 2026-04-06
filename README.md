@@ -45,4 +45,9 @@ O objetivo geral do projeto Radar Cidadão – Avaliação de Deputados Federais
 | 01                | 06/04/2026 | Em andamento |       |
 
 
+#MVP´S
+
+#Sprint 1
+[ Clique aqui para assistir o vídeo ](https://youtu.be/sBF46geoj6Y)
+[ Clique aqui para acessar o arquivo .md do MVP da Sprint] ()
 
