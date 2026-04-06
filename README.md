@@ -48,6 +48,8 @@ O objetivo geral do projeto Radar Cidadão – Avaliação de Deputados Federais
 #MVP´S
 
 #Sprint 1
+
 [ Clique aqui para assistir o vídeo ](https://youtu.be/sBF46geoj6Y)
-[ Clique aqui para acessar o arquivo .md do MVP da Sprint] ()
+
+[ Clique aqui para acessar o arquivo .md do MVP da Sprint](https://github.com/ninaduquehc/API/blob/main/MVP/Sprint1.md)
 
