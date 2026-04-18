@@ -16,7 +16,7 @@ def get_deputados(uf_filtro=None, partido_filtro=None, nome_filtro=None, pagina=
     while True:
         params = {
             "idLegislatura": 57,
-            "itens": 100,  # máximo permitido
+            "itens": 100,  
             "pagina": pagina_api,
             "ordem": "ASC",
             "ordenarPor": "nome"
@@ -219,7 +219,7 @@ def ranking_presenca(deputados):
                 presenca = future.result()
 
                 ranking.append({
-                    "id": dep["id"],  # 🔥 ESSENCIAL
+                    "id": dep["id"],  
                     "nome": dep["nome"],
                     "partido": dep["siglaPartido"],
                     "uf": dep["siglaUf"],

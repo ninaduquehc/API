@@ -21,7 +21,6 @@ def index():
     nome = request.form.get("nome") or request.args.get("nome") or ""
     nome = nome.strip()
 
-    # 🔥 JÁ VEM LIMPO E PAGINADO
     deputados = get_deputados(
         uf_filtro=uf,
         partido_filtro=partido,
