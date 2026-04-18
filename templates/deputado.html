@@ -111,7 +111,12 @@
           {% else %} Na média {% endif %}
         </p>
       </div>
-      <a href="/" class="btn">← Voltar</a>
+      <a
+        href="{% if origem == 'ranking' %}/ranking{% else %}/{% endif %}"
+        class="btn"
+      >
+        ← Voltar
+      </a>
     </div>
 
     {% endblock %}

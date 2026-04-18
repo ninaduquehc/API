@@ -117,7 +117,9 @@
 
         <div class="ranking-item">
           <!-- POSIÇÃO -->
-          <div class="ranking-pos">{{ (current_page - 1) * 15 + loop.index }}º</div>
+          <div class="ranking-pos">
+            {{ (current_page - 1) * 15 + loop.index }}º
+          </div>
 
           <!-- FOTO -->
           <img src="{{ dep.foto }}" alt="Foto" />
@@ -126,6 +128,14 @@
           <div class="ranking-info">
             <strong>{{ dep.nome }}</strong>
             <span>{{ dep.partido }} - {{ dep.uf }}</span>
+          </div>
+          <div>
+            <a
+              href="{{ url_for('detalhe_deputado', id=dep.id, origem='ranking') }}"
+              class="btn"
+            >
+              Ver mais
+            </a>
           </div>
 
           <!-- VALOR -->
@@ -140,7 +150,7 @@
     <div style="margin-top: 20px">
       {% if current_page > 1 %}
       <a href="/ranking?uf={{ uf }}&page={{ current_page - 1 }}" class="btn">
-        Anterior  
+        Anterior
       </a>
       {% endif %} {% if tem_proxima %}
       <a href="/ranking?uf={{ uf }}&page={{ current_page + 1 }}" class="btn">

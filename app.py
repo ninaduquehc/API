@@ -56,13 +56,13 @@ def detalhe_deputado(id):
     presenca = calcular_presenca(id)
     media_estado = calcular_media_estado(uf)
 
-    # 🔥 pega ranking do estado
     deputados_estado = get_deputados(uf_filtro=uf, itens=100)
     ranking = ranking_presenca(deputados_estado)
 
     posicao = "-"
     total = len(ranking)
 
+    origem = request.args.get("origem", "dashboard")
     for i, dep in enumerate(ranking):
         if dep["id"] == id:
             posicao = i + 1
@@ -75,7 +75,8 @@ def detalhe_deputado(id):
         presenca=round(presenca, 2),
         media=round(media_estado, 2),
         posicao=posicao,
-        total=total
+        total=total,
+        origem=origem
     )
 
 @app.route("/ranking")
