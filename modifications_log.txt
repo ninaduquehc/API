@@ -1,0 +1,27 @@
+# Modifications Log
+
+This file contains a record of the performance optimizations and bug fixes applied to the application.
+
+## 1. Concurrent API Requests
+- **File Modified:** `src/py/consdep.py`
+- **Location:** `calculate_dashboard_metrics` function
+- **Modification:** Replaced the sequential `for` loop that fetched deputy expenses with Python's `concurrent.futures.ThreadPoolExecutor(max_workers=12)`.
+- **Reason:** It drastically speeds up the initial calculation times for the dashboard cards by fetching all 12 properties concurrently in the background rather than waiting for each separate API response.
+
+## 2. Parameter Sanitization (Case-Sensitivity & Whitespace Bug Fix)
+- **File Modified:** `app.py`
+- **Location:** Inside the route logic for retrieving query/form arguments (`uf`, `partido`, `nome`).
+- **Modification:** Added chained `.strip().upper()` string methods to `uf` and `partido`, and `.strip()` for `nome`. 
+- **Reason:** The external `dadosabertos` API strictly requires `siglaUf` and `siglaPartido` to be in uppercase (e.g., `SP`, `PT`) without leading/trailing spaces. Previously, entering lowercase letters caused the API to crash and return an empty list because the JSON decode failed. Now all arguments are cleanly formatted before hitting the API.
+
+## 3. Server-Side Memory Caching
+- **File Modified:** `src/py/consdep.py`
+- **Location:** Decorating the `get_deputados` and `get_despesas_deputado` functions.
+- **Modification:** Added `@lru_cache(maxsize=256)` and `@lru_cache(maxsize=1024)` decorators from the `functools` module.
+- **Reason:** Caches the response payload in server RAM. Navigating through identical search filters or re-rendering page pagination is now instantaneous. Calculating dashboard totals for a reused deputy ID relies entirely on the server-side cache and effectively eliminates all network load.
+
+## 4. Frontend Lazy-Loading Images
+- **File Modified:** `templates/index.html`
+- **Location:** Inside the `img` block of the `deputado-card`
+- **Modification:** Appended the HTML5 attribute `loading="lazy"` to `<img src="{{ dep.urlFoto }}" alt="Foto" loading="lazy">`.
+- **Reason:** Prevents browser render blocking while reducing initial network data requests on mobile limits and desktops, deferring the download of photo assets until they enter the viewport.

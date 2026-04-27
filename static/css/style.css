@@ -1,0 +1,185 @@
+/* Base styles and defaults */
+:root {
+    --primary-color: #36b694;
+    --background-color: #ffffff;
+    --card-bg-color: #d1d5db; /* Light grey mimicking the mockup */
+    --text-color: #1a1a1a;
+    --border-radius: 8px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    overflow-x: hidden;
+}
+
+/* Header/Navbar */
+.navbar {
+    background-color: var(--primary-color);
+    padding: 15px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 10;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    margin: 10px 20px;
+}
+
+/* Adds the shadow behind the navbar shown in the mock */
+.navbar::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: -5px;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    z-index: -1;
+}
+
+.menu-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.hamburger {
+    width: 30px;
+    height: 4px;
+    background-color: white;
+    border-radius: 2px;
+}
+
+.logo {
+    color: white;
+    font-size: 24px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.logo-icon {
+    font-size: 28px;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+}
+
+.header-right {
+    width: 30px; /* Balances the layout for absolute centering of the logo */
+}
+
+
+/* Dashboard Layout */
+.dashboard-container {
+    padding: 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Common Card style */
+.card {
+    background-color: var(--card-bg-color);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 150px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.15);
+}
+
+.card h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.metric-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111;
+}
+
+
+/* Top row specific */
+.top-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: 1fr 1fr 1fr 2fr; /* 3 equally narrow, 1 wider */
+    gap: 20px;
+}
+
+/* Bottom section specific */
+.bottom-section {
+    display: grid;
+    grid-template-columns: 1fr 4fr; /* Sidebar is smaller, chart area is huge */
+    gap: 20px;
+}
+
+.sidebar-options {
+    min-height: 400px;
+    justify-content: flex-start;
+}
+
+.chart-area {
+    min-height: 400px;
+    justify-content: center;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .top-metrics {
+        grid-template-columns: 1fr 1fr;
+    }
+    .bottom-section {
+        grid-template-columns: 1fr;
+    }
+    .bottom-section .sidebar-options {
+        min-height: 200px;
+    }
+}
+
+@media (max-width: 600px) {
+    .top-metrics {
+        grid-template-columns: 1fr;
+    }
+    .navbar {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .logo {
+        position: static;
+        transform: none;
+    }
+}

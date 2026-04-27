@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Detalhe do Deputado</title>
+
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background: #f5f7fa;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 50px auto;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        text-align: center;
+      }
+
+      .foto {
+        width: 150px;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+
+      h1 {
+        margin-bottom: 10px;
+      }
+
+      .info {
+        font-size: 16px;
+        margin: 8px 0;
+        color: #444;
+      }
+
+      .gasto {
+        margin-top: 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #36b694;
+      }
+
+      .btn {
+        display: inline-block;
+        margin-top: 25px;
+        padding: 10px 20px;
+        background: #36b694;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+      }
+
+      .btn:hover {
+        background: #2e9e80;
+      }
+    </style>
+  </head>
+
+  <body>
+    {% extends "base.html" %} {% block title %}Deputado{% endblock %} {% block
+    content %}
+
+    <div class="container">
+      <img
+        src="{{ deputado.ultimoStatus.urlFoto }}"
+        alt="Foto do deputado"
+        class="foto"
+      />
+
+      <h1>{{ deputado.nomeCivil or deputado.nome }}</h1>
+
+      <p class="info">
+        <strong>Partido:</strong> {{ deputado.ultimoStatus.siglaPartido }}
+      </p>
+      <p class="info">
+        <strong>UF:</strong> {{ deputado.ultimoStatus.siglaUf }}
+      </p>
+
+      <p class="gasto">
+        Gasto estimado: R$ {{ "{:,.2f}".format(gasto).replace(",",
+        "X").replace(".", ",").replace("X", ".") }}
+      </p>
+      <div style="margin-top: 20px; text-align: left">
+        <p class="info"><strong>Presença:</strong> {{ presenca }}%</p>
+
+        <p class="info">
+          <strong>Posição no ranking estadual:</strong>
+          {{ posicao }}º de {{ total }}
+        </p>
+
+        <p class="info"><strong>Média do estado:</strong> {{ media }}%</p>
+
+        <p class="info">
+          <strong>Comparação:</strong>
+          {% if presenca > media %}
+          <span style="color: green">
+            Acima da média (+{{ (presenca - media)|round(2) }}%)
+          </span>
+          {% elif presenca < media %}
+          <span style="color: red">
+            Abaixo da média (-{{ (media - presenca)|round(2) }}%)
+          </span>
+          {% else %} Na média {% endif %}
+        </p>
+      </div>
+      <a
+        href="{% if origem == 'ranking' %}/ranking{% else %}/{% endif %}"
+        class="btn"
+      >
+        ← Voltar
+      </a>
+    </div>
+
+    {% endblock %}
+  </body>
+</html>
