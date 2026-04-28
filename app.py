@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request
+from datetime import date
 import sys
 import os
 
 # Ensure the app can find the src.py folder
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from src.py.consdep import get_deputados, calculate_dashboard_metrics,get_deputado_por_id,get_despesas_deputado,ranking_presenca,calcular_media_estado,calcular_presenca,get_deputados_completo
+from src.visualizardespesascota import resumo_e_lista_ceap_mes
 
 app = Flask(__name__)
 
@@ -62,6 +64,16 @@ def detalhe_deputado(id):
     total = len(ranking)
 
     origem = request.args.get("origem", "dashboard")
+
+    hoje = date.today()
+    ano = request.args.get("ano", default=hoje.year, type=int)
+    mes = request.args.get("mes", default=hoje.month, type=int)
+    ano = max(2019, min(ano, hoje.year))
+    mes = max(1, min(mes, 12))
+
+    resumo_ceap, linhas_despesas = resumo_e_lista_ceap_mes(uf, id, ano, mes)
+    anos_ceap = list(range(2019, hoje.year + 1))
+
     for i, dep in enumerate(ranking):
         if dep["id"] == id:
             posicao = i + 1
@@ -75,7 +87,12 @@ def detalhe_deputado(id):
         media=round(media_estado, 2),
         posicao=posicao,
         total=total,
-        origem=origem
+        origem=origem,
+        ceap_ano=ano,
+        ceap_mes=mes,
+        anos_ceap=anos_ceap,
+        resumo_ceap=resumo_ceap,
+        linhas_despesas=linhas_despesas,
     )
 
 @app.route("/ranking")

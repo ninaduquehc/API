@@ -2,7 +2,10 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Detalhe do Deputado</title>
+
+    <link rel="stylesheet" href="/static/css/style.css" />
 
     <style>
       body {
@@ -61,12 +64,160 @@
       .btn:hover {
         background: #2e9e80;
       }
+
+      /* CEAP — mesmo critério de visualizardespesascota.py */
+      details.ceap-section {
+        margin-top: 28px;
+        text-align: left;
+        border: 1px solid #e0e6ed;
+        border-radius: 8px;
+        padding: 12px 16px;
+        background: #fafbfc;
+      }
+
+      details.ceap-section summary {
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 17px;
+        color: #2c3e50;
+        list-style-position: outside;
+      }
+
+      details.ceap-section summary::-webkit-details-marker {
+        color: #36b694;
+      }
+
+      .ceap-form {
+        margin-top: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: flex-end;
+      }
+
+      .ceap-form label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: #555;
+      }
+
+      .ceap-form select {
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+        min-width: 140px;
+      }
+
+      .ceap-form button {
+        padding: 9px 18px;
+        background: #36b694;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .ceap-form button:hover {
+        background: #2e9e80;
+      }
+
+      .ceap-resumo {
+        margin-top: 18px;
+        padding: 14px;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #e8ecf1;
+      }
+
+      .ceap-resumo p {
+        margin: 8px 0;
+        font-size: 15px;
+        color: #333;
+      }
+
+      .ceap-bar-wrap {
+        margin-top: 12px;
+        height: 28px;
+        background: #eef2f6;
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .ceap-bar-fill {
+        height: 100%;
+        border-radius: 8px;
+        transition: width 0.25s ease;
+      }
+
+      .ceap-bar-label {
+        margin-top: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #444;
+      }
+
+      .ceap-table-wrap {
+        margin-top: 16px;
+        overflow-x: auto;
+        max-height: 380px;
+        overflow-y: auto;
+        border: 1px solid #e8ecf1;
+        border-radius: 8px;
+      }
+
+      .ceap-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        background: white;
+      }
+
+      .ceap-table th,
+      .ceap-table td {
+        padding: 10px 12px;
+        text-align: left;
+        border-bottom: 1px solid #eef2f6;
+      }
+
+      .ceap-table th {
+        background: #f0f4f8;
+        font-weight: 700;
+        position: sticky;
+        top: 0;
+      }
+
+      .ceap-table td:nth-child(4) {
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .ceap-notas {
+        margin-top: 14px;
+        font-size: 12px;
+        color: #666;
+        line-height: 1.45;
+      }
+
+      .ceap-periodo {
+        margin-top: 10px;
+        font-size: 14px;
+        color: #555;
+      }
     </style>
   </head>
 
   <body>
     {% extends "base.html" %} {% block title %}Deputado{% endblock %} {% block
     content %}
+
+    {% set mes_labels = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio",
+    "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+    %}
 
     <div class="container">
       <img
@@ -111,6 +262,117 @@
           {% else %} Na média {% endif %}
         </p>
       </div>
+
+      <details class="ceap-section">
+        <summary>Despesas e cota parlamentar (CEAP)</summary>
+
+        <p class="ceap-periodo">
+          Consulte o total de despesas do mês na API da Câmara e o percentual
+          sobre o limite mensal da CEAP do estado (referência 2024/2025), no
+          mesmo critério do script.
+        </p>
+
+        <form
+          class="ceap-form"
+          method="get"
+          action="{{ url_for('detalhe_deputado', id=deputado.id) }}"
+        >
+          <input type="hidden" name="origem" value="{{ origem }}" />
+          <div>
+            <label for="ceap-mes">Mês</label>
+            <select id="ceap-mes" name="mes">
+              {% for m in range(1, 13) %}
+              <option value="{{ m }}" {% if m == ceap_mes %}selected{% endif %}>
+                {{ mes_labels[m - 1] }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label for="ceap-ano">Ano</label>
+            <select id="ceap-ano" name="ano">
+              {% for y in anos_ceap %}
+              <option value="{{ y }}" {% if y == ceap_ano %}selected{% endif %}>
+                {{ y }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit">Atualizar período</button>
+        </form>
+
+        <div class="ceap-resumo">
+          <p>
+            <strong>Período:</strong> {{ mes_labels[ceap_mes - 1] }} /
+            {{ ceap_ano }}
+          </p>
+          <p>
+            <strong>Limite mensal CEAP ({{ deputado.ultimoStatus.siglaUf }}):</strong>
+            R$ {{
+            "{:,.2f}".format(resumo_ceap.limite_ceap).replace(",",
+            "X").replace(".", ",").replace("X", ".") }}
+          </p>
+          <p>
+            <strong>Total líquido no mês (valorLiquido):</strong>
+            R$ {{
+            "{:,.2f}".format(resumo_ceap.gasto).replace(",", "X").replace(".",
+            ",").replace("X", ".") }}
+          </p>
+
+          {% set pct = resumo_ceap.uso_pct %} {% set pct_vis = pct if pct <= 100 else 100 %}
+
+          <div class="ceap-bar-wrap">
+            <div
+              class="ceap-bar-fill"
+              style="width: {{ pct_vis }}%; background: {% if pct > 100 %}#e74c3c{% else %}#36b694{% endif %};"
+            ></div>
+          </div>
+          <p class="ceap-bar-label">
+            Uso da cota: {{ "%.1f"|format(pct) }}% do limite mensal do estado
+          </p>
+        </div>
+
+        {% if linhas_despesas|length > 0 %}
+        <div class="ceap-table-wrap">
+          <table class="ceap-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Tipo</th>
+                <th>Fornecedor</th>
+                <th>Valor líquido</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in linhas_despesas %}
+              <tr>
+                <td>{{ row.data }}</td>
+                <td>{{ row.tipo }}</td>
+                <td>{{ row.fornecedor }}</td>
+                <td>
+                  R$ {{
+                  "{:,.2f}".format(row.valor).replace(",", "X").replace(".",
+                  ",").replace("X", ".") }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p style="margin-top: 14px; color: #666; font-size: 14px">
+          Nenhum lançamento encontrado para este mês na API de despesas.
+        </p>
+        {% endif %}
+
+        <div class="ceap-notas">
+          O percentual é calculado sobre o limite mensal da CEAP do estado. Valores
+          acima de 100% indicam que o deputado ultrapassou o limite mensal da
+          cota no referencial utilizado; a Câmara não bloqueia o gasto no momento
+          — a auditoria e eventual devolução ocorrem posteriormente.
+        </div>
+      </details>
+
       <a
         href="{% if origem == 'ranking' %}/ranking{% else %}/{% endif %}"
         class="btn"
