@@ -1,386 +1,225 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Detalhe do Deputado</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VeritasCode - {{ deputado.nome }}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
 
-    <link rel="stylesheet" href="/static/css/style.css" />
+    <header class="navbar">
+        <div class="logo">VeritasCode</div>
+    </header>
 
-    <style>
-      body {
-        font-family: "Inter", sans-serif;
-        background: #f5f7fa;
-        margin: 0;
-        padding: 0;
-      }
+    <main class="dashboard-container">
 
-      .container {
-        max-width: 800px;
-        margin: 50px auto;
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        padding: 30px;
-        text-align: center;
-      }
+        <a href="/" class="back-link">&#8592; Voltar para lista</a>
 
-      .foto {
-        width: 150px;
-        height: 200px;
-        object-fit: cover;
-        border-radius: 8px;
-        margin-bottom: 20px;
-      }
+        <div class="perfil-hero">
+            <img
+                class="perfil-foto"
+                src="{{ deputado.url_foto }}"
+                alt="Foto de {{ deputado.nome }}"
+                onerror="this.src='https://via.placeholder.com/160x212?text=Sem+Foto'"
+            >
+            <div class="perfil-info">
+                <h1>{{ deputado.nome }}</h1>
+                <span class="badge-partido">{{ deputado.sigla_partido }} &bull; {{ deputado.sigla_uf }}</span>
 
-      h1 {
-        margin-bottom: 10px;
-      }
+                <div class="info-grid">
+                    {% if detalhes.get('nomeCivil') %}
+                    <div class="info-item">
+                        <div class="label">Nome Civil</div>
+                        <div class="value">{{ detalhes.nomeCivil }}</div>
+                    </div>
+                    {% endif %}
 
-      .info {
-        font-size: 16px;
-        margin: 8px 0;
-        color: #444;
-      }
+                    {% if detalhes.get('dataNascimento') %}
+                    <div class="info-item">
+                        <div class="label">Data de Nascimento</div>
+                        <div class="value">{{ detalhes.dataNascimento }}</div>
+                    </div>
+                    {% endif %}
 
-      .gasto {
-        margin-top: 20px;
-        font-size: 18px;
-        font-weight: bold;
-        color: #36b694;
-      }
+                    {% if detalhes.get('municipioNascimento') %}
+                    <div class="info-item">
+                        <div class="label">Município Natal</div>
+                        <div class="value">{{ detalhes.municipioNascimento }} / {{ detalhes.get('ufNascimento', '') }}</div>
+                    </div>
+                    {% endif %}
 
-      .btn {
-        display: inline-block;
-        margin-top: 25px;
-        padding: 10px 20px;
-        background: #36b694;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        font-weight: bold;
-      }
+                    {% if detalhes.get('escolaridade') %}
+                    <div class="info-item">
+                        <div class="label">Escolaridade</div>
+                        <div class="value">{{ detalhes.escolaridade }}</div>
+                    </div>
+                    {% endif %}
 
-      .btn:hover {
-        background: #2e9e80;
-      }
+                    {% if deputado.email %}
+                    <div class="info-item">
+                        <div class="label">E-mail</div>
+                        <div class="value">{{ deputado.email }}</div>
+                    </div>
+                    {% endif %}
 
-      /* CEAP — mesmo critério de visualizardespesascota.py */
-      details.ceap-section {
-        margin-top: 28px;
-        text-align: left;
-        border: 1px solid #e0e6ed;
-        border-radius: 8px;
-        padding: 12px 16px;
-        background: #fafbfc;
-      }
+                    {% if detalhes.get('situacao') %}
+                    <div class="info-item">
+                        <div class="label">Situação</div>
+                        <div class="value">{{ detalhes.situacao }}</div>
+                    </div>
+                    {% endif %}
 
-      details.ceap-section summary {
-        cursor: pointer;
-        font-weight: 700;
-        font-size: 17px;
-        color: #2c3e50;
-        list-style-position: outside;
-      }
+                    {% if detalhes.get('condicaoEleitoral') %}
+                    <div class="info-item">
+                        <div class="label">Condição Eleitoral</div>
+                        <div class="value">{{ detalhes.condicaoEleitoral }}</div>
+                    </div>
+                    {% endif %}
 
-      details.ceap-section summary::-webkit-details-marker {
-        color: #36b694;
-      }
+                    {% if detalhes.get('gabinete') %}
+                    <div class="info-item">
+                        <div class="label">Gabinete</div>
+                        <div class="value">Sala {{ detalhes.gabinete.get('sala', '-') }}, Andar {{ detalhes.gabinete.get('andar', '-') }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">Telefone</div>
+                        <div class="value">{{ detalhes.gabinete.get('telefone', '-') }}</div>
+                    </div>
+                    {% endif %}
 
-      .ceap-form {
-        margin-top: 16px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: flex-end;
-      }
-
-      .ceap-form label {
-        display: block;
-        font-size: 13px;
-        font-weight: 600;
-        margin-bottom: 4px;
-        color: #555;
-      }
-
-      .ceap-form select {
-        padding: 8px 10px;
-        border-radius: 6px;
-        border: 1px solid #ccc;
-        font-size: 14px;
-        min-width: 140px;
-      }
-
-      .ceap-form button {
-        padding: 9px 18px;
-        background: #36b694;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-weight: 700;
-        cursor: pointer;
-      }
-
-      .ceap-form button:hover {
-        background: #2e9e80;
-      }
-
-      .ceap-resumo {
-        margin-top: 18px;
-        padding: 14px;
-        background: white;
-        border-radius: 8px;
-        border: 1px solid #e8ecf1;
-      }
-
-      .ceap-resumo p {
-        margin: 8px 0;
-        font-size: 15px;
-        color: #333;
-      }
-
-      .ceap-bar-wrap {
-        margin-top: 12px;
-        height: 28px;
-        background: #eef2f6;
-        border-radius: 8px;
-        overflow: hidden;
-        position: relative;
-      }
-
-      .ceap-bar-fill {
-        height: 100%;
-        border-radius: 8px;
-        transition: width 0.25s ease;
-      }
-
-      .ceap-bar-label {
-        margin-top: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        color: #444;
-      }
-
-      .ceap-table-wrap {
-        margin-top: 16px;
-        overflow-x: auto;
-        max-height: 380px;
-        overflow-y: auto;
-        border: 1px solid #e8ecf1;
-        border-radius: 8px;
-      }
-
-      .ceap-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13px;
-        background: white;
-      }
-
-      .ceap-table th,
-      .ceap-table td {
-        padding: 10px 12px;
-        text-align: left;
-        border-bottom: 1px solid #eef2f6;
-      }
-
-      .ceap-table th {
-        background: #f0f4f8;
-        font-weight: 700;
-        position: sticky;
-        top: 0;
-      }
-
-      .ceap-table td:nth-child(4) {
-        white-space: nowrap;
-        font-variant-numeric: tabular-nums;
-      }
-
-      .ceap-notas {
-        margin-top: 14px;
-        font-size: 12px;
-        color: #666;
-        line-height: 1.45;
-      }
-
-      .ceap-periodo {
-        margin-top: 10px;
-        font-size: 14px;
-        color: #555;
-      }
-    </style>
-  </head>
-
-  <body>
-    {% extends "base.html" %} {% block title %}Deputado{% endblock %} {% block
-    content %}
-
-    {% set mes_labels = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio",
-    "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
-    %}
-
-    <div class="container">
-      <img
-        src="{{ deputado.ultimoStatus.urlFoto }}"
-        alt="Foto do deputado"
-        class="foto"
-      />
-
-      <h1>{{ deputado.nomeCivil or deputado.nome }}</h1>
-
-      <p class="info">
-        <strong>Partido:</strong> {{ deputado.ultimoStatus.siglaPartido }}
-      </p>
-      <p class="info">
-        <strong>UF:</strong> {{ deputado.ultimoStatus.siglaUf }}
-      </p>
-
-      <p class="gasto">
-        Gasto estimado: R$ {{ "{:,.2f}".format(gasto).replace(",",
-        "X").replace(".", ",").replace("X", ".") }}
-      </p>
-      <div style="margin-top: 20px; text-align: left">
-        <p class="info"><strong>Presença:</strong> {{ presenca }}%</p>
-
-        <p class="info">
-          <strong>Posição no ranking estadual:</strong>
-          {{ posicao }}º de {{ total }}
-        </p>
-
-        <p class="info"><strong>Média do estado:</strong> {{ media }}%</p>
-
-        <p class="info">
-          <strong>Comparação:</strong>
-          {% if presenca > media %}
-          <span style="color: green">
-            Acima da média (+{{ (presenca - media)|round(2) }}%)
-          </span>
-          {% elif presenca < media %}
-          <span style="color: red">
-            Abaixo da média (-{{ (media - presenca)|round(2) }}%)
-          </span>
-          {% else %} Na média {% endif %}
-        </p>
-      </div>
-
-      <details class="ceap-section">
-        <summary>Despesas e cota parlamentar (CEAP)</summary>
-
-        <p class="ceap-periodo">
-          Consulte o total de despesas do mês na API da Câmara e o percentual
-          sobre o limite mensal da CEAP do estado (referência 2024/2025), no
-          mesmo critério do script.
-        </p>
-
-        <form
-          class="ceap-form"
-          method="get"
-          action="{{ url_for('detalhe_deputado', id=deputado.id) }}"
-        >
-          <input type="hidden" name="origem" value="{{ origem }}" />
-          <div>
-            <label for="ceap-mes">Mês</label>
-            <select id="ceap-mes" name="mes">
-              {% for m in range(1, 13) %}
-              <option value="{{ m }}" {% if m == ceap_mes %}selected{% endif %}>
-                {{ mes_labels[m - 1] }}
-              </option>
-              {% endfor %}
-            </select>
-          </div>
-          <div>
-            <label for="ceap-ano">Ano</label>
-            <select id="ceap-ano" name="ano">
-              {% for y in anos_ceap %}
-              <option value="{{ y }}" {% if y == ceap_ano %}selected{% endif %}>
-                {{ y }}
-              </option>
-              {% endfor %}
-            </select>
-          </div>
-          <button type="submit">Atualizar período</button>
-        </form>
-
-        <div class="ceap-resumo">
-          <p>
-            <strong>Período:</strong> {{ mes_labels[ceap_mes - 1] }} /
-            {{ ceap_ano }}
-          </p>
-          <p>
-            <strong>Limite mensal CEAP ({{ deputado.ultimoStatus.siglaUf }}):</strong>
-            R$ {{
-            "{:,.2f}".format(resumo_ceap.limite_ceap).replace(",",
-            "X").replace(".", ",").replace("X", ".") }}
-          </p>
-          <p>
-            <strong>Total líquido no mês (valorLiquido):</strong>
-            R$ {{
-            "{:,.2f}".format(resumo_ceap.gasto).replace(",", "X").replace(".",
-            ",").replace("X", ".") }}
-          </p>
-
-          {% set pct = resumo_ceap.uso_pct %} {% set pct_vis = pct if pct <= 100 else 100 %}
-
-          <div class="ceap-bar-wrap">
-            <div
-              class="ceap-bar-fill"
-              style="width: {{ pct_vis }}%; background: {% if pct > 100 %}#e74c3c{% else %}#36b694{% endif %};"
-            ></div>
-          </div>
-          <p class="ceap-bar-label">
-            Uso da cota: {{ "%.1f"|format(pct) }}% do limite mensal do estado
-          </p>
+                    {% if detalhes.get('urlWebsite') %}
+                    <div class="info-item">
+                        <div class="label">Site</div>
+                        <div class="value">
+                            <a class="site-link" href="{{ detalhes.urlWebsite }}" target="_blank">Visitar &#8594;</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
 
-        {% if linhas_despesas|length > 0 %}
-        <div class="ceap-table-wrap">
-          <table class="ceap-table">
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Tipo</th>
-                <th>Fornecedor</th>
-                <th>Valor líquido</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for row in linhas_despesas %}
-              <tr>
-                <td>{{ row.data }}</td>
-                <td>{{ row.tipo }}</td>
-                <td>{{ row.fornecedor }}</td>
-                <td>
-                  R$ {{
-                  "{:,.2f}".format(row.valor).replace(",", "X").replace(".",
-                  ",").replace("X", ".") }}
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+        <div class="gastos-section">
+
+            <button class="gastos-toggle {% if filtro_ano or filtro_mes or filtro_tipo %}open{% endif %}"
+                    id="gastosToggle"
+                    onclick="toggleGastos()">
+                <div class="gastos-toggle-left">
+                    <h2>&#128184; Gastos &amp; Despesas</h2>
+                    <span class="total-badge">{{ despesas|length }} registro(s)</span>
+                </div>
+                <span class="chevron">&#8964;</span>
+            </button>
+
+            <div class="gastos-body {% if filtro_ano or filtro_mes or filtro_tipo %}open{% endif %}"
+                 id="gastosBody">
+
+                <div class="metrics-row">
+                    <div class="metric-box">
+                        <div class="label">Gasto Total</div>
+                        <div class="value">{{ metrics.gasto_total }}</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="label">Gasto Médio por Período</div>
+                        <div class="value">{{ metrics.gasto_medio }}</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="label">Registros Encontrados</div>
+                        <div class="value">{{ despesas|length }}</div>
+                    </div>
+                </div>
+
+                <form method="GET" action="/deputado/{{ deputado.id }}">
+                    <div class="filtros-bar">
+                        <div class="filtro-group">
+                            <label>Ano</label>
+                            <select name="ano">
+                                <option value="">Todos</option>
+                                {% for a in anos_despesa %}
+                                <option value="{{ a }}" {% if filtro_ano == a|string %}selected{% endif %}>{{ a }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="filtro-group">
+                            <label>Mês</label>
+                            <select name="mes">
+                                <option value="">Todos</option>
+                                {% set meses = [('1','Janeiro'),('2','Fevereiro'),('3','Março'),('4','Abril'),('5','Maio'),('6','Junho'),('7','Julho'),('8','Agosto'),('9','Setembro'),('10','Outubro'),('11','Novembro'),('12','Dezembro')] %}
+                                {% for num, nome_mes in meses %}
+                                <option value="{{ num }}" {% if filtro_mes == num %}selected{% endif %}>{{ nome_mes }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="filtro-group" style="min-width: 200px;">
+                            <label>Tipo de Despesa</label>
+                            <select name="tipo">
+                                <option value="">Todos</option>
+                                {% for t in tipos_despesa %}
+                                <option value="{{ t }}" {% if filtro_tipo == t %}selected{% endif %}>{{ t }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn-filtrar">&#128269; Filtrar</button>
+                        <a href="/deputado/{{ deputado.id }}" class="btn-limpar">&#10005; Limpar</a>
+                    </div>
+                </form>
+
+                {% if despesas %}
+                <p class="results-count">Exibindo {{ despesas|length }} despesa(s)</p>
+                <table class="despesas-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Tipo de Despesa</th>
+                            <th>Fornecedor</th>
+                            <th>CNPJ/CPF</th>
+                            <th>Valor</th>
+                            <th>Doc.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in despesas %}
+                        <tr>
+                            <td>{{ d.data_documento or '-' }}</td>
+                            <td><span class="tipo-badge">{{ d.tipo_despesa or '-' }}</span></td>
+                            <td>{{ d.nome_fornecedor or '-' }}</td>
+                            <td style="font-size:12px; color:#888;">{{ d.cnpj_cpf_fornecedor or '-' }}</td>
+                            <td class="valor-cell">
+                                R$ {{ "%.2f"|format(d.valorDocumento|float or 0) | replace('.', ',') }}
+                            </td>
+                            <td>
+                                {% if d.url_documento %}
+                                <a class="doc-link" href="{{ d.url_documento }}" target="_blank">&#128196; Ver</a>
+                                {% else %}-{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <p>Nenhuma despesa encontrada com os filtros selecionados.</p>
+                </div>
+                {% endif %}
+
+            </div>
         </div>
-        {% else %}
-        <p style="margin-top: 14px; color: #666; font-size: 14px">
-          Nenhum lançamento encontrado para este mês na API de despesas.
-        </p>
-        {% endif %}
 
-        <div class="ceap-notas">
-          O percentual é calculado sobre o limite mensal da CEAP do estado. Valores
-          acima de 100% indicam que o deputado ultrapassou o limite mensal da
-          cota no referencial utilizado; a Câmara não bloqueia o gasto no momento
-          — a auditoria e eventual devolução ocorrem posteriormente.
-        </div>
-      </details>
+    </main>
 
-      <a
-        href="{% if origem == 'ranking' %}/ranking{% else %}/{% endif %}"
-        class="btn"
-      >
-        ← Voltar
-      </a>
-    </div>
+    <script>
+        function toggleGastos() {
+            const btn = document.getElementById('gastosToggle');
+            const body = document.getElementById('gastosBody');
+            btn.classList.toggle('open');
+            body.classList.toggle('open');
+        }
+    </script>
 
-    {% endblock %}
-  </body>
+</body>
 </html>

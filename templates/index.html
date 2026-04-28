@@ -1,279 +1,100 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VeritasCode - Dashboard</title>
-    <!-- CSS is linked with standard Jinja url_for to be Flask-compatible later -->
-    <link rel="stylesheet" href="/static/css/style.css" />
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
 
-    <!-- FOR PREVIEW WITHOUT FLASK uncomment the line below and comment the one above -->
-    <!-- <link rel="stylesheet" href="../static/css/style.css"> -->
+    <header class="navbar">
+        <div class="logo">VeritasCode</div>
+    </header>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      .form-group {
-        margin-bottom: 15px;
-        text-align: left;
-        width: 100%;
-      }
-      .form-group label {
-        font-size: 14px;
-        font-weight: 600;
-        display: block;
-        margin-bottom: 5px;
-      }
-      .form-group input {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-      }
-      .btn {
-        background: #36b694;
-        color: white;
-        padding: 10px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        width: 100%;
-        font-weight: bold;
-      }
-
-      .deputados-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 15px;
-        width: 100%;
-        padding: 10px;
-      }
-      .deputado-card img {
-        width: 100%;
-        height: 140px;
-        object-fit: cover;
-        border-radius: 6px;
-      }
-      .deputado-card img {
-        width: 80px;
-        height: 106px;
-        object-fit: cover;
-        border-radius: 4px;
-        margin-bottom: 10px;
-      }
-      .deputado-card h4 {
-        font-size: 14px;
-        min-height: 35px;
-      }
-      .deputado-card p {
-        font-size: 12px;
-        color: #666;
-        margin: 2px 0;
-      }
-
-      .pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 15px;
-        margin-top: 20px;
-        width: 100%;
-      }
-      .btn-outline {
-        background: transparent;
-        border: 2px solid #36b694;
-        color: #36b694;
-        padding: 8px 15px;
-        border-radius: 4px;
-        cursor: pointer;
-        text-decoration: none;
-        font-weight: bold;
-      }
-      .btn-outline:hover {
-        background: #36b694;
-        color: white;
-      }
-      .sidebar {
-        height: 100%;
-        width: 0;
-        position: fixed;
-        top: 0;
-        left: 0;
-        background-color: #2c3e50;
-        overflow-x: hidden;
-        transition: 0.3s;
-        padding-top: 60px;
-        z-index: 999;
-      }
-
-      .sidebar a {
-        padding: 10px 20px;
-        text-decoration: none;
-        font-size: 16px;
-        color: white;
-        display: block;
-        transition: 0.2s;
-      }
-
-      .sidebar a:hover {
-        background-color: #36b694;
-      }
-
-      .close-btn {
-        position: absolute;
-        top: 10px;
-        right: 15px;
-        font-size: 25px;
-      }
-    </style>
-  </head>
-
-  <body>
-    {% extends "base.html" %} {% block title %}Dashboard{% endblock %} {% block
-    content %}
-
-    <!-- TODO SEU HTML AQUI -->
-    <!-- Main Dashboard Container -->
     <main class="dashboard-container">
-      <!-- Top Row Metrics -->
-      <div class="top-metrics">
-        <div class="card metric-card">
-          <h3>Vistos nesta<br />página</h3>
-          <div class="metric-value" id="totalAtivos">
-            {{ deputados|length }}
-          </div>
-        </div>
-        <div class="card metric-card">
-          <h3>
-            Gasto médio<br /><span style="font-size: 11px; font-weight: normal"
-              >(destes 12)</span
-            >
-          </h3>
-          <div class="metric-value" id="gastoMedio" style="font-size: 18px">
-            {{ metrics.gasto_medio }}
-          </div>
-        </div>
-        <div class="card metric-card">
-          <h3>
-            Gasto total<br /><span style="font-size: 11px; font-weight: normal"
-              >(destes 12)</span
-            >
-          </h3>
-          <div class="metric-value" id="gastoTotal" style="font-size: 18px">
-            {{ metrics.gasto_total }}
-          </div>
-        </div>
-        <div class="card metric-card wide-card">
-          <h3>
-            Mais Gastos
-            <span style="font-size: 11px; font-weight: normal"
-              >(nesta página)</span
-            >
-          </h3>
-          <div class="metric-value" id="maisGastos" style="font-size: 20px">
-            {{ metrics.deputado_mais_gastos }}
-          </div>
-        </div>
-      </div>
 
-      <!-- Bottom Row Layout -->
-      <div class="bottom-section">
-        <aside class="sidebar-options card">
-          <h3>Opções de filtro</h3>
-          <form action="/" method="GET" style="width: 100%; margin-top: 15px">
-            <div class="form-group">
-              <label>Estado (UF)</label>
-              <input
-                type="text"
-                name="uf"
-                value="{{ uf }}"
-                placeholder="ex: SP"
-              />
+        <div class="top-metrics">
+            <div class="card metric-card">
+                <h3>Vistos nesta página</h3>
+                <div class="metric-value">{{ deputados|length }}</div>
             </div>
-            <div class="form-group">
-              <label>Partido</label>
-              <input
-                type="text"
-                name="partido"
-                value="{{ partido }}"
-                placeholder="ex: PT"
-              />
+            <div class="card metric-card">
+                <h3>Gasto médio</h3>
+                <div class="metric-value">{{ metrics.gasto_medio }}</div>
             </div>
-            <div class="form-group">
-              <label>Nome</label>
-              <input
-                type="text"
-                name="nome"
-                value="{{ nome }}"
-                placeholder="ex: Silva"
-              />
+            <div class="card metric-card">
+                <h3>Gasto total</h3>
+                <div class="metric-value">{{ metrics.gasto_total }}</div>
             </div>
-            <button type="submit" class="btn">Pesquisar</button>
-          </form>
-        </aside>
-        <section class="chart-area card">
-          <h3>Lista de Deputados (Página {{ current_page }})</h3>
+            <div class="card metric-card">
+                <h3>Mais gastos</h3>
+                <div class="metric-value">{{ metrics.deputado_mais_gastos }}</div>
+            </div>
+        </div>
 
-          <div class="deputados-grid">
-            {% for dep in deputados %}
-            <div class="deputado-card">
-              <img src="{{ dep.urlFoto }}" alt="Foto" loading="lazy" />
+        <div class="bottom-section">
+            <aside class="sidebar-options card">
+                <h3>Filtros</h3>
+                <form method="GET">
+                    <div class="form-group">
+                        <label>UF</label>
+                        <input type="text" name="uf" value="{{ uf }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Partido</label>
+                        <input type="text" name="partido" value="{{ partido }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Nome</label>
+                        <input type="text" name="nome" value="{{ nome }}">
+                    </div>
+                    <button class="btn">Pesquisar</button>
+                </form>
+            </aside>
 
-              <h4>{{ dep.nome }}</h4>
-              <a
-                href="{{ url_for('detalhe_deputado', id=dep.id, origem='dashboard') }}"
-                class="btn-outline"
-              >
-                Ver Mais
-              </a>
-              <p><strong>{{ dep.siglaPartido }}</strong> - {{ dep.siglaUf }}</p>
-            </div>
-            {% else %}
-            <p style="grid-column: span 4; text-align: center">
-              Nenhum deputado encontrado com estes filtros.
-            </p>
-            {% endfor %}
-          </div>
+            <section class="chart-area card">
+                <h3>Deputados (Página {{ current_page }})</h3>
 
-          <!-- Pagination -->
-          <div class="pagination">
-            {% if current_page > 1 %}
-            <a
-              href="/?page={{ current_page - 1 }}&uf={{ uf }}&partido={{ partido }}&nome={{ nome }}"
-              class="btn-outline"
-              >Anterior</a
-            >
-            {% endif %} {% if deputados|length == 12 %}
-            <a
-              href="/?page={{ current_page + 1 }}&uf={{ uf }}&partido={{ partido }}&nome={{ nome }}"
-              class="btn-outline"
-              >Próxima Página &raquo;</a
-            >
-            {% endif %}
-          </div>
-        </section>
-      </div>
+                <div class="deputados-grid">
+                    {% for dep in deputados %}
+                    <a class="deputado-card" href="/deputado/{{ dep.id }}">
+                        <img
+                            src="{{ dep.url_foto }}"
+                            alt="Foto de {{ dep.nome }}"
+                            onerror="this.src='https://via.placeholder.com/80x106?text=Sem+Foto'"
+                        >
+                        <h4>{{ dep.nome }}</h4>
+                        <p>{{ dep.sigla_partido }} - {{ dep.sigla_uf }}</p>
+                    </a>
+                    {% endfor %}
+                </div>
+
+                <div class="pagination">
+                    {% if current_page > 1 and (tem_proxima or deputados|length == 12) %}
+                    <a class="page-link" href="/?page={{ current_page - 1 }}&uf={{ uf }}&partido={{ partido }}&nome={{ nome }}">&laquo;</a>
+                    {% endif %}
+
+                    {% if tem_proxima or current_page > 1 %}
+                    {% for p in range(current_page - 2, current_page + 3) %}
+                    {% if p > 0 %}
+                    <a href="/?page={{ p }}&uf={{ uf }}&partido={{ partido }}&nome={{ nome }}"
+                        class="page-link {% if p == current_page %}active-page{% endif %}">{{ p }}</a>
+                    {% endif %}
+                    {% endfor %}
+                    {% else %}
+                    <span class="page-link active-page">{{ current_page }}</span>
+                    {% endif %}
+
+                    {% if tem_proxima %}
+                    <a class="page-link" href="/?page={{ current_page + 1 }}&uf={{ uf }}&partido={{ partido }}&nome={{ nome }}">&raquo;</a>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+
     </main>
 
-    <!-- Optional JS Script -->
-    <!-- <script src="{{ url_for('static', filename='js/main.js') }}"></script> -->
-
-    {% endblock %}
-
-    <script>
-      function toggleSidebar() {
-        const sidebar = document.getElementById("sidebar");
-
-        if (sidebar.style.width === "250px") {
-          sidebar.style.width = "0";
-        } else {
-          sidebar.style.width = "250px";
-        }
-      }
-    </script>
-  </body>
+</body>
 </html>
