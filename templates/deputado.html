@@ -17,7 +17,12 @@
 
   <main class="dashboard-container">
 
+    {% if request.args.get('origem') == 'ranking' %}
+    <a href="/ranking?uf={{ request.args.get('uf', '') }}&page={{ request.args.get('page', 1) }}"
+      class="back-link">&#8592; Voltar para ranking</a>
+    {% else %}
     <a href="/" class="back-link">&#8592; Voltar para lista</a>
+    {% endif %}
 
     <div class="perfil-hero">
       <img class="perfil-foto" src="{{ deputado.url_foto }}" alt="Foto de {{ deputado.nome }}"
@@ -63,7 +68,7 @@
             <div class="value" style="color: #16a34a; font-weight: 600;">
               {{ "%.1f"|format(presenca|float) }}%
               <span style="font-size: 13px; font-weight: 400; margin-left: 6px; display: inline;">+{{
-                "%.1f"|format(diff) }}% vs média   ({{ "%.1f"|format(media|float) }}%)</span>
+                "%.1f"|format(diff) }}% vs média ({{ "%.1f"|format(media|float) }}%)</span>
             </div>
             {% else %}
             <div class="value" style="color: #dc2626; font-weight: 600;">
