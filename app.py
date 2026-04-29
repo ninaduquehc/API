@@ -9,7 +9,9 @@ from database.repository import (
     buscar_despesas_deputado,
     buscar_tipos_despesa_deputado,
     buscar_anos_despesa_deputado,
-    buscar_ranking_gastos
+    buscar_ranking_gastos,
+    buscar_presenca_deputado,
+    media_presenca_estado
 )
 from src.utils.data_processor import processar_metricas_pandas
 
@@ -77,7 +79,11 @@ def deputado_detalhe(id_deputado):
     tipos_despesa = buscar_tipos_despesa_deputado(id_deputado)
     anos_despesa = buscar_anos_despesa_deputado(id_deputado)
     metrics = processar_metricas_pandas(despesas, 1)
-
+    presenca = buscar_presenca_deputado(id_deputado)
+    media_estado = media_presenca_estado(deputado["sigla_uf"])
+    print("PRESENCA:", presenca)
+    print("MEDIA:", media_estado)
+    valor_presenca = float(presenca["percentual_presenca"]) if presenca else 0
     return render_template(
         "deputado.html",
         deputado=deputado,
@@ -89,6 +95,8 @@ def deputado_detalhe(id_deputado):
         filtro_ano=filtro_ano,
         filtro_mes=filtro_mes,
         filtro_tipo=filtro_tipo,
+        presenca=valor_presenca,
+        media=media_estado, 
     )
 
 @app.route("/ranking")
@@ -98,7 +106,6 @@ def ranking():
 
     por_pagina = 15
 
-    # PEGA TODOS OS DADOS
     ranking_completo = buscar_ranking_gastos(uf)
 
     total = len(ranking_completo)

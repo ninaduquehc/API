@@ -1,248 +1,238 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VeritasCode - {{ deputado.nome }}</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VeritasCode - {{ deputado.nome }}</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
 
-    <header class="navbar">
-        <div class="logo">VeritasCode</div>
-    </header>
+  <header class="navbar">
+    <div class="logo">VeritasCode</div>
+  </header>
 
-    <main class="dashboard-container">
+  <main class="dashboard-container">
 
-        <a href="/" class="back-link">&#8592; Voltar para lista</a>
+    <a href="/" class="back-link">&#8592; Voltar para lista</a>
 
-        <div class="perfil-hero">
-            <img
-                class="perfil-foto"
-                src="{{ deputado.url_foto }}"
-                alt="Foto de {{ deputado.nome }}"
-                onerror="this.src='https://via.placeholder.com/160x212?text=Sem+Foto'"
-            >
-            <div class="perfil-info">
-                <h1>{{ deputado.nome }}</h1>
-                <span class="badge-partido">{{ deputado.sigla_partido }} &bull; {{ deputado.sigla_uf }}</span>
+    <div class="perfil-hero">
+      <img class="perfil-foto" src="{{ deputado.url_foto }}" alt="Foto de {{ deputado.nome }}"
+        onerror="this.src='https://via.placeholder.com/160x212?text=Sem+Foto'">
+      <div class="perfil-info">
+        <h1>{{ deputado.nome }}</h1>
+        <span class="badge-partido">{{ deputado.sigla_partido }} &bull; {{ deputado.sigla_uf }}</span>
 
-                <div class="info-grid">
-                    {% if detalhes.get('nomeCivil') %}
-                    <div class="info-item">
-                        <div class="label">Nome Civil</div>
-                        <div class="value">{{ detalhes.nomeCivil }}</div>
-                    </div>
-                    {% endif %}
+        <div class="info-grid">
 
-                    {% if detalhes.get('dataNascimento') %}
-                    <div class="info-item">
-                        <div class="label">Data de Nascimento</div>
-                        <div class="value">{{ detalhes.dataNascimento }}</div>
-                    </div>
-                    {% endif %}
+          {% if detalhes.get('nomeCivil') %}
+          <div class="info-item">
+            <div class="label">Nome Civil</div>
+            <div class="value">{{ detalhes.nomeCivil }}</div>
+          </div>
+          {% endif %}
 
-                    {% if detalhes.get('municipioNascimento') %}
-                    <div class="info-item">
-                        <div class="label">Município Natal</div>
-                        <div class="value">{{ detalhes.municipioNascimento }} / {{ detalhes.get('ufNascimento', '') }}</div>
-                    </div>
-                    {% endif %}
+          {% if detalhes.get('dataNascimento') %}
+          <div class="info-item">
+            <div class="label">Data de Nascimento</div>
+            <div class="value">{{ detalhes.dataNascimento }}</div>
+          </div>
+          {% endif %}
 
-                    {% if detalhes.get('escolaridade') %}
-                    <div class="info-item">
-                        <div class="label">Escolaridade</div>
-                        <div class="value">{{ detalhes.escolaridade }}</div>
-                    </div>
-                    {% endif %}
-                    
+          {% if detalhes.get('municipioNascimento') %}
+          <div class="info-item">
+            <div class="label">Município Natal</div>
+            <div class="value">{{ detalhes.municipioNascimento }} / {{ detalhes.get('ufNascimento', '') }}</div>
+          </div>
+          {% endif %}
 
-                    {% if deputado.email %}
-                    <div class="info-item">
-                        <div class="label">E-mail</div>
-                        <div class="value">{{ deputado.email }}</div>
-                    </div>
-                    {% endif %}
+          {% if detalhes.get('escolaridade') %}
+          <div class="info-item">
+            <div class="label">Escolaridade</div>
+            <div class="value">{{ detalhes.escolaridade }}</div>
+          </div>
+          {% endif %}
 
-                    {% if detalhes.get('situacao') %}
-                    <div class="info-item">
-                        <div class="label">Situação</div>
-                        <div class="value">{{ detalhes.situacao }}</div>
-                    </div>
-                    {% endif %}
-
-                    {% if detalhes.get('condicaoEleitoral') %}
-                    <div class="info-item">
-                        <div class="label">Condição Eleitoral</div>
-                        <div class="value">{{ detalhes.condicaoEleitoral }}</div>
-                    </div>
-                    {% endif %}
-
-                    {% if detalhes.get('gabinete') %}
-                    <div class="info-item">
-                        <div class="label">Gabinete</div>
-                        <div class="value">Sala {{ detalhes.gabinete.get('sala', '-') }}, Andar {{ detalhes.gabinete.get('andar', '-') }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="label">Telefone</div>
-                        <div class="value">{{ detalhes.gabinete.get('telefone', '-') }}</div>
-                    </div>
-                    {% endif %}
-
-                    {% if detalhes.get('urlWebsite') %}
-                    <div class="info-item">
-                        <div class="label">Site</div>
-                        <div class="value">
-                            <a class="site-link" href="{{ detalhes.urlWebsite }}" target="_blank">Visitar &#8594;</a>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
+          {% set diff = presenca|float - media|float %}
+          <div class="info-item">
+            <div class="label">Presença</div>
+            {% if diff >= 0 %}
+            <div class="value" style="color: #16a34a; font-weight: 600;">
+              {{ "%.1f"|format(presenca|float) }}%
+              <span style="font-size: 13px; font-weight: 400; margin-left: 6px; display: inline;">+{{
+                "%.1f"|format(diff) }}% vs média   ({{ "%.1f"|format(media|float) }}%)</span>
             </div>
+            {% else %}
+            <div class="value" style="color: #dc2626; font-weight: 600;">
+              {{ "%.1f"|format(presenca|float) }}%
+              <span style="font-size: 13px; font-weight: 400; margin-left: 6px; display: inline;">{{ "%.1f"|format(diff)
+                }}% vs média estadual ({{ "%.1f"|format(media|float) }}%)</span>
+            </div>
+            {% endif %}
+          </div>
+
+          {% if deputado.email %}
+          <div class="info-item">
+            <div class="label">E-mail</div>
+            <div class="value">{{ deputado.email }}</div>
+          </div>
+          {% endif %}
+
+          {% if detalhes.get('situacao') %}
+          <div class="info-item">
+            <div class="label">Situação</div>
+            <div class="value">{{ detalhes.situacao }}</div>
+          </div>
+          {% endif %}
+
+          {% if detalhes.get('condicaoEleitoral') %}
+          <div class="info-item">
+            <div class="label">Condição Eleitoral</div>
+            <div class="value">{{ detalhes.condicaoEleitoral }}</div>
+          </div>
+          {% endif %}
+
+          {% if detalhes.get('gabinete') %}
+          <div class="info-item">
+            <div class="label">Gabinete</div>
+            <div class="value">Sala {{ detalhes.gabinete.get('sala', '-') }}, Andar {{ detalhes.gabinete.get('andar',
+              '-') }}</div>
+          </div>
+          <div class="info-item">
+            <div class="label">Telefone</div>
+            <div class="value">{{ detalhes.gabinete.get('telefone', '-') }}</div>
+          </div>
+          {% endif %}
+
+          {% if detalhes.get('urlWebsite') %}
+          <div class="info-item">
+            <div class="label">Site</div>
+            <div class="value"><a class="site-link" href="{{ detalhes.urlWebsite }}" target="_blank">Visitar &#8594;</a>
+            </div>
+          </div>
+          {% endif %}
+
         </div>
-
-        <div class="gastos-section">
-
-            <button class="gastos-toggle {% if filtro_ano or filtro_mes or filtro_tipo %}open{% endif %}"
-                    id="gastosToggle"
-                    onclick="toggleGastos()">
-                <div class="gastos-toggle-left">
-                    <h2>&#128184; Gastos &amp; Despesas</h2>
-                    <span class="total-badge">{{ despesas|length }} registro(s)</span>
-                </div>
-                <span class="chevron">&#8964;</span>
-            </button>
-
-            <div class="gastos-body {% if filtro_ano or filtro_mes or filtro_tipo %}open{% endif %}"
-                 id="gastosBody">
-
-                <div class="metrics-row">
-                    
-                    <div class="metric-box">
-                        <div class="label">Gasto Total</div>
-                        <div class="value">{{ metrics.gasto_total }}</div>
-                    </div>
-                    <div class="metric-box">
-                        <div class="label">Gasto Médio por Período</div>
-                        <div class="value">{{ metrics.gasto_medio }}</div>
-                    </div>
-                    <div class="metric-box">
-                        <div class="label">Registros Encontrados</div>
-                        <div class="value">{{ despesas|length }}</div>
-                    </div>
-                </div>
-
-               <form method="GET" action="/deputado/{{ deputado.id }}">
-    <div class="filtros-bar">
-
-        <!-- ANO -->
-        <div class="filtro-group">
-            <label>Ano</label>
-            <select name="ano">
-                <option value="">Todos</option>
-                {% for a in anos_despesa %}
-                <option value="{{ a }}"
-                    {% if filtro_ano and filtro_ano|string == a|string %}selected{% endif %}>
-                    {{ a }}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <!-- MÊS -->
-        <div class="filtro-group">
-            <label>Mês</label>
-            <select name="mes">
-                <option value="">Todos</option>
-
-                {% set meses = [
-                    ('1','Janeiro'),('2','Fevereiro'),('3','Março'),
-                    ('4','Abril'),('5','Maio'),('6','Junho'),
-                    ('7','Julho'),('8','Agosto'),('9','Setembro'),
-                    ('10','Outubro'),('11','Novembro'),('12','Dezembro')
-                ] %}
-
-                {% for num, nome_mes in meses %}
-                <option value="{{ num }}"
-                    {% if filtro_mes and filtro_mes|string == num|string %}selected{% endif %}>
-                    {{ nome_mes }}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <!-- TIPO -->
-        <div class="filtro-group">
-            <label>Tipo</label>
-            <select name="tipo">
-                <option value="">Todos</option>
-                {% for t in tipos_despesa %}
-                <option value="{{ t }}"
-                    {% if filtro_tipo and filtro_tipo|string == t|string %}selected{% endif %}>
-                    {{ t }}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <button type="submit" class="btn-filtrar">Filtrar</button>
-        <a href="/deputado/{{ deputado.id }}" class="btn-limpar">Limpar</a>
-
+      </div>
     </div>
-</form>
 
-                {% if despesas %}
-                <p class="results-count">Exibindo {{ despesas|length }} despesa(s)</p>
-                <table class="despesas-table">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Tipo de Despesa</th>
-                            <th>Fornecedor</th>
-                            <th>CNPJ/CPF</th>
-                            <th>Valor</th>
-                            <th>Doc.</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for d in despesas %}
-                        <tr>
-                            <td>{{ d.data_documento or '-' }}</td>
-                            <td><span class="tipo-badge">{{ d.tipo_despesa or '-' }}</span></td>
-                            <td>{{ d.nome_fornecedor or '-' }}</td>
-                            <td style="font-size:12px; color:#888;">{{ d.cnpj_cpf_fornecedor or '-' }}</td>
-                            <td class="valor-cell">
-                                R$ {{ "%.2f"|format(d.valorDocumento|float or 0) | replace('.', ',') }}
-                            </td>
-                            <td>
-                                {% if d.url_documento %}
-                                <a class="doc-link" href="{{ d.url_documento }}" target="_blank">&#128196; Ver</a>
-                                {% else %}-{% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <div class="empty-state">
-                    <p>Nenhuma despesa encontrada com os filtros selecionados.</p>
-                </div>
-                {% endif %}
+    <div class="gastos-section">
 
-            </div>
+      <button class="gastos-toggle {% if filtro_ano or filtro_mes or filtro_tipo %}open{% endif %}" id="gastosToggle"
+        onclick="toggleGastos()">
+        <div class="gastos-toggle-left">
+          <h2>&#128184; Gastos &amp; Despesas</h2>
+          <span class="total-badge">{{ despesas|length }} registro(s)</span>
+        </div>
+        <span class="chevron">&#8964;</span>
+      </button>
+
+      <div class="gastos-body {% if filtro_ano or filtro_mes or filtro_tipo %}open{% endif %}" id="gastosBody">
+
+        <div class="metrics-row">
+          <div class="metric-box">
+            <div class="label">Gasto Total</div>
+            <div class="value">{{ metrics.gasto_total }}</div>
+          </div>
+          <div class="metric-box">
+            <div class="label">Gasto Médio por Período</div>
+            <div class="value">{{ metrics.gasto_medio }}</div>
+          </div>
+          <div class="metric-box">
+            <div class="label">Registros Encontrados</div>
+            <div class="value">{{ despesas|length }}</div>
+          </div>
         </div>
 
-    </main>
+        <form method="GET" action="/deputado/{{ deputado.id }}">
+          <div class="filtros-bar">
 
-    <script>
-        function toggleGastos() {
-            const btn = document.getElementById('gastosToggle');
-            const body = document.getElementById('gastosBody');
-            btn.classList.toggle('open');
-            body.classList.toggle('open');
-        }
-    </script>
+            <div class="filtro-group">
+              <label>Ano</label>
+              <select name="ano">
+                <option value="">Todos</option>
+                {% for a in anos_despesa %}<option value="{{ a }}" {% if filtro_ano and filtro_ano|string==a|string
+                  %}selected{% endif %}>{{ a }}</option>{% endfor %}
+              </select>
+            </div>
+
+            <div class="filtro-group">
+              <label>Mês</label>
+              <select name="mes">
+                <option value="">Todos</option>
+                {% set meses =
+                [('1','Janeiro'),('2','Fevereiro'),('3','Março'),('4','Abril'),('5','Maio'),('6','Junho'),('7','Julho'),('8','Agosto'),('9','Setembro'),('10','Outubro'),('11','Novembro'),('12','Dezembro')]
+                %}
+                {% for num, nome_mes in meses %}<option value="{{ num }}" {% if filtro_mes and
+                  filtro_mes|string==num|string %}selected{% endif %}>{{ nome_mes }}</option>{% endfor %}
+              </select>
+            </div>
+
+            <div class="filtro-group">
+              <label>Tipo</label>
+              <select name="tipo">
+                <option value="">Todos</option>
+                {% for t in tipos_despesa %}<option value="{{ t }}" {% if filtro_tipo and filtro_tipo|string==t|string
+                  %}selected{% endif %}>{{ t }}</option>{% endfor %}
+              </select>
+            </div>
+
+            <button type="submit" class="btn-filtrar">Filtrar</button>
+            <a href="/deputado/{{ deputado.id }}" class="btn-limpar">Limpar</a>
+
+          </div>
+        </form>
+
+        {% if despesas %}
+        <p class="results-count">Exibindo {{ despesas|length }} despesa(s)</p>
+        <table class="despesas-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Tipo de Despesa</th>
+              <th>Fornecedor</th>
+              <th>CNPJ/CPF</th>
+              <th>Valor</th>
+              <th>Doc.</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in despesas %}
+            <tr>
+              <td>{{ d.data_documento or '-' }}</td>
+              <td><span class="tipo-badge">{{ d.tipo_despesa or '-' }}</span></td>
+              <td>{{ d.nome_fornecedor or '-' }}</td>
+              <td style="font-size:12px; color:#888;">{{ d.cnpj_cpf_fornecedor or '-' }}</td>
+              <td class="valor-cell">R$ {{ "%.2f"|format(d.valorDocumento|float or 0) | replace('.', ',') }}</td>
+              <td>{% if d.url_documento %}<a class="doc-link" href="{{ d.url_documento }}" target="_blank">&#128196;
+                  Ver</a>{% else %}-{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+          <p>Nenhuma despesa encontrada com os filtros selecionados.</p>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    function toggleGastos() {
+      const btn = document.getElementById('gastosToggle');
+      const body = document.getElementById('gastosBody');
+      btn.classList.toggle('open');
+      body.classList.toggle('open');
+    }
+  </script>
 
 </body>
+
 </html>

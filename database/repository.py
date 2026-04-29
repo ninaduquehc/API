@@ -180,3 +180,36 @@ def buscar_ranking_gastos(uf=None):
     cursor.close()
     conn.close()
     return resultados
+
+def buscar_presenca_deputado(id_deputado):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT percentual_presenca
+        FROM presencas
+        WHERE id_deputado = %s
+    """, (id_deputado,))
+
+    result = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+    return result
+
+def media_presenca_estado(uf):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT AVG(p.percentual_presenca)
+        FROM presencas p
+        JOIN deputados d ON d.id = p.id_deputado
+        WHERE d.sigla_uf = %s
+    """, (uf,))
+
+    media = cursor.fetchone()[0]
+
+    cursor.close()
+    conn.close()
+    return round(media, 2) if media else 0
