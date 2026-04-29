@@ -5,7 +5,7 @@ _pool = MySQLConnectionPool(
     pool_size=10,
     host="localhost",
     user="root",
-    password="123456",
+    password="fatec",
     database="camara_db",
     autocommit=False,
 )

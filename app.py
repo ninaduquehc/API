@@ -10,7 +10,8 @@ from database.repository import (
     buscar_tipos_despesa_deputado,
     buscar_anos_despesa_deputado,
 )
-from src.utils.data_processor import processar_metricas_pandas
+from src.utils.data_processor import processar_metricas_pandas, gasto_total_numerico
+from src.utils.ceap import resumo_ceap_deputado, formatar_resumo_ceap_exibicao
 
 app = Flask(__name__)
 
@@ -76,6 +77,15 @@ def deputado_detalhe(id_deputado):
     tipos_despesa = buscar_tipos_despesa_deputado(id_deputado)
     anos_despesa = buscar_anos_despesa_deputado(id_deputado)
     metrics = processar_metricas_pandas(despesas, 1)
+    
+    gasto_total = gasto_total_numerico(despesas)
+    ceap_bruto = resumo_ceap_deputado(
+        gasto_total,
+        deputado.get("sigla_uf") or "",
+        filtro_ano,
+        filtro_mes,
+    )
+    ceap = formatar_resumo_ceap_exibicao(ceap_bruto)
 
     return render_template(
         "deputado.html",
@@ -83,6 +93,7 @@ def deputado_detalhe(id_deputado):
         detalhes=detalhes_api,
         despesas=despesas,
         metrics=metrics,
+        ceap=ceap,
         tipos_despesa=tipos_despesa,
         anos_despesa=anos_despesa,
         filtro_ano=filtro_ano,
