@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ranking - VeritasCode</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+  </head>
+  <body>
+    <header class="navbar">
+      <div class="nav-container">
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <div class="logo">VeritasCode</div>
+      </div>
+    </header>
+
+    <aside id="sidebar" class="sidebar">
+      <a href="/" class="sidebar-link">Home</a>
+      <a href="/" class="sidebar-link">Deputados</a>
+      <a href="/ranking" class="sidebar-link">Ranking</a>
+    </aside>
+
+    <main class="dashboard-container">
+      <div class="card">
+        <h3>Ranking de Gastos</h3>
+
+        <!-- FILTRO -->
+        <form method="GET" class="ranking-filter">
+          <div class="filter-group">
+            <label>UF</label>
+            <input
+              type="text"
+              name="uf"
+              value="{{ uf }}"
+              placeholder="Ex: SP"
+            />
+          </div>
+
+          <!-- mantém página 1 ao filtrar -->
+          <input type="hidden" name="page" value="1" />
+
+          <button class="btn">Filtrar</button>
+        </form>
+
+        <!-- LISTA -->
+        <div class="ranking-list">
+          {% for dep in ranking %}
+          <a href="/deputado/{{ dep.id }}" class="ranking-item">
+            <!-- FOTO -->
+            <img
+              src="https://www.camara.leg.br/internet/deputado/bandep/{{ dep.id }}.jpg"
+              alt="Foto de {{ dep.nome }}"
+              onerror="
+                this.src = 'https://via.placeholder.com/80x100?text=Sem+Foto'
+              "
+            />
+
+            <!-- INFO -->
+            <div class="ranking-info">
+              <h4>#{{ (page - 1) * 15 + loop.index }} - {{ dep.nome }}</h4>
+              <p>{{ dep.sigla_partido }} - {{ dep.sigla_uf }}</p>
+            </div>
+
+            <!-- VALOR -->
+            <div class="ranking-value">
+              R$ {{ "%.2f"|format(dep.total_gasto) }}
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+
+        <!-- PAGINAÇÃO -->
+        <div class="pagination">
+          <!-- PRIMEIRA PÁGINA -->
+          {% if page > 1 %}
+          <a class="page-link" href="?uf={{ uf }}&page=1"><<</a>
+          <a class="page-link" href="?uf={{ uf }}&page={{ page - 1 }}"><</a>
+          {% endif %}
+
+          <!-- CÁLCULO DO RANGE -->
+          {% set inicio = page %} {% set fim = page + 4 %} {% if fim >
+          total_paginas %} {% set fim = total_paginas %} {% endif %} {% if
+          inicio < 1 %} {% set inicio = 1 %} {% endif %}
+
+          <!-- PÁGINAS -->
+          {% for p in range(inicio, fim + 1) %}
+          <a
+            class="page-link {% if p == page %}active-page{% endif %}"
+            href="?uf={{ uf }}&page={{ p }}"
+          >
+            {{ p }}
+          </a>
+          {% endfor %}
+
+          <!-- ÚLTIMA PÁGINA -->
+          {% if page < total_paginas %}
+          <a class="page-link" href="?uf={{ uf }}&page={{ page + 1 }}">></a>
+          <a class="page-link" href="?uf={{ uf }}&page={{ total_paginas }}"
+            >>></a
+          >
+          {% endif %}
+        </div>
+      </div>
+    </main>
+
+    <script>
+      function toggleSidebar() {
+        document.getElementById("sidebar").classList.toggle("active");
+      }
+    </script>
+  </body>
+</html>
