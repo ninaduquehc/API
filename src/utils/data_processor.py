@@ -18,9 +18,19 @@ def processar_metricas_pandas(dados_despesas, total_deputados):
         df = pd.concat([df_com_id, df_sem_id], ignore_index=True)
 
     col_valor = "valorDocumento" if "valorDocumento" in df.columns else "valor"
+    df[col_valor] = pd.to_numeric(df[col_valor], errors="coerce")
 
-    gasto_total = pd.to_numeric(df[col_valor], errors="coerce").sum()
-    gasto_medio = gasto_total / total_deputados if total_deputados > 0 else 0
+    gasto_total = df[col_valor].sum()
+
+    if total_deputados == 1:
+        # Soma por ano → média entre os anos
+        if "ano" in df.columns:
+            media_por_ano = df.groupby("ano")[col_valor].sum()
+            gasto_medio = media_por_ano.mean()
+        else:
+            gasto_medio = gasto_total
+    else:
+        gasto_medio = gasto_total / total_deputados if total_deputados > 0 else 0
 
     mais_gastador = "-"
     if not df.empty and "nome_deputado" in df.columns:
