@@ -253,3 +253,20 @@ def buscar_ranking_presenca(uf=None, ordem="asc"):
     cursor.close()
     conn.close()
     return resultados
+
+def contar_ranking(uf=None, criterio="gastos"):
+    conn = get_connection()
+    cursor = conn.cursor()
+    if criterio == "presenca":
+        query = "SELECT COUNT(*) FROM presencas p JOIN deputados d ON d.id = p.id_deputado WHERE 1=1"
+    else:
+        query = "SELECT COUNT(DISTINCT d.id) FROM deputados d JOIN despesas dep ON dep.id_deputado = d.id WHERE 1=1"
+    params = []
+    if uf:
+        query += " AND d.sigla_uf = %s"
+        params.append(uf)
+    cursor.execute(query, params)
+    total = cursor.fetchone()[0]
+    cursor.close()
+    conn.close()
+    return total

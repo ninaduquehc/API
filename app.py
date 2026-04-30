@@ -12,7 +12,8 @@ from database.repository import (
     buscar_ranking_gastos,
     buscar_ranking_presenca,
     buscar_presenca_deputado,
-    media_presenca_estado
+    media_presenca_estado,
+    contar_ranking
 )
 from src.utils.data_processor import processar_metricas_pandas
 
@@ -105,19 +106,20 @@ def ranking():
     uf = request.args.get("uf", "").upper().strip()
     page = request.args.get("page", 1, type=int)
     criterio = request.args.get("criterio", "gastos")
+    ordem_default = "asc" if criterio == "presenca" else "desc"
+    ordem = request.args.get("ordem", ordem_default)
 
     por_pagina = 15
+    offset = (page - 1) * por_pagina
 
     if criterio == "presenca":
-        ranking_completo = buscar_ranking_presenca(uf)
+        ranking_paginado = buscar_ranking_presenca(uf, ordem)
     else:
-        ranking_completo = buscar_ranking_gastos(uf)
+        ranking_paginado = buscar_ranking_gastos(uf, ordem)
 
-    total = len(ranking_completo)
-    inicio = (page - 1) * por_pagina
-    fim = inicio + por_pagina
-    ranking_paginado = ranking_completo[inicio:fim]
+    total = contar_ranking(uf, criterio)
     total_paginas = max(1, (total + por_pagina - 1) // por_pagina)
+    ranking_paginado = ranking_paginado[offset:offset + por_pagina]
 
     return render_template(
         "ranking.html",
@@ -125,5 +127,6 @@ def ranking():
         uf=uf,
         page=page,
         total_paginas=total_paginas,
-        criterio=criterio
+        criterio=criterio,
+        ordem=ordem
     )
