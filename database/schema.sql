@@ -5,11 +5,13 @@ USE camara_db;
 CREATE TABLE IF NOT EXISTS deputados (
     id INT PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
-    sigla_partido VARCHAR(10),
-    sigla_uf VARCHAR(5),
+    sigla_partido VARCHAR(20),
+    sigla_uf VARCHAR(20),
     url_foto TEXT,
-    email VARCHAR(255)
+    email VARCHAR(255),
+    cargo_partido VARCHAR(50)
 );
+
 
 CREATE TABLE IF NOT EXISTS despesas (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -28,6 +30,23 @@ CREATE TABLE IF NOT EXISTS despesas (
     FOREIGN KEY (id_deputado) REFERENCES deputados(id)
 );
 
+CREATE TABLE IF NOT EXISTS presencas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_deputado INT NOT NULL,
+    ano INT NOT NULL,
+    total_eventos INT,
+    presencas INT,
+    faltas INT,
+    percentual_presenca DECIMAL(5,2),
+    percentual_faltas DECIMAL(5,2),
+
+    UNIQUE KEY unique_dep_ano (id_deputado, ano),
+
+    FOREIGN KEY (id_deputado) REFERENCES deputados(id)
+);
+
+CREATE INDEX idx_presenca_dep ON presencas(id_deputado);
 CREATE INDEX idx_despesas_deputado ON despesas(id_deputado);
 CREATE INDEX idx_despesas_ano ON despesas(ano);
 CREATE UNIQUE INDEX idx_doc_unique ON despesas(id_documento);
+
