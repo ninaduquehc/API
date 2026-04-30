@@ -9,6 +9,11 @@ from database.repository import (
     buscar_despesas_deputado,
     buscar_tipos_despesa_deputado,
     buscar_anos_despesa_deputado,
+    buscar_ranking_gastos,
+    buscar_ranking_presenca,
+    buscar_presenca_deputado,
+    media_presenca_estado,
+    contar_ranking
 )
 from src.utils.data_processor import processar_metricas_pandas, gasto_total_numerico
 from src.utils.ceap import resumo_ceap_deputado, formatar_resumo_ceap_exibicao
@@ -77,7 +82,8 @@ def deputado_detalhe(id_deputado):
     tipos_despesa = buscar_tipos_despesa_deputado(id_deputado)
     anos_despesa = buscar_anos_despesa_deputado(id_deputado)
     metrics = processar_metricas_pandas(despesas, 1)
-    
+
+    # CEAP — cota parlamentar e equivalência em cestas básicas
     gasto_total = gasto_total_numerico(despesas)
     ceap_bruto = resumo_ceap_deputado(
         gasto_total,
@@ -86,6 +92,14 @@ def deputado_detalhe(id_deputado):
         filtro_mes,
     )
     ceap = formatar_resumo_ceap_exibicao(ceap_bruto)
+
+    # Presença
+    presenca = buscar_presenca_deputado(id_deputado)
+    media_estado = media_presenca_estado(deputado["sigla_uf"])
+    valor_presenca = float(presenca["percentual_presenca"]) if presenca else 0.0
+
+    # Cargo no partido — já vem no dict deputado vindo do banco
+    cargo_partido = deputado.get("cargo_partido") or "Membro"
 
     return render_template(
         "deputado.html",
@@ -99,6 +113,40 @@ def deputado_detalhe(id_deputado):
         filtro_ano=filtro_ano,
         filtro_mes=filtro_mes,
         filtro_tipo=filtro_tipo,
+        presenca=valor_presenca,
+        media=media_estado,
+        cargo_partido=cargo_partido,
+    )
+
+
+@app.route("/ranking")
+def ranking():
+    uf = request.args.get("uf", "").upper().strip()
+    page = request.args.get("page", 1, type=int)
+    criterio = request.args.get("criterio", "gastos")
+    ordem_default = "asc" if criterio == "presenca" else "desc"
+    ordem = request.args.get("ordem", ordem_default)
+
+    por_pagina = 15
+    offset = (page - 1) * por_pagina
+
+    if criterio == "presenca":
+        ranking_paginado = buscar_ranking_presenca(uf, ordem)
+    else:
+        ranking_paginado = buscar_ranking_gastos(uf, ordem)
+
+    total = contar_ranking(uf, criterio)
+    total_paginas = max(1, (total + por_pagina - 1) // por_pagina)
+    ranking_paginado = ranking_paginado[offset:offset + por_pagina]
+
+    return render_template(
+        "ranking.html",
+        ranking=ranking_paginado,
+        uf=uf,
+        page=page,
+        total_paginas=total_paginas,
+        criterio=criterio,
+        ordem=ordem
     )
 
 
