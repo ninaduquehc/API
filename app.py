@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, abort
 import requests as http_requests
 
 from database.repository import (
-      buscar_deputados,
+    buscar_deputados,
     contar_deputados,
     buscar_despesas_por_deputados,
     buscar_deputado_por_id,
@@ -15,7 +15,8 @@ from database.repository import (
     media_presenca_estado,
     contar_ranking
 )
-from src.utils.data_processor import processar_metricas_pandas
+from src.utils.data_processor import processar_metricas_pandas, gasto_total_numerico
+from src.utils.ceap import resumo_ceap_deputado, formatar_resumo_ceap_exibicao
 
 app = Flask(__name__)
 
@@ -81,25 +82,42 @@ def deputado_detalhe(id_deputado):
     tipos_despesa = buscar_tipos_despesa_deputado(id_deputado)
     anos_despesa = buscar_anos_despesa_deputado(id_deputado)
     metrics = processar_metricas_pandas(despesas, 1)
+
+    # CEAP — cota parlamentar e equivalência em cestas básicas
+    gasto_total = gasto_total_numerico(despesas)
+    ceap_bruto = resumo_ceap_deputado(
+        gasto_total,
+        deputado.get("sigla_uf") or "",
+        filtro_ano,
+        filtro_mes,
+    )
+    ceap = formatar_resumo_ceap_exibicao(ceap_bruto)
+
+    # Presença
     presenca = buscar_presenca_deputado(id_deputado)
     media_estado = media_presenca_estado(deputado["sigla_uf"])
-    print("PRESENCA:", presenca)
-    print("MEDIA:", media_estado)
-    valor_presenca = float(presenca["percentual_presenca"]) if presenca else 0
+    valor_presenca = float(presenca["percentual_presenca"]) if presenca else 0.0
+
+    # Cargo no partido — já vem no dict deputado vindo do banco
+    cargo_partido = deputado.get("cargo_partido") or "Membro"
+
     return render_template(
         "deputado.html",
         deputado=deputado,
         detalhes=detalhes_api,
         despesas=despesas,
         metrics=metrics,
+        ceap=ceap,
         tipos_despesa=tipos_despesa,
         anos_despesa=anos_despesa,
         filtro_ano=filtro_ano,
         filtro_mes=filtro_mes,
         filtro_tipo=filtro_tipo,
         presenca=valor_presenca,
-        media=media_estado, 
+        media=media_estado,
+        cargo_partido=cargo_partido,
     )
+
 
 @app.route("/ranking")
 def ranking():
@@ -130,3 +148,7 @@ def ranking():
         criterio=criterio,
         ordem=ordem
     )
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
