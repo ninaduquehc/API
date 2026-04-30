@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -98,3 +99,75 @@
 
 </body>
 </html>
+=======
+{% extends "base.html" %}
+
+{% block title %}VeritasCode - Dashboard{% endblock %}
+
+{% block content %}
+<div class="top-metrics">
+  <div class="card metric-card">
+    <h3>Vistos nesta página</h3>
+    <div class="metric-value">{{ deputados|length }}</div>
+  </div>
+  <div class="card metric-card">
+    <h3>Gasto médio</h3>
+    <div class="metric-value">{{ metrics.gasto_medio }}</div>
+  </div>
+  <div class="card metric-card">
+    <h3>Gasto total</h3>
+    <div class="metric-value">{{ metrics.gasto_total }}</div>
+  </div>
+  <div class="card metric-card">
+    <h3>Mais gastos</h3>
+    <div class="metric-value">{{ metrics.deputado_mais_gastos }}</div>
+  </div>
+</div>
+
+<div class="bottom-section">
+  <aside class="sidebar-options card">
+    <h3>Filtros</h3>
+    <form method="GET">
+      <div class="form-group">
+        <label>UF</label>
+        <input type="text" name="uf" value="{{ uf }}">
+      </div>
+      <div class="form-group">
+        <label>Partido</label>
+        <input type="text" name="partido" value="{{ partido }}">
+      </div>
+      <div class="form-group">
+        <label>Nome</label>
+        <input type="text" name="nome" value="{{ nome }}">
+      </div>
+      <button class="btn">Pesquisar</button>
+    </form>
+  </aside>
+
+  <section class="chart-area card">
+    <h3>Deputados (Página {{ current_page }})</h3>
+    <div class="deputados-grid">
+      {% for dep in deputados %}
+      <a class="deputado-card" href="/deputado/{{ dep.id }}">
+        <img src="{{ dep.url_foto }}" alt="Foto de {{ dep.nome }}"
+          onerror="this.src='https://via.placeholder.com/80x106?text=Sem+Foto'">
+        <h4>{{ dep.nome }}</h4>
+        <p>{{ dep.sigla_partido }} - {{ dep.sigla_uf }}</p>
+      </a>
+      {% endfor %}
+    </div>
+
+    <div class="pagination">
+      {% if current_page > 1 and (tem_proxima or deputados|length == 12) %}<a class="page-link"
+        href="/?page={{ current_page - 1 }}&uf={{ uf }}&partido={{ partido }}&nome={{ nome }}">&laquo;</a>{% endif %}
+      {% if tem_proxima or current_page > 1 %}{% for p in range(current_page - 2, current_page + 3) %}{% if p > 0 %}<a
+        href="/?page={{ p }}&uf={{ uf }}&partido={{ partido }}&nome={{ nome }}"
+        class="page-link {% if p == current_page %}active-page{% endif %}">{{ p }}</a>{% endif %}{% endfor %}{% else
+      %}<span class="page-link active-page">{{ current_page }}</span>{% endif %}
+      {% if tem_proxima %}<a class="page-link"
+        href="/?page={{ current_page + 1 }}&uf={{ uf }}&partido={{ partido }}&nome={{ nome }}">&raquo;</a>{% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}
+>>>>>>> atualizacao-projeto-29-04

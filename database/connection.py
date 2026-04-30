@@ -5,7 +5,11 @@ _pool = MySQLConnectionPool(
     pool_size=10,
     host="localhost",
     user="root",
+<<<<<<< HEAD
     password="fatec",
+=======
+    password="123456",
+>>>>>>> atualizacao-projeto-29-04
     database="camara_db",
     autocommit=False,
 )

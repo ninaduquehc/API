@@ -147,4 +147,8 @@ def formatar_resumo_ceap_exibicao(resumo):
             if resumo["modo_referencia"] == "mensal"
             else "Limite anual de referência (12× mensal da UF)"
         ),
+<<<<<<< HEAD
     }
+=======
+    }
+>>>>>>> atualizacao-projeto-29-04

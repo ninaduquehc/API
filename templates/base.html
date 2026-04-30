@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}VeritasCode{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <header class="navbar">
+        <div class="nav-container">
+            <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+            <div class="logo">VeritasCode</div>
+        </div>
+    </header>
+
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <aside id="sidebar" class="sidebar">
+        <button class="sidebar-close" onclick="closeSidebar()">&#10005;</button>
+        <a href="/" class="sidebar-link">Home</a>
+        <a href="/ranking" class="sidebar-link">Ranking</a>
+    </aside>
+
+    <main class="dashboard-container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <style>
+        
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+        }
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            padding: 16px 0 0 0;
+        }
+
+        .sidebar-close {
+            align-self: flex-end;
+            margin-right: 14px;
+            margin-bottom: 16px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 16px;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .sidebar-close:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+    </style>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const overlay = document.getElementById("sidebarOverlay");
+            if (sidebar.classList.contains("active")) {
+                closeSidebar();
+            } else {
+                sidebar.classList.add("active");
+                overlay.classList.add("active");
+                document.body.style.overflow = "hidden";
+            }
+        }
+
+        function closeSidebar() {
+            document.getElementById("sidebar").classList.remove("active");
+            document.getElementById("sidebarOverlay").classList.remove("active");
+            document.body.style.overflow = "";
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+
+</body>
+
+</html>

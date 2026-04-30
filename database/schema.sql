@@ -5,8 +5,13 @@ USE camara_db;
 CREATE TABLE IF NOT EXISTS deputados (
     id INT PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
+<<<<<<< HEAD
     sigla_partido VARCHAR(20),
     sigla_uf VARCHAR(10),
+=======
+    sigla_partido VARCHAR(10),
+    sigla_uf VARCHAR(5),
+>>>>>>> atualizacao-projeto-29-04
     url_foto TEXT,
     email VARCHAR(255)
 );

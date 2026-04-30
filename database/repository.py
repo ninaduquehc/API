@@ -145,4 +145,132 @@ def buscar_anos_despesa_deputado(id_deputado):
     resultados = [row[0] for row in cursor.fetchall() if row[0]]
     cursor.close()
     conn.close()
+<<<<<<< HEAD
     return resultados
+=======
+    return resultados
+
+def buscar_ranking_gastos(uf=None, ordem="desc"):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    direcao = "ASC" if ordem == "asc" else "DESC"
+
+    query = f"""
+        SELECT 
+            d.id, d.nome, d.sigla_uf, d.sigla_partido,
+            SUM(dep.valor) AS total_gasto,
+            COALESCE(p.percentual_presenca, 0) AS presenca,
+            COALESCE(media_uf.media, 0) AS media_uf
+        FROM deputados d
+        JOIN despesas dep ON dep.id_deputado = d.id
+        LEFT JOIN presencas p ON p.id_deputado = d.id
+        LEFT JOIN (
+            SELECT d2.sigla_uf, AVG(p2.percentual_presenca) AS media
+            FROM presencas p2
+            JOIN deputados d2 ON d2.id = p2.id_deputado
+            GROUP BY d2.sigla_uf
+        ) media_uf ON media_uf.sigla_uf = d.sigla_uf
+        WHERE 1=1
+    """
+
+    params = []
+    if uf:
+        query += " AND d.sigla_uf = %s"
+        params.append(uf)
+
+    query += f" GROUP BY d.id, d.nome, d.sigla_uf, d.sigla_partido, p.percentual_presenca, media_uf.media ORDER BY total_gasto {direcao}"
+
+    cursor.execute(query, params)
+    resultados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return resultados
+
+def buscar_presenca_deputado(id_deputado):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT percentual_presenca
+        FROM presencas
+        WHERE id_deputado = %s
+    """, (id_deputado,))
+
+    result = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+    return result
+
+def media_presenca_estado(uf):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT AVG(p.percentual_presenca)
+        FROM presencas p
+        JOIN deputados d ON d.id = p.id_deputado
+        WHERE d.sigla_uf = %s
+    """, (uf,))
+
+    media = cursor.fetchone()[0]
+
+    cursor.close()
+    conn.close()
+    return round(media, 2) if media else 0
+
+def buscar_ranking_presenca(uf=None, ordem="asc"):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    direcao = "ASC" if ordem == "asc" else "DESC"
+
+    query = f"""
+        SELECT 
+            d.id, d.nome, d.sigla_uf, d.sigla_partido,
+            p.percentual_presenca AS presenca,
+            COALESCE(media_uf.media, 0) AS media_uf,
+            COALESCE(SUM(dep.valor), 0) AS total_gasto
+        FROM deputados d
+        JOIN presencas p ON p.id_deputado = d.id
+        LEFT JOIN despesas dep ON dep.id_deputado = d.id
+        LEFT JOIN (
+            SELECT d2.sigla_uf, AVG(p2.percentual_presenca) AS media
+            FROM presencas p2
+            JOIN deputados d2 ON d2.id = p2.id_deputado
+            GROUP BY d2.sigla_uf
+        ) media_uf ON media_uf.sigla_uf = d.sigla_uf
+        WHERE 1=1
+    """
+
+    params = []
+    if uf:
+        query += " AND d.sigla_uf = %s"
+        params.append(uf)
+
+    query += f" GROUP BY d.id, d.nome, d.sigla_uf, d.sigla_partido, p.percentual_presenca, media_uf.media ORDER BY presenca {direcao}"
+
+    cursor.execute(query, params)
+    resultados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return resultados
+
+def contar_ranking(uf=None, criterio="gastos"):
+    conn = get_connection()
+    cursor = conn.cursor()
+    if criterio == "presenca":
+        query = "SELECT COUNT(*) FROM presencas p JOIN deputados d ON d.id = p.id_deputado WHERE 1=1"
+    else:
+        query = "SELECT COUNT(DISTINCT d.id) FROM deputados d JOIN despesas dep ON dep.id_deputado = d.id WHERE 1=1"
+    params = []
+    if uf:
+        query += " AND d.sigla_uf = %s"
+        params.append(uf)
+    cursor.execute(query, params)
+    total = cursor.fetchone()[0]
+    cursor.close()
+    conn.close()
+    return total
+>>>>>>> atualizacao-projeto-29-04

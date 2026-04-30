@@ -6,7 +6,15 @@ def _dataframe_despesas_dedup(dados_despesas):
         return None
     df = pd.DataFrame(dados_despesas)
     if "idDocumento" in df.columns:
+<<<<<<< HEAD
         mask_valido = df["idDocumento"].notna() & (df["idDocumento"] != 0) & (df["idDocumento"] != "")
+=======
+        mask_valido = (
+            df["idDocumento"].notna()
+            & (df["idDocumento"] != 0)
+            & (df["idDocumento"] != "")
+        )
+>>>>>>> atualizacao-projeto-29-04
         df_com_id = df[mask_valido].drop_duplicates(subset=["idDocumento"])
         df_sem_id = df[~mask_valido]
         df = pd.concat([df_com_id, df_sem_id], ignore_index=True)
@@ -27,15 +35,36 @@ def processar_metricas_pandas(dados_despesas, total_deputados):
         return {
             "gasto_total": "R$ 0,00",
             "gasto_medio": "R$ 0,00",
+<<<<<<< HEAD
             "deputado_mais_gastos": "-"
+=======
+            "deputado_mais_gastos": "-",
+>>>>>>> atualizacao-projeto-29-04
         }
 
     df = _dataframe_despesas_dedup(dados_despesas)
 
     col_valor = "valorDocumento" if "valorDocumento" in df.columns else "valor"
+<<<<<<< HEAD
 
     gasto_total = pd.to_numeric(df[col_valor], errors="coerce").sum()
     gasto_medio = gasto_total / total_deputados if total_deputados > 0 else 0
+=======
+    df[col_valor] = pd.to_numeric(df[col_valor], errors="coerce")
+
+    gasto_total = df[col_valor].sum()
+
+    if total_deputados == 1:
+        # Página de detalhe: média entre os anos disponíveis
+        if "ano" in df.columns:
+            media_por_ano = df.groupby("ano")[col_valor].sum()
+            gasto_medio = media_por_ano.mean()
+        else:
+            gasto_medio = gasto_total
+    else:
+        # Página de lista: média entre os deputados
+        gasto_medio = gasto_total / total_deputados if total_deputados > 0 else 0
+>>>>>>> atualizacao-projeto-29-04
 
     mais_gastador = "-"
     if not df.empty and "nome_deputado" in df.columns:
@@ -48,5 +77,9 @@ def processar_metricas_pandas(dados_despesas, total_deputados):
     return {
         "gasto_total": fmt(gasto_total),
         "gasto_medio": fmt(gasto_medio),
+<<<<<<< HEAD
         "deputado_mais_gastos": mais_gastador
+=======
+        "deputado_mais_gastos": mais_gastador,
+>>>>>>> atualizacao-projeto-29-04
     }
