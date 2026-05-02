@@ -737,6 +737,150 @@ body {
   text-decoration: underline;
 }
 
+/* ─── Proposições: preview (sempre visível) ──────── */
+.prop-preview {
+  padding: 16px 25px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.prop-tipo-pills {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.prop-tipo-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f0fdf9;
+  border: 1px solid #a7f3d0;
+  border-radius: 20px;
+  padding: 5px 14px;
+}
+
+.prop-tipo-sigla {
+  font-size: 13px;
+  font-weight: 700;
+  color: #065f46;
+}
+
+.prop-tipo-total {
+  font-size: 13px;
+  font-weight: 600;
+  color: #36b694;
+}
+
+/* ─── Top Temas ──────────────────────────────────── */
+.top-temas-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.top-temas-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.top-temas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tema-bar-row {
+  display: grid;
+  grid-template-columns: 200px 1fr 36px;
+  align-items: center;
+  gap: 10px;
+}
+
+.tema-nome {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tema-bar-track {
+  background: #e5e7eb;
+  border-radius: 4px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.tema-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #36b694, #2da07f);
+  border-radius: 4px;
+  min-width: 4px;
+  transition: width 0.4s ease;
+}
+
+.tema-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: #36b694;
+  text-align: right;
+}
+
+/* ─── Métricas CEAP ──────────────────────────────── */
+.metrics-row--four {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.metric-box--total .value {
+  color: #c0392b;
+}
+
+.metric-sub {
+  font-size: 12px;
+  color: #666;
+  margin-top: 6px;
+}
+
+.metric-box--cota .value--pct {
+  color: #36b694;
+}
+
+.metric-box--cota-over .value--pct {
+  color: #c0392b;
+}
+
+.cota-progress-track {
+  background: #e5e7eb;
+  border-radius: 4px;
+  height: 6px;
+  margin: 8px 0 4px;
+  overflow: hidden;
+}
+
+.cota-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #36b694, #2da07f);
+  border-radius: 4px;
+  max-width: 100%;
+  transition: width 0.4s;
+}
+
+.metric-box--cota-over .cota-progress-fill {
+  background: linear-gradient(90deg, #ef4444, #c0392b);
+}
+
+.cota-limit-line small {
+  font-size: 11px;
+  color: #999;
+}
+
 @media (max-width: 1024px) {
   .top-metrics {
     grid-template-columns: 1fr 1fr;

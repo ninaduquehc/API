@@ -3,6 +3,8 @@
 {% block title %}VeritasCode - {{ deputado.nome }}{% endblock %}
 
 {% block content %}
+
+{# --- Navegação --- #}
 {% if request.args.get('origem') == 'ranking' %}
 <a href="/ranking?uf={{ request.args.get('uf', '') }}&page={{ request.args.get('page', 1) }}&criterio={{ request.args.get('criterio', 'gastos') }}&ordem={{ request.args.get('ordem', 'desc') }}"
   class="back-link">&#8592; Voltar para ranking</a>
@@ -10,26 +12,25 @@
 <a href="/" class="back-link">&#8592; Voltar para lista</a>
 {% endif %}
 
+{# --- Hero --- #}
 <div class="perfil-hero">
   <img class="perfil-foto" src="{{ deputado.url_foto }}" alt="Foto de {{ deputado.nome }}"
     onerror="this.src='https://via.placeholder.com/160x212?text=Sem+Foto'">
+
   <div class="perfil-info">
     <h1>{{ deputado.nome }}</h1>
 
-    {# ── Badges: partido à esquerda, cargo à direita ── #}
-    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:20px;">
       <span class="badge-partido">{{ deputado.sigla_partido }} &bull; {{ deputado.sigla_uf }}</span>
-
-      {% set is_lider = cargo_partido not in ('Membro', '', none) %}
-      {% set cargo_icon = '👑' if is_lider else '🪑' %}
-      {% set badge_cargo_style = 'background: #92400e; color: #fef3c7;' if is_lider else '' %}
-      <span class="badge-partido" style="{{ badge_cargo_style }}">
-        {{ cargo_icon }} {{ cargo_partido or 'Membro' }}
+      {% set cargo = deputado.cargo_partido or cargo_partido or 'Membro' %}
+      {% set is_lider = cargo not in ('Membro', '', none) %}
+      <span class="badge-partido"
+        style="{{ 'background:#92400e;color:#fef3c7;' if is_lider else 'background:#f3f4f6;color:#374151;' }}">
+        {{ '👑' if is_lider else '🪑' }} {{ cargo }}
       </span>
     </div>
 
     <div class="info-grid">
-
       {% if detalhes.get('nomeCivil') %}
       <div class="info-item">
         <div class="label">Nome Civil</div>
@@ -44,30 +45,15 @@
       </div>
       {% endif %}
 
-      {% if detalhes.get('municipioNascimento') %}
-      <div class="info-item">
-        <div class="label">Município Natal</div>
-        <div class="value">{{ detalhes.municipioNascimento }} / {{ detalhes.get('ufNascimento', '') }}</div>
-      </div>
-      {% endif %}
-
-      {% if detalhes.get('escolaridade') %}
-      <div class="info-item">
-        <div class="label">Escolaridade</div>
-        <div class="value">{{ detalhes.escolaridade }}</div>
-      </div>
-      {% endif %}
-
-      {# ── Presença ── #}
-      {% set diff = presenca|float - media|float %}
-      {% set presenca_color = '#16a34a' if diff >= 0 else '#dc2626' %}
-      {% set presenca_sinal = '+' if diff >= 0 else '' %}
+      {% set p_val = presenca|float if presenca else 0.0 %}
+      {% set m_val = media|float if media else 0.0 %}
+      {% set diff = p_val - m_val %}
       <div class="info-item">
         <div class="label">Presença</div>
-        <div class="value" style="color: {{ presenca_color }}; font-weight: 600;">
-          {{ "%.1f"|format(presenca|float) }}%
-          <span style="font-size: 13px; font-weight: 400; margin-left: 6px; display: inline;">
-            {{ presenca_sinal }}{{ "%.1f"|format(diff) }}% vs média estadual ({{ "%.1f"|format(media|float) }}%)
+        <div class="value" style="color:{{ '#16a34a' if diff >= 0 else '#dc2626' }};font-weight:600;">
+          {{ "%.1f"|format(p_val) }}%
+          <span style="font-size:13px;font-weight:400;margin-left:6px;color:#666;">
+            ({{ '+' if diff >= 0 else '' }}{{ "%.1f"|format(diff) }}% vs média estadual)
           </span>
         </div>
       </div>
@@ -75,55 +61,169 @@
       {% if deputado.email %}
       <div class="info-item">
         <div class="label">E-mail</div>
-        <div class="value">{{ deputado.email }}</div>
-      </div>
-      {% endif %}
-
-      {% if detalhes.get('situacao') %}
-      <div class="info-item">
-        <div class="label">Situação</div>
-        <div class="value">{{ detalhes.situacao }}</div>
-      </div>
-      {% endif %}
-
-      {% if detalhes.get('condicaoEleitoral') %}
-      <div class="info-item">
-        <div class="label">Condição Eleitoral</div>
-        <div class="value">{{ detalhes.condicaoEleitoral }}</div>
+        <div class="value" style="font-size:0.9em;">{{ deputado.email }}</div>
       </div>
       {% endif %}
 
       {% if detalhes.get('gabinete') %}
       <div class="info-item">
         <div class="label">Gabinete</div>
-        <div class="value">Sala {{ detalhes.gabinete.get('sala', '-') }}, Andar {{ detalhes.gabinete.get('andar', '-') }}</div>
-      </div>
-      <div class="info-item">
-        <div class="label">Telefone</div>
-        <div class="value">{{ detalhes.gabinete.get('telefone', '-') }}</div>
-      </div>
-      {% endif %}
-
-      {% if detalhes.get('urlWebsite') %}
-      <div class="info-item">
-        <div class="label">Site</div>
-        <div class="value">
-          <a class="site-link" href="{{ detalhes.urlWebsite }}" target="_blank">Visitar &#8594;</a>
+        <div class="value">Sala {{ detalhes.gabinete.get('sala','-') }}, Prédio {{ detalhes.gabinete.get('anexo','-') }}
         </div>
       </div>
       {% endif %}
-
     </div>
   </div>
 </div>
 
-<div class="gastos-section" id="gastosSection">
+{# ═══════════════════════════════════════════════════════════
+SEÇÃO DE PROPOSIÇÕES
+════════════════════════════════════════════════════════════ #}
+<div class="gastos-section" id="proposicoesSection">
 
+  {# --- Cabeçalho do dropdown (sempre visível) --- #}
+  <button class="gastos-toggle {% if prop_tipo or prop_ano or prop_situacao %}open{% endif %}" id="propToggle"
+    onclick="toggleSection('propToggle','propBody')">
+    <div class="gastos-toggle-left">
+      <h2>📋 Proposições Legislativas</h2>
+      <span class="total-badge">{{ proposicoes|length }} resultado(s)</span>
+    </div>
+    <span class="chevron">&#8964;</span>
+  </button>
+
+  {# --- Preview (top temas + totais por tipo) — FORA do body, sempre visível --- #}
+  <div class="prop-preview">
+
+    {# Totais por tipo #}
+    <div class="prop-tipo-pills">
+      {% for sigla, total in totais_tipo.items() %}
+      <div class="prop-tipo-pill">
+        <span class="prop-tipo-sigla">{{ sigla }}</span>
+        <span class="prop-tipo-total">{{ total }}</span>
+      </div>
+      {% endfor %}
+      {% if not totais_tipo %}
+      <span style="color:#999;font-size:13px;">Nenhuma proposição registrada.</span>
+      {% endif %}
+    </div>
+
+    {# Top 5 temas #}
+    {% if top_temas %}
+    <div class="top-temas-wrap">
+      <span class="top-temas-label">Top temas:</span>
+      <div class="top-temas-list">
+        {% for tema in top_temas %}
+        <div class="tema-bar-row">
+          <span class="tema-nome">{{ tema.nome }}</span>
+          <div class="tema-bar-track">
+            <div class="tema-bar-fill" style="width:{{ ((tema.total / top_temas[0].total) * 100)|int }}%">
+            </div>
+          </div>
+          <span class="tema-count">{{ tema.total }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  {# --- Body expansível --- #}
+  <div class="gastos-body {% if prop_tipo or prop_ano or prop_situacao %}open{% endif %}" id="propBody">
+
+    {# Filtros #}
+    <form method="GET" action="/deputado/{{ deputado.id }}#proposicoesSection">
+      {# Preserva filtros de despesas #}
+      {% if filtro_ano %}<input type="hidden" name="ano" value="{{ filtro_ano }}">{% endif %}
+      {% if filtro_mes %}<input type="hidden" name="mes" value="{{ filtro_mes }}">{% endif %}
+      {% if filtro_tipo %}<input type="hidden" name="tipo" value="{{ filtro_tipo }}">{% endif %}
+
+      <div class="filtros-bar">
+        <div class="filtro-group">
+          <label>Tipo</label>
+          <select name="prop_tipo">
+            <option value="">Todos</option>
+            {% for t in ['PL','PDC','PEC'] %}
+            <option value="{{ t }}" {% if prop_tipo==t %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="filtro-group">
+          <label>Ano</label>
+          <select name="prop_ano">
+            <option value="">Todos</option>
+            {% for a in anos_proposicoes %}
+            <option value="{{ a }}" {% if prop_ano|string==a|string %}selected{% endif %}>{{ a }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="filtro-group" style="min-width:200px;">
+          <label>Situação</label>
+          <select name="prop_situacao">
+            <option value="">Todas</option>
+            {% for s in situacoes_prop %}
+            <option value="{{ s }}" {% if prop_situacao==s %}selected{% endif %}>{{ s|truncate(40) }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <button type="submit" class="btn-filtrar">🔍 Filtrar</button>
+        <a href="/deputado/{{ deputado.id }}#proposicoesSection" class="btn-limpar">✕ Limpar</a>
+      </div>
+    </form>
+
+    {# Tabela #}
+    {% if proposicoes %}
+    <p class="results-count">{{ proposicoes|length }} proposição(ões) encontrada(s)</p>
+    <div style="overflow-x:auto;">
+      <table class="despesas-table">
+        <thead>
+          <tr>
+            <th>Tipo</th>
+            <th>Número</th>
+            <th>Ano</th>
+            <th>Situação</th>
+            <th>Ementa</th>
+            <th>Link</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in proposicoes %}
+          <tr>
+            <td><span class="tipo-badge">{{ p.sigla_tipo }}</span></td>
+            <td>{{ p.numero }}</td>
+            <td>{{ p.ano }}</td>
+            <td style="font-size:12px;color:#555;">{{ p.situacao|truncate(40) or '-' }}</td>
+            <td style="font-size:12px;" title="{{ p.ementa }}">{{ p.ementa|truncate(70) or '-' }}</td>
+            <td>
+              {% if p.url_inteiro_teor %}
+              <a class="doc-link" href="{{ p.url_inteiro_teor }}" target="_blank">📄</a>
+              {% else %}-{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">Nenhuma proposição encontrada com os filtros selecionados.</div>
+    {% endif %}
+
+  </div>
+</div>
+
+{# ═══════════════════════════════════════════════════════════
+SEÇÃO DE GASTOS
+════════════════════════════════════════════════════════════ #}
+<div class="gastos-section" id="gastosSection">
   {% set gastos_open = 'open' if (filtro_ano or filtro_mes or filtro_tipo) else '' %}
 
-  <button class="gastos-toggle {{ gastos_open }}" id="gastosToggle" onclick="toggleGastos()">
+  <button class="gastos-toggle {{ gastos_open }}" id="gastosToggle"
+    onclick="toggleSection('gastosToggle','gastosBody')">
     <div class="gastos-toggle-left">
-      <h2>&#128184; Gastos &amp; Despesas</h2>
+      <h2>💰 Gastos &amp; Despesas</h2>
       <span class="total-badge">{{ despesas|length }} registro(s)</span>
     </div>
     <span class="chevron">&#8964;</span>
@@ -131,81 +231,42 @@
 
   <div class="gastos-body {{ gastos_open }}" id="gastosBody">
 
-    {# ── Métricas (4 colunas, com CEAP) ── #}
-    {% set cota_extra = 'metric-box--cota-over' if ceap.uso_pct > 100 else '' %}
-    {% set cota_width = ceap.uso_pct_barra|round(1) %}
-
     <div class="metrics-row metrics-row--four">
-
       <div class="metric-box metric-box--total">
         <div class="label">Gasto Total</div>
-        <div class="value">{{ metrics.gasto_total }}</div>
-        <div class="metric-sub metric-cestas" title="Equivalência estimada com base no valor da cesta básica na UF">
-          <span class="cestas-icon" aria-hidden="true">&#128722;</span>
-          <span>≈ {{ ceap.cestas_equivalentes_fmt }} cestas básicas</span>
+        <div class="value">{{ metrics.gasto_total or 'R$ 0,00' }}</div>
+        <div class="metric-sub metric-cestas">
+          <span class="cestas-icon">🛒</span>
+          <span>≈ {{ ceap.cestas_equivalentes_fmt or '0' }} cestas básicas</span>
         </div>
-        <p class="metric-footnote">
-          * Estimativa baseada em {{ ceap.valor_cesta_basica_fmt }} / cesta (referência por UF).
-        </p>
       </div>
 
-      <div class="metric-box metric-box--cota {{ cota_extra }}">
-        <div class="label">% da cota parlamentar utilizada</div>
-        <div class="value value--pct">{{ ceap.uso_pct_fmt }}%</div>
-        <div class="cota-progress-track" role="progressbar"
-          aria-valuenow="{{ cota_width }}" aria-valuemin="0" aria-valuemax="100">
-          <div class="cota-progress-fill" style="width: {{ cota_width }}%;"></div>
+      <div class="metric-box metric-box--cota {% if ceap.uso_pct > 100 %}metric-box--cota-over{% endif %}">
+        <div class="label">% da Cota Utilizada</div>
+        <div class="value value--pct">{{ ceap.uso_pct_fmt or '0' }}%</div>
+        <div class="cota-progress-track">
+          <div class="cota-progress-fill" style="width:{{ ceap.uso_pct_barra|default(0) }}%;"></div>
         </div>
-        <div class="cota-limit-line" title="{{ ceap.label_referencia_cota }}">
-          <span class="cota-limit-label">{{ ceap.label_referencia_cota }}:</span>
-          <span class="cota-limit-value">
-            {% if ceap.modo_referencia == 'mensal' %}
-            {{ ceap.limite_mensal_fmt }}
-            {% else %}
-            {{ ceap.limite_anual_fmt }}
-            {% endif %}
-          </span>
-          <span class="info-hint"
-            title="Valores de referência CEAP por UF (tabela mensal); o anual exibido é 12× o mensal.">&#9432;</span>
+        <div class="cota-limit-line">
+          <small>Ref: {{ ceap.limite_mensal_fmt if ceap.modo_referencia == 'mensal' else ceap.limite_anual_fmt
+            }}</small>
         </div>
-        {% if ceap.uso_pct > 100 %}
-        <p class="metric-footnote metric-footnote--warn">
-          Gasto do período filtrado supera o limite de referência indicado acima.
-        </p>
-        {% endif %}
       </div>
-
-      <div class="metric-box">
-        <div class="label">Gasto Médio por Período</div>
-        <div class="value">{{ metrics.gasto_medio }}</div>
-      </div>
-
-      
-
     </div>
 
-    {# ── Banner informativo CEAP ── #}
-    <div class="ceap-info-banner">
-      <span class="ceap-info-icon" aria-hidden="true">&#128161;</span>
-      <p>
-        <strong>Sobre as informações exibidas.</strong>
-        O percentual da cota utiliza o limite mensal da CEAP da UF do deputado quando ano <em>e</em> mês
-        estão filtrados; caso contrário, compara com o limite anual de referência (12 vezes o mensal).
-        A equivalência em cestas básicas é estimativa com base no valor de referência da UF e pode variar
-        conforme a fonte.
-      </p>
-    </div>
-
-    {# ── Filtros ── #}
     <form method="GET" action="/deputado/{{ deputado.id }}#gastosSection" id="filtrosForm">
+      {# Preserva filtros de proposições #}
+      {% if prop_tipo %}<input type="hidden" name="prop_tipo" value="{{ prop_tipo }}">{% endif %}
+      {% if prop_ano %}<input type="hidden" name="prop_ano" value="{{ prop_ano }}">{% endif %}
+      {% if prop_situacao %}<input type="hidden" name="prop_situacao" value="{{ prop_situacao }}">{% endif %}
+
       <div class="filtros-bar">
         <div class="filtro-group">
           <label>Ano</label>
           <select name="ano">
             <option value="">Todos</option>
             {% for a in anos_despesa %}
-            {% set sel_ano = 'selected' if (filtro_ano and filtro_ano|string == a|string) else '' %}
-            <option value="{{ a }}" {{ sel_ano }}>{{ a }}</option>
+            <option value="{{ a }}" {% if filtro_ano|string==a|string %}selected{% endif %}>{{ a }}</option>
             {% endfor %}
           </select>
         </div>
@@ -214,104 +275,93 @@
           <label>Mês</label>
           <select name="mes">
             <option value="">Todos</option>
-            {% set meses = [
-              ('1','Janeiro'),('2','Fevereiro'),('3','Março'),('4','Abril'),
-              ('5','Maio'),('6','Junho'),('7','Julho'),('8','Agosto'),
-              ('9','Setembro'),('10','Outubro'),('11','Novembro'),('12','Dezembro')
-            ] %}
-            {% for num, nome_mes in meses %}
-            {% set sel_mes = 'selected' if (filtro_mes and filtro_mes|string == num|string) else '' %}
-            <option value="{{ num }}" {{ sel_mes }}>{{ nome_mes }}</option>
+            {% for num, nome_mes in
+            [('1','Jan'),('2','Fev'),('3','Mar'),('4','Abr'),('5','Mai'),('6','Jun'),('7','Jul'),('8','Ago'),('9','Set'),('10','Out'),('11','Nov'),('12','Dez')]
+            %}
+            <option value="{{ num }}" {% if filtro_mes|string==num|string %}selected{% endif %}>{{ nome_mes }}</option>
             {% endfor %}
           </select>
         </div>
 
-        <div class="filtro-group" style="min-width: 200px;">
-          <label>Tipo de Despesa</label>
-          <select name="tipo">
-            <option value="">Todos</option>
-            {% for t in tipos_despesa %}
-            {% set sel_tipo = 'selected' if (filtro_tipo and filtro_tipo|string == t|string) else '' %}
-            <option value="{{ t }}" {{ sel_tipo }}>{{ t }}</option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <button type="submit" class="btn-filtrar">&#128269; Filtrar</button>
-        <a href="/deputado/{{ deputado.id }}#gastosSection" class="btn-limpar">&#10005; Limpar</a>
+        <button type="submit" class="btn-filtrar">🔍 Filtrar</button>
+        <a href="/deputado/{{ deputado.id }}#gastosSection" class="btn-limpar">✕ Limpar</a>
       </div>
     </form>
 
-    {# ── Tabela de despesas ── #}
     {% if despesas %}
-    <p class="results-count">Exibindo {{ despesas|length }} despesa(s)</p>
-    <table class="despesas-table">
-      <thead>
-        <tr>
-          <th>Data</th>
-          <th>Tipo de Despesa</th>
-          <th>Fornecedor</th>
-          <th>CNPJ/CPF</th>
-          <th>Valor</th>
-          <th>Doc.</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for d in despesas %}
-        <tr>
-          <td>{{ d.data_documento or '-' }}</td>
-          <td><span class="tipo-badge">{{ d.tipo_despesa or '-' }}</span></td>
-          <td>{{ d.nome_fornecedor or '-' }}</td>
-          <td style="font-size:12px; color:#888;">{{ d.cnpj_cpf_fornecedor or '-' }}</td>
-          <td class="valor-cell">
-            R$ {{ "%.2f"|format(d.valorDocumento|float or 0) | replace('.', ',') }}
-          </td>
-          <td>
-            {% if d.url_documento %}
-            <a class="doc-link" href="{{ d.url_documento }}" target="_blank">&#128196; Ver</a>
-            {% else %}-{% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% else %}
-    <div class="empty-state">
-      <p>Nenhuma despesa encontrada com os filtros selecionados.</p>
+    <div style="overflow-x:auto;">
+      <table class="despesas-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Tipo</th>
+            <th>Fornecedor</th>
+            <th>Valor</th>
+            <th>Doc.</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in despesas %}
+          <tr>
+            <td>{{ d.data_documento or '-' }}</td>
+
+            <td>
+              <span class="tipo-badge">
+                {{ d.tipo_despesa|default('-')|truncate(30) }}
+              </span>
+            </td>
+
+            <td title="{{ d.nome_fornecedor }}">
+              {{ d.nome_fornecedor|default('-')|truncate(25) }}
+            </td>
+
+            <td class="valor-cell">
+              R$ {{
+              "%.2f"|format(
+              (d.get('valor')
+              or d.get('valorLiquido')
+              or d.get('valorDocumento')
+              or 0)|float
+              )|replace('.', ',')
+              }}
+            </td>
+
+            <td>
+              {% if d.url_documento %}
+              <a class="doc-link" href="{{ d.url_documento }}" target="_blank">🔗</a>
+              {% else %}-{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
+    {% else %}
+    <div class="empty-state">Nenhuma despesa encontrada.</div>
     {% endif %}
 
   </div>
 </div>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
-  function toggleGastos() {
-    const btn = document.getElementById('gastosToggle');
-    const body = document.getElementById('gastosBody');
-    btn.classList.toggle('open');
-    body.classList.toggle('open');
+  function toggleSection(btnId, bodyId) {
+    document.getElementById(btnId).classList.toggle('open');
+    document.getElementById(bodyId).classList.toggle('open');
   }
 
   (function () {
     const params = new URLSearchParams(window.location.search);
-    const temFiltro = params.get('ano') || params.get('mes') || params.get('tipo');
-    const temAncora = window.location.hash === '#gastosSection';
-
-    if (temFiltro || temAncora) {
-      const section = document.getElementById('gastosSection');
-      const btn = document.getElementById('gastosToggle');
-      const body = document.getElementById('gastosBody');
-
-      btn.classList.add('open');
-      body.classList.add('open');
-
-      if (section) {
-        setTimeout(function () {
-          section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 80);
-      }
+    if (params.get('ano') || params.get('mes')) {
+      document.getElementById('gastosToggle')?.classList.add('open');
+      document.getElementById('gastosBody')?.classList.add('open');
+    }
+    if (params.get('prop_tipo') || params.get('prop_ano') || params.get('prop_situacao')
+      || window.location.hash === '#proposicoesSection') {
+      document.getElementById('propToggle')?.classList.add('open');
+      document.getElementById('propBody')?.classList.add('open');
     }
   })();
 </script>

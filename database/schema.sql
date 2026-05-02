@@ -1,18 +1,26 @@
+-- database/schema.sql
+
+-- Criação do banco
 CREATE DATABASE IF NOT EXISTS camara_db;
 
+-- Seleciona o banco
 USE camara_db;
 
-CREATE TABLE IF NOT EXISTS deputados (
+-- =========================
+-- TABELA DEPUTADOS
+-- =========================
+CREATE TABLE deputados (
     id INT PRIMARY KEY,
-    nome VARCHAR(255) NOT NULL,
-    sigla_partido VARCHAR(20),
-    sigla_uf VARCHAR(20),
+    nome VARCHAR(255),
+    sigla_partido VARCHAR(100),
+    sigla_uf VARCHAR(10),
     url_foto TEXT,
-    email VARCHAR(255),
-    cargo_partido VARCHAR(50)
+    email VARCHAR(255)
 );
 
-
+-- =========================
+-- TABELA DESPESAS
+-- =========================
 CREATE TABLE IF NOT EXISTS despesas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_deputado INT NOT NULL,
@@ -39,14 +47,51 @@ CREATE TABLE IF NOT EXISTS presencas (
     faltas INT,
     percentual_presenca DECIMAL(5,2),
     percentual_faltas DECIMAL(5,2),
-
+     -- Impede duplicidade de registro para o mesmo deputado no mesmo ano
     UNIQUE KEY unique_dep_ano (id_deputado, ano),
+
+    -- Relacionamento com a tabela de deputados
+    FOREIGN KEY (id_deputado) REFERENCES deputados(id)
+);
+
+CREATE TABLE IF NOT EXISTS proposicoes (
+    id              INT PRIMARY KEY,
+    id_deputado     INT NOT NULL,
+    sigla_tipo      VARCHAR(20),
+    numero          INT,
+    ano             INT,
+    ementa          TEXT,
+    keywords        TEXT,
+    situacao        VARCHAR(255),
+    url_inteiro_teor TEXT,
 
     FOREIGN KEY (id_deputado) REFERENCES deputados(id)
 );
 
-CREATE INDEX idx_presenca_dep ON presencas(id_deputado);
+CREATE TABLE IF NOT EXISTS temas (
+    cod  VARCHAR(20) PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS proposicoes_temas (
+    id_proposicao INT         NOT NULL,
+    cod_tema      VARCHAR(20) NOT NULL,
+    PRIMARY KEY (id_proposicao, cod_tema),
+    FOREIGN KEY (id_proposicao) REFERENCES proposicoes(id),
+    FOREIGN KEY (cod_tema)      REFERENCES temas(cod)
+);
+
+
+-- =========================
+-- ÍNDICES
+-- =========================
 CREATE INDEX idx_despesas_deputado ON despesas(id_deputado);
 CREATE INDEX idx_despesas_ano ON despesas(ano);
 CREATE UNIQUE INDEX idx_doc_unique ON despesas(id_documento);
+CREATE INDEX idx_proposicoes_deputado ON proposicoes(id_deputado);
+CREATE INDEX idx_proposicoes_ano      ON proposicoes(ano);
+CREATE INDEX idx_proposicoes_tipo     ON proposicoes(sigla_tipo);
+
+
+
 

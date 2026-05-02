@@ -53,13 +53,26 @@ def index():
 
 @app.route("/deputado/<int:id_deputado>")
 def deputado_detalhe(id_deputado):
+    from database.repository import (
+        buscar_proposicoes_deputado,
+        buscar_top_temas_deputado,
+        buscar_resumo_proposicoes_deputado,
+        buscar_anos_proposicoes_deputado,
+        buscar_situacoes_proposicoes_deputado,
+    )
+
     deputado = buscar_deputado_por_id(id_deputado)
     if not deputado:
         abort(404)
 
-    filtro_ano = request.args.get("ano", "").strip()
-    filtro_mes = request.args.get("mes", "").strip()
+    filtro_ano  = request.args.get("ano",  "").strip()
+    filtro_mes  = request.args.get("mes",  "").strip()
     filtro_tipo = request.args.get("tipo", "").strip()
+
+    # filtros de proposições
+    prop_tipo     = request.args.get("prop_tipo",     "").strip()
+    prop_ano      = request.args.get("prop_ano",      "").strip()
+    prop_situacao = request.args.get("prop_situacao", "").strip()
 
     detalhes_api = {}
     try:
@@ -80,12 +93,11 @@ def deputado_detalhe(id_deputado):
     )
 
     tipos_despesa = buscar_tipos_despesa_deputado(id_deputado)
-    anos_despesa = buscar_anos_despesa_deputado(id_deputado)
-    metrics = processar_metricas_pandas(despesas, 1)
+    anos_despesa  = buscar_anos_despesa_deputado(id_deputado)
+    metrics       = processar_metricas_pandas(despesas, 1)
 
-    # CEAP — cota parlamentar e equivalência em cestas básicas
     gasto_total = gasto_total_numerico(despesas)
-    ceap_bruto = resumo_ceap_deputado(
+    ceap_bruto  = resumo_ceap_deputado(
         gasto_total,
         deputado.get("sigla_uf") or "",
         filtro_ano,
@@ -93,13 +105,28 @@ def deputado_detalhe(id_deputado):
     )
     ceap = formatar_resumo_ceap_exibicao(ceap_bruto)
 
-    # Presença
-    presenca = buscar_presenca_deputado(id_deputado)
-    media_estado = media_presenca_estado(deputado["sigla_uf"])
+    presenca      = buscar_presenca_deputado(id_deputado)
+    media_estado  = media_presenca_estado(deputado["sigla_uf"])
     valor_presenca = float(presenca["percentual_presenca"]) if presenca else 0.0
+    cargo_partido  = deputado.get("cargo_partido") or "Membro"
 
-    # Cargo no partido — já vem no dict deputado vindo do banco
-    cargo_partido = deputado.get("cargo_partido") or "Membro"
+    # Proposições
+    proposicoes = buscar_proposicoes_deputado(
+        id_deputado,
+        tipo=prop_tipo     if prop_tipo     else None,
+        ano=int(prop_ano)  if prop_ano      else None,
+        situacao=prop_situacao if prop_situacao else None,
+    )
+    top_temas          = buscar_top_temas_deputado(id_deputado, limite=5)
+    resumo_proposicoes = buscar_resumo_proposicoes_deputado(id_deputado)
+    anos_proposicoes   = buscar_anos_proposicoes_deputado(id_deputado)
+    situacoes_prop     = buscar_situacoes_proposicoes_deputado(id_deputado)
+
+    # Totais por tipo para o resumo acima do dropdown
+    totais_tipo = {}
+    for row in resumo_proposicoes:
+        t = row["sigla_tipo"]
+        totais_tipo[t] = totais_tipo.get(t, 0) + row["total"]
 
     return render_template(
         "deputado.html",
@@ -116,6 +143,14 @@ def deputado_detalhe(id_deputado):
         presenca=valor_presenca,
         media=media_estado,
         cargo_partido=cargo_partido,
+        proposicoes=proposicoes,
+        top_temas=top_temas,
+        totais_tipo=totais_tipo,
+        anos_proposicoes=anos_proposicoes,
+        situacoes_prop=situacoes_prop,
+        prop_tipo=prop_tipo,
+        prop_ano=prop_ano,
+        prop_situacao=prop_situacao,
     )
 
 

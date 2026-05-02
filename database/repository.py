@@ -270,3 +270,109 @@ def contar_ranking(uf=None, criterio="gastos"):
     cursor.close()
     conn.close()
     return total
+
+# ── Proposições ──────────────────────────────────────────────
+
+def buscar_proposicoes_deputado(id_deputado, tipo=None, ano=None, situacao=None):
+    conn   = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    query  = """
+        SELECT p.id, p.sigla_tipo, p.numero, p.ano, p.ementa,
+               p.keywords, p.situacao, p.url_inteiro_teor
+        FROM proposicoes p
+        WHERE p.id_deputado = %s
+    """
+    params = [id_deputado]
+
+    if tipo:
+        query += " AND p.sigla_tipo = %s"
+        params.append(tipo)
+    if ano:
+        query += " AND p.ano = %s"
+        params.append(ano)
+    if situacao:
+        query += " AND p.situacao LIKE %s"
+        params.append(f"%{situacao}%")
+
+    query += " ORDER BY p.ano DESC, p.numero DESC"
+
+    cursor.execute(query, params)
+    resultados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return resultados
+
+
+def buscar_top_temas_deputado(id_deputado, limite=5):
+    conn   = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT t.nome, COUNT(*) AS total
+        FROM proposicoes_temas pt
+        JOIN temas t ON t.cod = pt.cod_tema
+        JOIN proposicoes p ON p.id = pt.id_proposicao
+        WHERE p.id_deputado = %s
+        GROUP BY t.cod, t.nome
+        ORDER BY total DESC
+        LIMIT %s
+    """, (id_deputado, limite))
+
+    resultados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return resultados
+
+
+def buscar_resumo_proposicoes_deputado(id_deputado):
+    conn   = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT
+            sigla_tipo,
+            ano,
+            COUNT(*) AS total
+        FROM proposicoes
+        WHERE id_deputado = %s
+        GROUP BY sigla_tipo, ano
+        ORDER BY ano DESC, sigla_tipo
+    """, (id_deputado,))
+
+    resultados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return resultados
+
+
+def buscar_anos_proposicoes_deputado(id_deputado):
+    conn   = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT DISTINCT ano FROM proposicoes
+        WHERE id_deputado = %s
+        ORDER BY ano DESC
+    """, (id_deputado,))
+
+    resultados = [row[0] for row in cursor.fetchall() if row[0]]
+    cursor.close()
+    conn.close()
+    return resultados
+
+
+def buscar_situacoes_proposicoes_deputado(id_deputado):
+    conn   = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT DISTINCT situacao FROM proposicoes
+        WHERE id_deputado = %s AND situacao != ''
+        ORDER BY situacao
+    """, (id_deputado,))
+
+    resultados = [row[0] for row in cursor.fetchall() if row[0]]
+    cursor.close()
+    conn.close()
+    return resultados
