@@ -14,31 +14,33 @@ from database.repository import (
     buscar_presenca_deputado,
     media_presenca_estado,
     contar_ranking,
-    buscar_ranking_proposicoes_deputado
+    buscar_ranking_proposicoes_deputado,
+    buscar_dados_ranking_pl,
 )
 from src.utils.data_processor import processar_metricas_pandas, gasto_total_numerico
 from src.utils.ceap import resumo_ceap_deputado, formatar_resumo_ceap_exibicao
+from src.utils.ranking_proposicoes import montar_ranking_pl
 
 app = Flask(__name__)
 
 
 @app.route("/", methods=["GET"])
 def index():
-    page = request.args.get("page", 1, type=int)
-    uf = request.args.get("uf", "").upper().strip()
+    page    = request.args.get("page", 1, type=int)
+    uf      = request.args.get("uf", "").upper().strip()
     partido = request.args.get("partido", "").upper().strip()
-    nome = request.args.get("nome", "").strip()
+    nome    = request.args.get("nome", "").strip()
 
-    limit = 12
+    limit  = 12
     offset = (page - 1) * limit
 
-    deputados = buscar_deputados(uf, partido, nome, limit, offset)
-    total = contar_deputados(uf, partido, nome)
+    deputados   = buscar_deputados(uf, partido, nome, limit, offset)
+    total       = contar_deputados(uf, partido, nome)
     tem_proxima = (offset + limit) < total
 
-    ids = [d["id"] for d in deputados]
+    ids      = [d["id"] for d in deputados]
     despesas = buscar_despesas_por_deputados(ids)
-    metrics = processar_metricas_pandas(despesas, len(deputados))
+    metrics  = processar_metricas_pandas(despesas, len(deputados))
 
     return render_template(
         "index.html",
@@ -48,7 +50,7 @@ def index():
         tem_proxima=tem_proxima,
         uf=uf,
         partido=partido,
-        nome=nome
+        nome=nome,
     )
 
 
@@ -66,11 +68,9 @@ def deputado_detalhe(id_deputado):
     if not deputado:
         abort(404)
 
-    filtro_ano  = request.args.get("ano",  "").strip()
-    filtro_mes  = request.args.get("mes",  "").strip()
-    filtro_tipo = request.args.get("tipo", "").strip()
-
-    # filtros de proposições
+    filtro_ano    = request.args.get("ano",  "").strip()
+    filtro_mes    = request.args.get("mes",  "").strip()
+    filtro_tipo   = request.args.get("tipo", "").strip()
     prop_tipo     = request.args.get("prop_tipo",     "").strip()
     prop_ano      = request.args.get("prop_ano",      "").strip()
     prop_situacao = request.args.get("prop_situacao", "").strip()
@@ -79,7 +79,7 @@ def deputado_detalhe(id_deputado):
     try:
         res = http_requests.get(
             f"https://dadosabertos.camara.leg.br/api/v2/deputados/{id_deputado}",
-            timeout=10
+            timeout=10,
         )
         if res.status_code == 200:
             detalhes_api = res.json().get("dados", {})
@@ -90,7 +90,7 @@ def deputado_detalhe(id_deputado):
         id_deputado,
         ano=int(filtro_ano) if filtro_ano else None,
         mes=int(filtro_mes) if filtro_mes else None,
-        tipo=filtro_tipo if filtro_tipo else None,
+        tipo=filtro_tipo    if filtro_tipo else None,
     )
 
     tipos_despesa = buscar_tipos_despesa_deputado(id_deputado)
@@ -106,19 +106,18 @@ def deputado_detalhe(id_deputado):
     )
     ceap = formatar_resumo_ceap_exibicao(ceap_bruto)
 
-    presenca      = buscar_presenca_deputado(id_deputado)
-    media_estado  = media_presenca_estado(deputado["sigla_uf"])
-    ranking_prop = buscar_ranking_proposicoes_deputado(id_deputado)
-    posicao_prop = ranking_prop["posicao"] if ranking_prop else None
+    presenca        = buscar_presenca_deputado(id_deputado)
+    media_estado    = media_presenca_estado(deputado["sigla_uf"])
+    ranking_prop    = buscar_ranking_proposicoes_deputado(id_deputado)
+    posicao_prop    = ranking_prop["posicao"]         if ranking_prop else None
     total_aprovadas = ranking_prop["total_aprovadas"] if ranking_prop else 0
-    valor_presenca = float(presenca["percentual_presenca"]) if presenca else 0.0
-    cargo_partido  = deputado.get("cargo_partido") or "Membro"
+    valor_presenca  = float(presenca["percentual_presenca"]) if presenca else 0.0
+    cargo_partido   = deputado.get("cargo_partido") or "Membro"
 
-    # Proposições
     proposicoes = buscar_proposicoes_deputado(
         id_deputado,
-        tipo=prop_tipo     if prop_tipo     else None,
-        ano=int(prop_ano)  if prop_ano      else None,
+        tipo=prop_tipo         if prop_tipo     else None,
+        ano=int(prop_ano)      if prop_ano      else None,
         situacao=prop_situacao if prop_situacao else None,
     )
     top_temas          = buscar_top_temas_deputado(id_deputado, limite=5)
@@ -126,7 +125,6 @@ def deputado_detalhe(id_deputado):
     anos_proposicoes   = buscar_anos_proposicoes_deputado(id_deputado)
     situacoes_prop     = buscar_situacoes_proposicoes_deputado(id_deputado)
 
-    # Totais por tipo para o resumo acima do dropdown
     totais_tipo = {}
     for row in resumo_proposicoes:
         t = row["sigla_tipo"]
@@ -162,21 +160,52 @@ def deputado_detalhe(id_deputado):
 
 @app.route("/ranking")
 def ranking():
-    uf = request.args.get("uf", "").upper().strip()
-    page = request.args.get("page", 1, type=int)
+    uf       = request.args.get("uf", "").upper().strip()
+    page     = request.args.get("page", 1, type=int)
     criterio = request.args.get("criterio", "gastos")
-    ordem_default = "asc" if criterio == "presenca" else "desc"
-    ordem = request.args.get("ordem", ordem_default)
+    ordem    = request.args.get("ordem", "")
+
+    if criterio == "proposicoes":
+        if not ordem:
+            ordem = "desc"
+        por_pagina   = 15
+        rows         = buscar_dados_ranking_pl(uf if uf else None)
+        ranking_full = montar_ranking_pl(rows)
+
+        if ordem == "asc":
+            ranking_full = list(reversed(ranking_full))
+
+        total         = len(ranking_full)
+        total_paginas = max(1, (total + por_pagina - 1) // por_pagina)
+        offset        = (page - 1) * por_pagina
+        ranking_pag   = ranking_full[offset:offset + por_pagina]
+
+        for i, r in enumerate(ranking_pag):
+            r["posicao_display"] = offset + i + 1
+
+        return render_template(
+            "ranking.html",
+            ranking=ranking_pag,
+            uf=uf,
+            page=page,
+            total_paginas=total_paginas,
+            criterio=criterio,
+            ordem=ordem,
+            total=total,
+        )
+
+    if not ordem:
+        ordem = "asc" if criterio == "presenca" else "desc"
 
     por_pagina = 15
-    offset = (page - 1) * por_pagina
+    offset     = (page - 1) * por_pagina
 
     if criterio == "presenca":
         ranking_paginado = buscar_ranking_presenca(uf, ordem)
     else:
         ranking_paginado = buscar_ranking_gastos(uf, ordem)
 
-    total = contar_ranking(uf, criterio)
+    total         = contar_ranking(uf, criterio)
     total_paginas = max(1, (total + por_pagina - 1) // por_pagina)
     ranking_paginado = ranking_paginado[offset:offset + por_pagina]
 
@@ -187,7 +216,8 @@ def ranking():
         page=page,
         total_paginas=total_paginas,
         criterio=criterio,
-        ordem=ordem
+        ordem=ordem,
+        total=total,
     )
 
 

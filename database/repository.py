@@ -407,3 +407,53 @@ def buscar_ranking_proposicoes_deputado(id_deputado):
     cursor.close()
     conn.close()
     return resultado
+
+def buscar_dados_ranking_pl(uf=None):
+    conn   = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    query = """
+        SELECT
+            d.id,
+            d.nome,
+            d.sigla_uf,
+            d.sigla_partido,
+            d.url_foto,
+            SUM(CASE WHEN p.sigla_tipo = 'PL'  THEN 1 ELSE 0 END) AS total_pl,
+            SUM(CASE WHEN p.sigla_tipo = 'PDC' THEN 1 ELSE 0 END) AS total_pdc,
+            SUM(CASE WHEN p.sigla_tipo = 'PEC' THEN 1 ELSE 0 END) AS total_pec
+        FROM deputados d
+        LEFT JOIN proposicoes p ON p.id_deputado = d.id
+        WHERE 1=1
+    """
+    params = []
+
+    if uf:
+        query += " AND d.sigla_uf = %s"
+        params.append(uf)
+
+    query += " GROUP BY d.id, d.nome, d.sigla_uf, d.sigla_partido, d.url_foto"
+
+    cursor.execute(query, params)
+    resultados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return resultados
+
+
+def contar_ranking_pl(uf=None):
+    conn   = get_connection()
+    cursor = conn.cursor()
+
+    query  = "SELECT COUNT(*) FROM deputados d WHERE 1=1"
+    params = []
+
+    if uf:
+        query += " AND d.sigla_uf = %s"
+        params.append(uf)
+
+    cursor.execute(query, params)
+    total = cursor.fetchone()[0]
+    cursor.close()
+    conn.close()
+    return total

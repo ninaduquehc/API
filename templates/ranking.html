@@ -9,70 +9,215 @@
   <form method="GET" class="ranking-filter">
     <div class="filter-group">
       <label>UF</label>
-      <input type="text" name="uf" value="{{ uf }}" placeholder="Ex: SP">
+      <input type="text" name="uf" value="{{ uf }}" placeholder="Ex: SP"
+             maxlength="2" style="width:70px;">
     </div>
+
     <div class="filter-group">
       <label>Critério</label>
-      <select name="criterio">
-        <option value="gastos" {% if criterio=='gastos' %}selected{% endif %}>Gastos</option>
-        <option value="presenca" {% if criterio=='presenca' %}selected{% endif %}>Presença</option>
+      <select name="criterio" onchange="this.form.submit()">
+        <option value="gastos"       {% if criterio == 'gastos'       %}selected{% endif %}>Gastos</option>
+        <option value="presenca"     {% if criterio == 'presenca'     %}selected{% endif %}>Presença</option>
+        <option value="proposicoes"  {% if criterio == 'proposicoes'  %}selected{% endif %}>Proposições</option>
       </select>
     </div>
+
     <div class="filter-group">
       <label>Ordem</label>
       <select name="ordem">
-        <option value="desc" {% if ordem=='desc' %}selected{% endif %}>Maior → Menor</option>
-        <option value="asc" {% if ordem=='asc' %}selected{% endif %}>Menor → Maior</option>
+        {% if criterio == 'presenca' %}
+          <option value="desc" {% if ordem == 'desc' %}selected{% endif %}>Maior → Menor</option>
+          <option value="asc"  {% if ordem == 'asc'  %}selected{% endif %}>Menor → Maior</option>
+        {% elif criterio == 'proposicoes' %}
+          <option value="desc" {% if ordem == 'desc' %}selected{% endif %}>Maior score → Menor</option>
+          <option value="asc"  {% if ordem == 'asc'  %}selected{% endif %}>Menor score → Maior</option>
+        {% else %}
+          <option value="desc" {% if ordem == 'desc' %}selected{% endif %}>Maior → Menor</option>
+          <option value="asc"  {% if ordem == 'asc'  %}selected{% endif %}>Menor → Maior</option>
+        {% endif %}
       </select>
     </div>
+
     <input type="hidden" name="page" value="1">
-    <button class="btn">Filtrar</button>
+    <button class="btn" style="align-self:flex-end;">Filtrar</button>
+    {% if uf %}
+    <a href="/ranking?criterio={{ criterio }}&ordem={{ ordem }}"
+       class="btn-limpar" style="align-self:flex-end;">✕ Limpar UF</a>
+    {% endif %}
   </form>
 
-  <div class="ranking-list">
+  {# ── Legenda de pesos (só proposições) ── #}
+  {% if criterio == 'proposicoes' %}
+  <p style="font-size:13px;color:#666;margin:-4px 0 14px;line-height:1.6;">
+    Score ponderado por complexidade:
+    <strong>PEC ×3</strong> &nbsp;|&nbsp;
+    <strong>PDC ×2</strong> &nbsp;|&nbsp;
+    <strong>PL ×1</strong> — permite comparar deputados de bancadas de tamanhos diferentes.
+  </p>
+  <div class="prop-tipo-pills" style="margin-bottom:20px;">
+    <div class="prop-tipo-pill">
+      <span class="prop-tipo-sigla">PEC</span>
+      <span class="prop-tipo-total">peso 3</span>
+    </div>
+    <div class="prop-tipo-pill">
+      <span class="prop-tipo-sigla">PDC</span>
+      <span class="prop-tipo-total">peso 2</span>
+    </div>
+    <div class="prop-tipo-pill">
+      <span class="prop-tipo-sigla">PL</span>
+      <span class="prop-tipo-total">peso 1</span>
+    </div>
+    <span style="font-size:12px;color:#999;align-self:center;margin-left:8px;">
+      {{ total }} deputado(s){% if uf %} &bull; {{ uf }}{% endif %}
+    </span>
+  </div>
+  {% endif %}
+
+  {# ══════════════════════════════════════════
+     LISTA — PROPOSIÇÕES
+  ══════════════════════════════════════════ #}
+  {% if criterio == 'proposicoes' %}
+  <div class="ranking-list" style="display:flex;flex-direction:column;gap:10px;">
     {% for dep in ranking %}
-    {% set diff = dep.presenca|float - dep.media_uf|float %}
+    {% set diff = dep.diff_score %}
     <a href="/deputado/{{ dep.id }}?origem=ranking&uf={{ uf }}&page={{ page }}&criterio={{ criterio }}&ordem={{ ordem }}"
-      class="ranking-item">
-      <img src="https://www.camara.leg.br/internet/deputado/bandep/{{ dep.id }}.jpg" alt="Foto de {{ dep.nome }}"
-        onerror="this.src='https://via.placeholder.com/80x100?text=Sem+Foto'">
-      <div class="ranking-info">
-        <h4>#{{ (page - 1) * 15 + loop.index }} - {{ dep.nome }}</h4>
-        <p>{{ dep.sigla_partido }} - {{ dep.sigla_uf }}</p>
-        {% if diff >= 0 %}<p style="color:#16a34a; font-weight:600; font-size:13px; margin:2px 0 0;">Presença: {{
-          "%.1f"|format(dep.presenca|float) }}% <span style="font-weight:400;">+{{ "%.1f"|format(diff) }}% vs média ({{
-            "%.1f"|format(dep.media_uf|float) }}%)</span></p>
-        {% else %}<p style="color:#dc2626; font-weight:600; font-size:13px; margin:2px 0 0;">Presença: {{
-          "%.1f"|format(dep.presenca|float) }}% <span style="font-weight:400;">{{ "%.1f"|format(diff) }}% vs média ({{
-            "%.1f"|format(dep.media_uf|float) }}%)</span></p>{% endif %}
-      </div>
-      <div class="ranking-value">
-        {% if criterio == 'presenca' %}
-        {% if diff >= 0 %}<span style="color:#16a34a; font-weight:700; font-size:18px;">{{
-          "%.1f"|format(dep.presenca|float) }}%</span>
-        {% else %}<span style="color:#dc2626; font-weight:700; font-size:18px;">{{ "%.1f"|format(dep.presenca|float)
-          }}%</span>{% endif %}
+       class="ranking-item ranking-item--pl">
+
+      <div class="ranking-pos">
+        {% set pos = dep.posicao_display %}
+        {% if pos <= 3 and page == 1 and ordem == 'desc' %}
+          {% set medals = ['🥇','🥈','🥉'] %}
+          <span style="font-size:22px;">{{ medals[pos - 1] }}</span>
         {% else %}
-        <span style="font-size:15px; font-weight:600;">R$ {{ "%.2f"|format(dep.total_gasto) }}</span>
+          <span class="ranking-pos-num">#{{ pos }}</span>
         {% endif %}
       </div>
+
+      <img src="{{ dep.url_foto }}" alt="{{ dep.nome }}"
+           onerror="this.src='https://via.placeholder.com/60x80?text=?'">
+
+      <div class="ranking-info" style="flex:1;">
+        <h4>{{ dep.nome }}</h4>
+        <p>{{ dep.sigla_partido }} &bull; {{ dep.sigla_uf }}</p>
+        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+          <span class="prop-tipo-pill" style="padding:2px 10px;">
+            <span class="prop-tipo-sigla">PL</span>
+            <span class="prop-tipo-total">{{ dep.total_pl }}</span>
+          </span>
+          <span class="prop-tipo-pill" style="padding:2px 10px;">
+            <span class="prop-tipo-sigla">PDC</span>
+            <span class="prop-tipo-total">{{ dep.total_pdc }}</span>
+          </span>
+          <span class="prop-tipo-pill" style="padding:2px 10px;">
+            <span class="prop-tipo-sigla">PEC</span>
+            <span class="prop-tipo-total">{{ dep.total_pec }}</span>
+          </span>
+          <span style="font-size:12px;color:#999;align-self:center;">
+            {{ dep.total_geral }} total
+          </span>
+        </div>
+      </div>
+
+      <div style="text-align:right;min-width:120px;flex-shrink:0;">
+        <div style="font-size:26px;font-weight:700;
+                    color:{{ '#36b694' if diff >= 0 else '#dc2626' }};">
+          {{ dep.score|int }}
+          <span style="font-size:13px;font-weight:400;color:#999;">pts</span>
+        </div>
+        <div style="font-size:12px;margin-top:2px;
+                    color:{{ '#16a34a' if diff >= 0 else '#dc2626' }};">
+          {{ '+' if diff >= 0 else '' }}{{ "%.1f"|format(diff) }} vs média UF
+        </div>
+        <div style="font-size:11px;color:#aaa;margin-top:1px;">
+          média: {{ dep.media_uf_score|int }} pts
+        </div>
+      </div>
+
     </a>
+    {% else %}
+    <div class="empty-state">Nenhum deputado encontrado.</div>
     {% endfor %}
   </div>
 
+  {# ══════════════════════════════════════════
+     LISTA — GASTOS / PRESENÇA
+  ══════════════════════════════════════════ #}
+  {% else %}
+  <div class="ranking-list" style="display:flex;flex-direction:column;gap:10px;">
+    {% for dep in ranking %}
+    {% set diff = dep.presenca|float - dep.media_uf|float %}
+    <a href="/deputado/{{ dep.id }}?origem=ranking&uf={{ uf }}&page={{ page }}&criterio={{ criterio }}&ordem={{ ordem }}"
+       class="ranking-item">
+
+      <div class="ranking-pos">
+        {% set pos = (page - 1) * 15 + loop.index %}
+        {% if pos <= 3 and page == 1 and ordem == 'desc' %}
+          {% set medals = ['🥇','🥈','🥉'] %}
+          <span style="font-size:22px;">{{ medals[pos - 1] }}</span>
+        {% else %}
+          <span class="ranking-pos-num">#{{ pos }}</span>
+        {% endif %}
+      </div>
+
+      <img src="https://www.camara.leg.br/internet/deputado/bandep/{{ dep.id }}.jpg"
+           alt="Foto de {{ dep.nome }}"
+           onerror="this.src='https://via.placeholder.com/60x80?text=?'">
+
+      <div class="ranking-info" style="flex:1;">
+        <h4>{{ dep.nome }}</h4>
+        <p>{{ dep.sigla_partido }} &bull; {{ dep.sigla_uf }}</p>
+        <p style="font-size:13px;margin-top:3px;
+                  color:{{ '#16a34a' if diff >= 0 else '#dc2626' }};font-weight:600;">
+          Presença: {{ "%.1f"|format(dep.presenca|float) }}%
+          <span style="font-weight:400;color:#666;">
+            ({{ '+' if diff >= 0 else '' }}{{ "%.1f"|format(diff) }}%
+            vs média {{ "%.1f"|format(dep.media_uf|float) }}%)
+          </span>
+        </p>
+      </div>
+
+      <div style="text-align:right;min-width:130px;flex-shrink:0;">
+        {% if criterio == 'presenca' %}
+          <span style="font-size:22px;font-weight:700;
+                       color:{{ '#16a34a' if diff >= 0 else '#dc2626' }};">
+            {{ "%.1f"|format(dep.presenca|float) }}%
+          </span>
+        {% else %}
+          <span style="font-size:15px;font-weight:700;color:#c0392b;">
+            R$ {{ "%.2f"|format(dep.total_gasto|float)|replace('.','X')|replace(',','.')|replace('X',',') }}
+          </span>
+        {% endif %}
+      </div>
+
+    </a>
+    {% else %}
+    <div class="empty-state">Nenhum deputado encontrado.</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {# ── Paginação ── #}
   <div class="pagination">
-    {% if page > 1 %}<a class="page-link" href="?uf={{ uf }}&criterio={{ criterio }}&ordem={{ ordem }}&page=1">
-      <<< /a><a class="page-link" href="?uf={{ uf }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ page - 1 }}">
-          << /a>{% endif %}
-            {% set inicio = page %}{% set fim = page + 4 %}{% if fim > total_paginas %}{% set fim = total_paginas %}{%
-            endif %}{% if inicio < 1 %}{% set inicio=1 %}{% endif %} {% for p in range(inicio, fim + 1) %}<a
-              class="page-link {% if p == page %}active-page{% endif %}"
-              href="?uf={{ uf }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ p }}">{{ p }}
-        </a>{% endfor %}
-        {% if page < total_paginas %}<a class="page-link"
-          href="?uf={{ uf }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ page + 1 }}">>
-    </a><a class="page-link"
-      href="?uf={{ uf }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ total_paginas }}">>></a>{% endif %}
+    {% if page > 1 %}
+    <a class="page-link"
+       href="?uf={{ uf }}&criterio={{ criterio }}&ordem={{ ordem }}&page=1">&laquo;&laquo;</a>
+    <a class="page-link"
+       href="?uf={{ uf }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ page - 1 }}">&laquo;</a>
+    {% endif %}
+
+    {% set p_start = [1, page - 2]|max %}
+    {% set p_end   = [total_paginas, page + 2]|min %}
+    {% for p in range(p_start, p_end + 1) %}
+    <a class="page-link {% if p == page %}active-page{% endif %}"
+       href="?uf={{ uf }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ p }}">{{ p }}</a>
+    {% endfor %}
+
+    {% if page < total_paginas %}
+    <a class="page-link"
+       href="?uf={{ uf }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ page + 1 }}">&raquo;</a>
+    <a class="page-link"
+       href="?uf={{ uf }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ total_paginas }}">&raquo;&raquo;</a>
+    {% endif %}
   </div>
 
 </div>
