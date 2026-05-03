@@ -13,7 +13,8 @@ from database.repository import (
     buscar_ranking_presenca,
     buscar_presenca_deputado,
     media_presenca_estado,
-    contar_ranking
+    contar_ranking,
+    buscar_ranking_proposicoes_deputado
 )
 from src.utils.data_processor import processar_metricas_pandas, gasto_total_numerico
 from src.utils.ceap import resumo_ceap_deputado, formatar_resumo_ceap_exibicao
@@ -107,6 +108,9 @@ def deputado_detalhe(id_deputado):
 
     presenca      = buscar_presenca_deputado(id_deputado)
     media_estado  = media_presenca_estado(deputado["sigla_uf"])
+    ranking_prop = buscar_ranking_proposicoes_deputado(id_deputado)
+    posicao_prop = ranking_prop["posicao"] if ranking_prop else None
+    total_aprovadas = ranking_prop["total_aprovadas"] if ranking_prop else 0
     valor_presenca = float(presenca["percentual_presenca"]) if presenca else 0.0
     cargo_partido  = deputado.get("cargo_partido") or "Membro"
 
@@ -151,6 +155,8 @@ def deputado_detalhe(id_deputado):
         prop_tipo=prop_tipo,
         prop_ano=prop_ano,
         prop_situacao=prop_situacao,
+        posicao_prop=posicao_prop,
+        total_aprovadas=total_aprovadas,
     )
 
 

@@ -376,3 +376,34 @@ def buscar_situacoes_proposicoes_deputado(id_deputado):
     cursor.close()
     conn.close()
     return resultados
+
+def buscar_ranking_proposicoes_deputado(id_deputado):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    query = """
+        SELECT *
+        FROM (
+            SELECT 
+                d.id,
+                d.nome,
+                d.sigla_uf,
+                COUNT(*) AS total_aprovadas,
+                RANK() OVER (
+                    PARTITION BY d.sigla_uf 
+                    ORDER BY COUNT(*) DESC
+                ) AS posicao
+            FROM proposicoes p
+            JOIN deputados d ON d.id = p.id_deputado
+            WHERE p.situacao LIKE '%Aprovad%'
+            GROUP BY d.id, d.nome, d.sigla_uf
+        ) ranking
+        WHERE id = %s
+    """
+
+    cursor.execute(query, (id_deputado,))
+    resultado = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+    return resultado
