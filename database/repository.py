@@ -28,6 +28,21 @@ def buscar_deputados(uf="", partido="", nome="", limit=12, offset=0):
     return resultados
 
 
+def buscar_todos_deputados():
+    """Retorna todos os deputados ordenados por nome (sem limite de paginação)."""
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT id, nome, url_foto, sigla_partido, sigla_uf, cargo_partido, email
+        FROM deputados
+        ORDER BY nome ASC
+    """)
+    resultados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return resultados
+
+
 def contar_deputados(uf="", partido="", nome=""):
     conn = get_connection()
     cursor = conn.cursor()
