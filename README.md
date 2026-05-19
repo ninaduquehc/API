@@ -27,7 +27,7 @@ O objetivo central do **Radar Cidadão** é desenvolver uma aplicação que tran
 | Team Member | Leonardo Vilela Matiusso | [![Linkedin](https://img.shields.io/badge/Linkedin-blue?style=flat-square&logo=Linkedin&logoColor=white)](https://www.linkedin.com/in/leonardo-vilela-matiusso-94b405374/) [![GitHub](https://img.shields.io/badge/GitHub-111217?style=flat-square&logo=github&logoColor=white)](https://github.com/leovmatiusso) |
 | Team Member | Nathan Ariel Damasio Leão | [![Linkedin](https://img.shields.io/badge/Linkedin-blue?style=flat-square&logo=Linkedin&logoColor=white)](https://www.linkedin.com/in/nathan-ariel-damasio-le%C3%A3o-7a64522b5/) [![GitHub](https://img.shields.io/badge/GitHub-111217?style=flat-square&logo=github&logoColor=white)](https://github.com/Nathan-ADL) |
 | Team Member | Samuel Estevão Pereira Martins | [![Linkedin](https://img.shields.io/badge/Linkedin-blue?style=flat-square&logo=Linkedin&logoColor=white)](https://www.linkedin.com/in/samuel-martins-210s507em) [![GitHub](https://img.shields.io/badge/GitHub-111217?style=flat-square&logo=github&logoColor=white)](https://github.com/SamuelMartins00) |
-
+| Team Member | Giovanna Noccerino de Freitas | [![Linkedin](https://img.shields.io/badge/Linkedin-blue?style=flat-square&logo=Linkedin&logoColor=white)](https://br.linkedin.com/in/giovanna-noccerino-de-freitas-221aa8401) [![GitHub](https://img.shields.io/badge/GitHub-111217?style=flat-square&logo=github&logoColor=white)](https://github.com/GiNDF) |
 ---
 
 ## 🛠 Tecnologias Utilizadas
