@@ -1,3 +1,23 @@
+{%- macro paginacao(page, total_paginas, base_url) %}
+{% if total_paginas > 1 %}
+<div class="pagination">
+  {% if page > 1 %}
+  <a class="page-link" href="{{ base_url }}&page=1" title="Primeira">&laquo;&laquo;</a>
+  <a class="page-link" href="{{ base_url }}&page={{ page - 1 }}" title="Anterior">&laquo;</a>
+  {% endif %}
+  {% set p_start = [1, page - 2] | max %}
+  {% set p_end   = [total_paginas, page + 7] | min %}
+  {% for p in range(p_start, p_end + 1) %}
+  <a class="page-link {% if p == page %}active-page{% endif %}"
+     href="{{ base_url }}&page={{ p }}">{{ p }}</a>
+  {% endfor %}
+  {% if page < total_paginas %}
+  <a class="page-link" href="{{ base_url }}&page={{ page + 1 }}" title="Próxima">&raquo;</a>
+  <a class="page-link" href="{{ base_url }}&page={{ total_paginas }}" title="Última">&raquo;&raquo;</a>
+  {% endif %}
+</div>
+{% endif %}
+{%- endmacro %}
 {% extends "base.html" %}
 
 {% block title %}VeritasCode - Dashboard{% endblock %}
@@ -57,26 +77,8 @@
       {% endfor %}
     </div>
 
-    <div class="pagination">
-      {% if current_page > 1 and (tem_proxima or deputados|length == 12) %}
-      <a class="page-link"
-        href="/?page={{ current_page - 1 }}&uf={{ uf }}&partido={{ partido }}&nome={{ nome }}">&laquo;</a>
-      {% endif %}
-      {% if tem_proxima or current_page > 1 %}
-        {% for p in range(current_page - 2, current_page + 3) %}
-          {% if p > 0 %}
-          <a href="/?page={{ p }}&uf={{ uf }}&partido={{ partido }}&nome={{ nome }}"
-            class="page-link {% if p == current_page %}active-page{% endif %}">{{ p }}</a>
-          {% endif %}
-        {% endfor %}
-      {% else %}
-        <span class="page-link active-page">{{ current_page }}</span>
-      {% endif %}
-      {% if tem_proxima %}
-      <a class="page-link"
-        href="/?page={{ current_page + 1 }}&uf={{ uf }}&partido={{ partido }}&nome={{ nome }}">&raquo;</a>
-      {% endif %}
-    </div>
+    {% set base = "/?uf=" ~ uf ~ "&partido=" ~ partido ~ "&nome=" ~ nome %}
+    {{ paginacao(current_page, total_paginas, base) }}
   </section>
 </div>
 {% endblock %}

@@ -1,3 +1,23 @@
+{%- macro paginacao(page, total_paginas, base_url) %}
+{% if total_paginas > 1 %}
+<div class="pagination">
+  {% if page > 1 %}
+  <a class="page-link" href="{{ base_url }}&page=1" title="Primeira">&laquo;&laquo;</a>
+  <a class="page-link" href="{{ base_url }}&page={{ page - 1 }}" title="Anterior">&laquo;</a>
+  {% endif %}
+  {% set p_start = [1, page - 2] | max %}
+  {% set p_end   = [total_paginas, page + 7] | min %}
+  {% for p in range(p_start, p_end + 1) %}
+  <a class="page-link {% if p == page %}active-page{% endif %}"
+     href="{{ base_url }}&page={{ p }}">{{ p }}</a>
+  {% endfor %}
+  {% if page < total_paginas %}
+  <a class="page-link" href="{{ base_url }}&page={{ page + 1 }}" title="Próxima">&raquo;</a>
+  <a class="page-link" href="{{ base_url }}&page={{ total_paginas }}" title="Última">&raquo;&raquo;</a>
+  {% endif %}
+</div>
+{% endif %}
+{%- endmacro %}
 {% extends "base.html" %}
 
 {% block title %}VeritasCode - Ranking{% endblock %}
@@ -222,28 +242,8 @@
   {% endif %}
 
   {# ── Paginação ── #}
-  <div class="pagination">
-    {% if page > 1 %}
-    <a class="page-link"
-       href="?uf={{ uf }}&partido={{ partido }}&criterio={{ criterio }}&ordem={{ ordem }}&page=1">&laquo;&laquo;</a>
-    <a class="page-link"
-       href="?uf={{ uf }}&partido={{ partido }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ page - 1 }}">&laquo;</a>
-    {% endif %}
-
-    {% set p_start = [1, page - 2]|max %}
-    {% set p_end   = [total_paginas, page + 2]|min %}
-    {% for p in range(p_start, p_end + 1) %}
-    <a class="page-link {% if p == page %}active-page{% endif %}"
-       href="?uf={{ uf }}&partido={{ partido }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ p }}">{{ p }}</a>
-    {% endfor %}
-
-    {% if page < total_paginas %}
-    <a class="page-link"
-       href="?uf={{ uf }}&partido={{ partido }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ page + 1 }}">&raquo;</a>
-    <a class="page-link"
-       href="?uf={{ uf }}&partido={{ partido }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ total_paginas }}">&raquo;&raquo;</a>
-    {% endif %}
-  </div>
+  {% set base = "?uf=" ~ uf ~ "&partido=" ~ partido ~ "&criterio=" ~ criterio ~ "&ordem=" ~ ordem %}
+  {{ paginacao(page, total_paginas, base) }}
 
 </div>
 {% endblock %}

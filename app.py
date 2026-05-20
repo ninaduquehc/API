@@ -35,9 +35,14 @@ def index():
     limit  = 12
     offset = (page - 1) * limit
 
-    deputados   = buscar_deputados(uf, partido, nome, limit, offset)
-    total       = contar_deputados(uf, partido, nome)
-    tem_proxima = (offset + limit) < total
+    deputados     = buscar_deputados(uf, partido, nome, limit, offset)
+    total         = contar_deputados(uf, partido, nome)
+    total_paginas = max(1, (total + limit - 1) // limit)
+    tem_proxima   = (offset + limit) < total
+
+    # Garante que page não ultrapassa o total real
+    if page > total_paginas:
+        page = total_paginas
 
     ids      = [d["id"] for d in deputados]
     despesas = buscar_despesas_por_deputados(ids)
@@ -48,6 +53,7 @@ def index():
         deputados=deputados,
         metrics=metrics,
         current_page=page,
+        total_paginas=total_paginas,
         tem_proxima=tem_proxima,
         uf=uf,
         partido=partido,
