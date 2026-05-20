@@ -14,11 +14,17 @@
     </div>
 
     <div class="filter-group">
+      <label>Partido</label>
+      <input type="text" name="partido" value="{{ partido }}" placeholder="Ex: PT"
+             maxlength="20" style="width:90px;">
+    </div>
+
+    <div class="filter-group">
       <label>Critério</label>
       <select name="criterio" onchange="this.form.submit()">
-        <option value="gastos"       {% if criterio == 'gastos'       %}selected{% endif %}>Gastos</option>
-        <option value="presenca"     {% if criterio == 'presenca'     %}selected{% endif %}>Presença</option>
-        <option value="proposicoes"  {% if criterio == 'proposicoes'  %}selected{% endif %}>Proposições</option>
+        <option value="gastos"      {% if criterio == 'gastos'      %}selected{% endif %}>Gastos</option>
+        <option value="presenca"    {% if criterio == 'presenca'    %}selected{% endif %}>Presença</option>
+        <option value="proposicoes" {% if criterio == 'proposicoes' %}selected{% endif %}>Proposições</option>
       </select>
     </div>
 
@@ -40,11 +46,26 @@
 
     <input type="hidden" name="page" value="1">
     <button class="btn" style="align-self:flex-end;">Filtrar</button>
-    {% if uf %}
+
+    {% if uf or partido %}
     <a href="/ranking?criterio={{ criterio }}&ordem={{ ordem }}"
-       class="btn-limpar" style="align-self:flex-end;">✕ Limpar UF</a>
+       class="btn-limpar" style="align-self:flex-end;">✕ Limpar filtros</a>
     {% endif %}
   </form>
+
+  {# ── Filtros ativos ── #}
+  {% if uf or partido %}
+  <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;">
+    {% if uf %}
+    <span style="background:#eef2ff;color:#4338ca;font-size:.75rem;font-weight:600;
+                 padding:3px 10px;border-radius:20px;">🗺️ UF: {{ uf }}</span>
+    {% endif %}
+    {% if partido %}
+    <span style="background:#f0fdf4;color:#166534;font-size:.75rem;font-weight:600;
+                 padding:3px 10px;border-radius:20px;">🏛️ Partido: {{ partido }}</span>
+    {% endif %}
+  </div>
+  {% endif %}
 
   {# ── Legenda de pesos (só proposições) ── #}
   {% if criterio == 'proposicoes' %}
@@ -68,7 +89,9 @@
       <span class="prop-tipo-total">peso 1</span>
     </div>
     <span style="font-size:12px;color:#999;align-self:center;margin-left:8px;">
-      {{ total }} deputado(s){% if uf %} &bull; {{ uf }}{% endif %}
+      {{ total }} deputado(s)
+      {% if uf %} &bull; {{ uf }}{% endif %}
+      {% if partido %} &bull; {{ partido }}{% endif %}
     </span>
   </div>
   {% endif %}
@@ -80,7 +103,7 @@
   <div class="ranking-list" style="display:flex;flex-direction:column;gap:10px;">
     {% for dep in ranking %}
     {% set diff = dep.diff_score %}
-    <a href="/deputado/{{ dep.id }}?origem=ranking&uf={{ uf }}&page={{ page }}&criterio={{ criterio }}&ordem={{ ordem }}"
+    <a href="/deputado/{{ dep.id }}?origem=ranking&uf={{ uf }}&partido={{ partido }}&page={{ page }}&criterio={{ criterio }}&ordem={{ ordem }}"
        class="ranking-item ranking-item--pl">
 
       <div class="ranking-pos">
@@ -146,7 +169,7 @@
   <div class="ranking-list" style="display:flex;flex-direction:column;gap:10px;">
     {% for dep in ranking %}
     {% set diff = dep.presenca|float - dep.media_uf|float %}
-    <a href="/deputado/{{ dep.id }}?origem=ranking&uf={{ uf }}&page={{ page }}&criterio={{ criterio }}&ordem={{ ordem }}"
+    <a href="/deputado/{{ dep.id }}?origem=ranking&uf={{ uf }}&partido={{ partido }}&page={{ page }}&criterio={{ criterio }}&ordem={{ ordem }}"
        class="ranking-item">
 
       <div class="ranking-pos">
@@ -200,23 +223,23 @@
   <div class="pagination">
     {% if page > 1 %}
     <a class="page-link"
-       href="?uf={{ uf }}&criterio={{ criterio }}&ordem={{ ordem }}&page=1">&laquo;&laquo;</a>
+       href="?uf={{ uf }}&partido={{ partido }}&criterio={{ criterio }}&ordem={{ ordem }}&page=1">&laquo;&laquo;</a>
     <a class="page-link"
-       href="?uf={{ uf }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ page - 1 }}">&laquo;</a>
+       href="?uf={{ uf }}&partido={{ partido }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ page - 1 }}">&laquo;</a>
     {% endif %}
 
     {% set p_start = [1, page - 2]|max %}
     {% set p_end   = [total_paginas, page + 2]|min %}
     {% for p in range(p_start, p_end + 1) %}
     <a class="page-link {% if p == page %}active-page{% endif %}"
-       href="?uf={{ uf }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ p }}">{{ p }}</a>
+       href="?uf={{ uf }}&partido={{ partido }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ p }}">{{ p }}</a>
     {% endfor %}
 
     {% if page < total_paginas %}
     <a class="page-link"
-       href="?uf={{ uf }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ page + 1 }}">&raquo;</a>
+       href="?uf={{ uf }}&partido={{ partido }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ page + 1 }}">&raquo;</a>
     <a class="page-link"
-       href="?uf={{ uf }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ total_paginas }}">&raquo;&raquo;</a>
+       href="?uf={{ uf }}&partido={{ partido }}&criterio={{ criterio }}&ordem={{ ordem }}&page={{ total_paginas }}">&raquo;&raquo;</a>
     {% endif %}
   </div>
 
