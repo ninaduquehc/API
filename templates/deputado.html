@@ -5,12 +5,15 @@
 {% block content %}
 
 {# --- Navegação --- #}
-{% if request.args.get('origem') == 'ranking' %}
-<a href="/ranking?uf={{ request.args.get('uf', '') }}&page={{ request.args.get('page', 1) }}&criterio={{ request.args.get('criterio', 'gastos') }}&ordem={{ request.args.get('ordem', 'desc') }}"
-  class="back-link">&#8592; Voltar para ranking</a>
+{% set volta = request.args.get('volta', '') %}
+{% if volta %}
+  {% set destino = volta %}
+  {% set label   = "Voltar para ranking" if "/ranking" in volta else "Voltar para lista" %}
 {% else %}
-<a href="/" class="back-link">&#8592; Voltar para lista</a>
+  {% set destino = "/" %}
+  {% set label   = "Voltar para lista" %}
 {% endif %}
+<a href="{{ destino }}" class="back-link">&#8592; {{ label }}</a>
 
 {# --- Hero --- #}
 <div class="perfil-hero">

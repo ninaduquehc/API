@@ -103,7 +103,8 @@
   <div class="ranking-list" style="display:flex;flex-direction:column;gap:10px;">
     {% for dep in ranking %}
     {% set diff = dep.diff_score %}
-    <a href="/deputado/{{ dep.id }}?origem=ranking&uf={{ uf }}&partido={{ partido }}&page={{ page }}&criterio={{ criterio }}&ordem={{ ordem }}"
+    {% set url_volta = "/ranking?uf=" ~ uf ~ "&partido=" ~ partido ~ "&criterio=" ~ criterio ~ "&ordem=" ~ ordem ~ "&page=" ~ page %}
+    <a href="/deputado/{{ dep.id }}?volta={{ url_volta | urlencode }}"
        class="ranking-item ranking-item--pl">
 
       <div class="ranking-pos">
@@ -169,7 +170,8 @@
   <div class="ranking-list" style="display:flex;flex-direction:column;gap:10px;">
     {% for dep in ranking %}
     {% set diff = dep.presenca|float - dep.media_uf|float %}
-    <a href="/deputado/{{ dep.id }}?origem=ranking&uf={{ uf }}&partido={{ partido }}&page={{ page }}&criterio={{ criterio }}&ordem={{ ordem }}"
+    {% set url_volta = "/ranking?uf=" ~ uf ~ "&partido=" ~ partido ~ "&criterio=" ~ criterio ~ "&ordem=" ~ ordem ~ "&page=" ~ page %}
+    <a href="/deputado/{{ dep.id }}?volta={{ url_volta | urlencode }}"
        class="ranking-item">
 
       <div class="ranking-pos">

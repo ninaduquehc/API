@@ -46,7 +46,9 @@
     <h3>Deputados (Página {{ current_page }})</h3>
     <div class="deputados-grid">
       {% for dep in deputados %}
-      <a class="deputado-card" href="/deputado/{{ dep.id }}">
+      {% set url_volta = "/?page=" ~ current_page ~ "&uf=" ~ uf ~ "&partido=" ~ partido ~ "&nome=" ~ nome %}
+      <a class="deputado-card"
+         href="/deputado/{{ dep.id }}?volta={{ url_volta | urlencode }}">
         <img src="{{ dep.url_foto }}" alt="Foto de {{ dep.nome }}"
           onerror="this.src='https://via.placeholder.com/80x106?text=Sem+Foto'">
         <h4>{{ dep.nome }}</h4>
@@ -56,14 +58,24 @@
     </div>
 
     <div class="pagination">
-      {% if current_page > 1 and (tem_proxima or deputados|length == 12) %}<a class="page-link"
-        href="/?page={{ current_page - 1 }}&uf={{ uf }}&partido={{ partido }}&nome={{ nome }}">&laquo;</a>{% endif %}
-      {% if tem_proxima or current_page > 1 %}{% for p in range(current_page - 2, current_page + 3) %}{% if p > 0 %}<a
-        href="/?page={{ p }}&uf={{ uf }}&partido={{ partido }}&nome={{ nome }}"
-        class="page-link {% if p == current_page %}active-page{% endif %}">{{ p }}</a>{% endif %}{% endfor %}{% else
-      %}<span class="page-link active-page">{{ current_page }}</span>{% endif %}
-      {% if tem_proxima %}<a class="page-link"
-        href="/?page={{ current_page + 1 }}&uf={{ uf }}&partido={{ partido }}&nome={{ nome }}">&raquo;</a>{% endif %}
+      {% if current_page > 1 and (tem_proxima or deputados|length == 12) %}
+      <a class="page-link"
+        href="/?page={{ current_page - 1 }}&uf={{ uf }}&partido={{ partido }}&nome={{ nome }}">&laquo;</a>
+      {% endif %}
+      {% if tem_proxima or current_page > 1 %}
+        {% for p in range(current_page - 2, current_page + 3) %}
+          {% if p > 0 %}
+          <a href="/?page={{ p }}&uf={{ uf }}&partido={{ partido }}&nome={{ nome }}"
+            class="page-link {% if p == current_page %}active-page{% endif %}">{{ p }}</a>
+          {% endif %}
+        {% endfor %}
+      {% else %}
+        <span class="page-link active-page">{{ current_page }}</span>
+      {% endif %}
+      {% if tem_proxima %}
+      <a class="page-link"
+        href="/?page={{ current_page + 1 }}&uf={{ uf }}&partido={{ partido }}&nome={{ nome }}">&raquo;</a>
+      {% endif %}
     </div>
   </section>
 </div>
