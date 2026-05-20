@@ -81,7 +81,6 @@ SEÇÃO DE PROPOSIÇÕES
 ════════════════════════════════════════════════════════════ #}
 <div class="gastos-section" id="proposicoesSection">
 
-  {# --- Cabeçalho do dropdown (sempre visível) --- #}
   <button class="gastos-toggle {% if prop_tipo or prop_ano or prop_situacao %}open{% endif %}" id="propToggle"
     onclick="toggleSection('propToggle','propBody')">
     <div class="gastos-toggle-left">
@@ -91,10 +90,7 @@ SEÇÃO DE PROPOSIÇÕES
     <span class="chevron">&#8964;</span>
   </button>
 
-  {# --- Preview (top temas + totais por tipo) — FORA do body, sempre visível --- #}
   <div class="prop-preview">
-
-    {# Totais por tipo #}
     <div class="prop-tipo-pills">
       {% for sigla, total in totais_tipo.items() %}
       <div class="prop-tipo-pill">
@@ -107,7 +103,6 @@ SEÇÃO DE PROPOSIÇÕES
       {% endif %}
     </div>
 
-    {# Top 5 temas #}
     {% if top_temas %}
     <div class="top-temas-wrap">
       <span class="top-temas-label">Top temas:</span>
@@ -116,8 +111,7 @@ SEÇÃO DE PROPOSIÇÕES
         <div class="tema-bar-row">
           <span class="tema-nome">{{ tema.nome }}</span>
           <div class="tema-bar-track">
-            <div class="tema-bar-fill" style="width:{{ ((tema.total / top_temas[0].total) * 100)|int }}%">
-            </div>
+            <div class="tema-bar-fill" style="width:{{ ((tema.total / top_temas[0].total) * 100)|int }}%"></div>
           </div>
           <span class="tema-count">{{ tema.total }}</span>
         </div>
@@ -125,16 +119,10 @@ SEÇÃO DE PROPOSIÇÕES
       </div>
     </div>
     {% endif %}
-
   </div>
 
-  
-  {# --- Body expansível --- #}
   <div class="gastos-body {% if prop_tipo or prop_ano or prop_situacao %}open{% endif %}" id="propBody">
-
-    {# Filtros #}
     <form method="GET" action="/deputado/{{ deputado.id }}#proposicoesSection">
-      {# Preserva filtros de despesas #}
       {% if filtro_ano %}<input type="hidden" name="ano" value="{{ filtro_ano }}">{% endif %}
       {% if filtro_mes %}<input type="hidden" name="mes" value="{{ filtro_mes }}">{% endif %}
       {% if filtro_tipo %}<input type="hidden" name="tipo" value="{{ filtro_tipo }}">{% endif %}
@@ -149,7 +137,6 @@ SEÇÃO DE PROPOSIÇÕES
             {% endfor %}
           </select>
         </div>
-
         <div class="filtro-group">
           <label>Ano</label>
           <select name="prop_ano">
@@ -159,7 +146,6 @@ SEÇÃO DE PROPOSIÇÕES
             {% endfor %}
           </select>
         </div>
-
         <div class="filtro-group" style="min-width:200px;">
           <label>Situação</label>
           <select name="prop_situacao">
@@ -169,25 +155,18 @@ SEÇÃO DE PROPOSIÇÕES
             {% endfor %}
           </select>
         </div>
-
         <button type="submit" class="btn-filtrar">🔍 Filtrar</button>
         <a href="/deputado/{{ deputado.id }}#proposicoesSection" class="btn-limpar">✕ Limpar</a>
       </div>
     </form>
 
-    {# Tabela #}
     {% if proposicoes %}
     <p class="results-count">{{ proposicoes|length }} proposição(ões) encontrada(s)</p>
     <div style="overflow-x:auto;">
       <table class="despesas-table">
         <thead>
           <tr>
-            <th>Tipo</th>
-            <th>Número</th>
-            <th>Ano</th>
-            <th>Situação</th>
-            <th>Ementa</th>
-            <th>Link</th>
+            <th>Tipo</th><th>Número</th><th>Ano</th><th>Situação</th><th>Ementa</th><th>Link</th>
           </tr>
         </thead>
         <tbody>
@@ -210,6 +189,163 @@ SEÇÃO DE PROPOSIÇÕES
     </div>
     {% else %}
     <div class="empty-state">Nenhuma proposição encontrada com os filtros selecionados.</div>
+    {% endif %}
+  </div>
+</div>
+
+{# ═══════════════════════════════════════════════════════════
+SEÇÃO DE COERÊNCIA (US10)
+════════════════════════════════════════════════════════════ #}
+<div class="gastos-section" id="coerenciaSection">
+
+  <button class="gastos-toggle" id="coerenciaToggle"
+    onclick="toggleSection('coerenciaToggle','coerenciaBody')">
+    <div class="gastos-toggle-left">
+      <h2>🎯 Coerência Parlamentar</h2>
+      <span class="total-badge">últimos 3 anos</span>
+    </div>
+    <span class="chevron">&#8964;</span>
+  </button>
+
+  <div class="gastos-body" id="coerenciaBody">
+
+    {# ── Três pilares ── #}
+    <div class="coe-pilares">
+
+      <div class="coe-pilar">
+        <div class="coe-pilar__icone">🗣️</div>
+        <div class="coe-pilar__num">{{ coerencia.total_discursos }}</div>
+        <div class="coe-pilar__label">Discursos</div>
+        <div class="coe-pilar__barra-track">
+          <div class="coe-pilar__barra-fill coe-pilar__barra--disc"
+               data-max="{{ [coerencia.total_discursos, coerencia.total_proposicoes, coerencia.total_aprovacoes]|max }}"
+               data-val="{{ coerencia.total_discursos }}"></div>
+        </div>
+        <div class="coe-pilar__desc">Vezes que discursou em plenário sobre temas com tema identificado</div>
+      </div>
+
+      <div class="coe-pilar">
+        <div class="coe-pilar__icone">📋</div>
+        <div class="coe-pilar__num">{{ coerencia.total_proposicoes }}</div>
+        <div class="coe-pilar__label">Projetos</div>
+        <div class="coe-pilar__barra-track">
+          <div class="coe-pilar__barra-fill coe-pilar__barra--proj"
+               data-max="{{ [coerencia.total_discursos, coerencia.total_proposicoes, coerencia.total_aprovacoes]|max }}"
+               data-val="{{ coerencia.total_proposicoes }}"></div>
+        </div>
+        <div class="coe-pilar__desc">Projetos de lei (PL, PDC, PEC) apresentados nos últimos 3 anos</div>
+      </div>
+
+      <div class="coe-pilar">
+        <div class="coe-pilar__icone">✅</div>
+        <div class="coe-pilar__num">{{ coerencia.total_aprovacoes }}</div>
+        <div class="coe-pilar__label">Aprovações</div>
+        <div class="coe-pilar__barra-track">
+          <div class="coe-pilar__barra-fill coe-pilar__barra--aprov"
+               data-max="{{ [coerencia.total_discursos, coerencia.total_proposicoes, coerencia.total_aprovacoes]|max }}"
+               data-val="{{ coerencia.total_aprovacoes }}"></div>
+        </div>
+        <div class="coe-pilar__desc">Projetos transformados em norma jurídica</div>
+      </div>
+
+    </div>
+
+    {# ── Legenda interpretativa automática ── #}
+    {% set disc = coerencia.total_discursos %}
+    {% set proj = coerencia.total_proposicoes %}
+    {% set aprov = coerencia.total_aprovacoes %}
+
+    {% if disc == 0 and proj == 0 %}
+      {% set perfil_icon = "⚪" %}
+      {% set perfil_titulo = "Sem dados suficientes" %}
+      {% set perfil_texto = "Não foram encontrados discursos ou projetos com tema identificado nos últimos 3 anos." %}
+      {% set perfil_classe = "coe-perfil--neutro" %}
+    {% elif proj == 0 and disc > 0 %}
+      {% set perfil_icon = "🗣️" %}
+      {% set perfil_titulo = "Discursa mas não propõe" %}
+      {% set perfil_texto = "O deputado faz discursos, mas não apresentou projetos de lei nos temas em que fala. Atenção: discurso sem ação legislativa." %}
+      {% set perfil_classe = "coe-perfil--alerta" %}
+    {% elif disc == 0 and proj > 0 %}
+      {% set perfil_icon = "📋" %}
+      {% set perfil_titulo = "Propõe mas não discursa" %}
+      {% set perfil_texto = "O deputado apresenta projetos, mas não faz discursos sobre eles. Age nos bastidores, sem comunicação pública sobre suas prioridades." %}
+      {% set perfil_classe = "coe-perfil--moderado" %}
+    {% elif aprov == 0 %}
+      {% set perfil_icon = "⚠️" %}
+      {% set perfil_titulo = "Discursa e propõe, sem aprovações" %}
+      {% set perfil_texto = "O deputado fala e apresenta projetos, mas nenhum foi transformado em lei. Pode indicar projetos sem viabilidade ou pouca articulação política." %}
+      {% set perfil_classe = "coe-perfil--alerta" %}
+    {% elif aprov > 0 and proj > 0 and disc > 0 %}
+      {% set taxa = ((aprov / proj) * 100)|round(1) %}
+      {% if taxa >= 10 %}
+        {% set perfil_icon = "🏆" %}
+        {% set perfil_titulo = "Alta efetividade legislativa" %}
+        {% set perfil_texto = "O deputado discursa, propõe e tem projetos aprovados. Taxa de aprovação de " ~ taxa ~ "% indica forte atuação parlamentar." %}
+        {% set perfil_classe = "coe-perfil--alta" %}
+      {% else %}
+        {% set perfil_icon = "📊" %}
+        {% set perfil_titulo = "Atuação legislativa presente" %}
+        {% set perfil_texto = "O deputado discursa, propõe e tem projetos aprovados. Taxa de aprovação de " ~ taxa ~ "% — acompanhe os temas prioritários abaixo." %}
+        {% set perfil_classe = "coe-perfil--moderado" %}
+      {% endif %}
+    {% else %}
+      {% set perfil_icon = "📊" %}
+      {% set perfil_titulo = "Atuação em análise" %}
+      {% set perfil_texto = "Confira os detalhes por tema abaixo para entender as prioridades deste deputado." %}
+      {% set perfil_classe = "coe-perfil--neutro" %}
+    {% endif %}
+
+    <div class="coe-perfil {{ perfil_classe }}">
+      <div class="coe-perfil__icon">{{ perfil_icon }}</div>
+      <div>
+        <div class="coe-perfil__titulo">{{ perfil_titulo }}</div>
+        <div class="coe-perfil__texto">{{ perfil_texto }}</div>
+      </div>
+    </div>
+
+    {# ── Tabela por tema ── #}
+    {% if coerencia.temas %}
+    <p style="font-size:.8rem;color:#718096;margin:.5rem 0 .75rem;border-left:3px solid #e2e8f0;padding-left:.65rem;">
+      Índice por tema: discursos (30%) + projetos (40%) + aprovações (30%), normalizado pelo máximo do deputado.
+      Temas sem projetos apresentados têm índice zerado.
+      Um mesmo projeto pode aparecer em mais de um tema — o total de aprovações nos cards conta projetos únicos.
+    </p>
+    <div style="overflow-x:auto;">
+      <table class="despesas-table">
+        <thead>
+          <tr>
+            <th>Tema</th>
+            <th style="text-align:right;">Discursos</th>
+            <th style="text-align:right;">Projetos</th>
+            <th style="text-align:right;">Aprovações</th>
+            <th style="text-align:right;">Índice</th>
+            <th>Nível</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in coerencia.temas %}
+          <tr>
+            <td style="font-weight:500;">{{ t.tema }}</td>
+            <td style="text-align:right;">{{ t.discursos }}</td>
+            <td style="text-align:right;">{{ t.proposicoes }}</td>
+            <td style="text-align:right;">{{ t.aprovacoes }}</td>
+            <td style="text-align:right;font-weight:700;">{{ t.indice_coerencia }}%</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:.5rem;">
+                <div style="background:#edf2f7;border-radius:20px;height:6px;width:80px;flex-shrink:0;">
+                  <div class="coe-bar" data-valor="{{ t.indice_coerencia }}"
+                       style="height:6px;border-radius:20px;width:0;"></div>
+                </div>
+                <span class="coe-tag" data-valor="{{ t.indice_coerencia }}"></span>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">Nenhum dado com tema identificado nos últimos 3 anos.</div>
     {% endif %}
 
   </div>
@@ -249,14 +385,12 @@ SEÇÃO DE GASTOS
           <div class="cota-progress-fill" style="width:{{ ceap.uso_pct_barra|default(0) }}%;"></div>
         </div>
         <div class="cota-limit-line">
-          <small>Ref: {{ ceap.limite_mensal_fmt if ceap.modo_referencia == 'mensal' else ceap.limite_anual_fmt
-            }}</small>
+          <small>Ref: {{ ceap.limite_mensal_fmt if ceap.modo_referencia == 'mensal' else ceap.limite_anual_fmt }}</small>
         </div>
       </div>
     </div>
 
     <form method="GET" action="/deputado/{{ deputado.id }}#gastosSection" id="filtrosForm">
-      {# Preserva filtros de proposições #}
       {% if prop_tipo %}<input type="hidden" name="prop_tipo" value="{{ prop_tipo }}">{% endif %}
       {% if prop_ano %}<input type="hidden" name="prop_ano" value="{{ prop_ano }}">{% endif %}
       {% if prop_situacao %}<input type="hidden" name="prop_situacao" value="{{ prop_situacao }}">{% endif %}
@@ -271,19 +405,17 @@ SEÇÃO DE GASTOS
             {% endfor %}
           </select>
         </div>
-
         <div class="filtro-group">
           <label>Mês</label>
           <select name="mes">
             <option value="">Todos</option>
             {% for num, nome_mes in
-            [('1','Jan'),('2','Fev'),('3','Mar'),('4','Abr'),('5','Mai'),('6','Jun'),('7','Jul'),('8','Ago'),('9','Set'),('10','Out'),('11','Nov'),('12','Dez')]
-            %}
+            [('1','Jan'),('2','Fev'),('3','Mar'),('4','Abr'),('5','Mai'),('6','Jun'),
+             ('7','Jul'),('8','Ago'),('9','Set'),('10','Out'),('11','Nov'),('12','Dez')] %}
             <option value="{{ num }}" {% if filtro_mes|string==num|string %}selected{% endif %}>{{ nome_mes }}</option>
             {% endfor %}
           </select>
         </div>
-
         <button type="submit" class="btn-filtrar">🔍 Filtrar</button>
         <a href="/deputado/{{ deputado.id }}#gastosSection" class="btn-limpar">✕ Limpar</a>
       </div>
@@ -294,39 +426,18 @@ SEÇÃO DE GASTOS
       <table class="despesas-table">
         <thead>
           <tr>
-            <th>Data</th>
-            <th>Tipo</th>
-            <th>Fornecedor</th>
-            <th>Valor</th>
-            <th>Doc.</th>
+            <th>Data</th><th>Tipo</th><th>Fornecedor</th><th>Valor</th><th>Doc.</th>
           </tr>
         </thead>
         <tbody>
           {% for d in despesas %}
           <tr>
             <td>{{ d.data_documento or '-' }}</td>
-
-            <td>
-              <span class="tipo-badge">
-                {{ d.tipo_despesa|default('-')|truncate(30) }}
-              </span>
-            </td>
-
-            <td title="{{ d.nome_fornecedor }}">
-              {{ d.nome_fornecedor|default('-')|truncate(25) }}
-            </td>
-
+            <td><span class="tipo-badge">{{ d.tipo_despesa|default('-')|truncate(30) }}</span></td>
+            <td title="{{ d.nome_fornecedor }}">{{ d.nome_fornecedor|default('-')|truncate(25) }}</td>
             <td class="valor-cell">
-              R$ {{
-              "%.2f"|format(
-              (d.get('valor')
-              or d.get('valorLiquido')
-              or d.get('valorDocumento')
-              or 0)|float
-              )|replace('.', ',')
-              }}
+              R$ {{ "%.2f"|format((d.get('valor') or d.get('valorLiquido') or d.get('valorDocumento') or 0)|float)|replace('.', ',') }}
             </td>
-
             <td>
               {% if d.url_documento %}
               <a class="doc-link" href="{{ d.url_documento }}" target="_blank">🔗</a>
@@ -343,6 +454,96 @@ SEÇÃO DE GASTOS
 
   </div>
 </div>
+
+{# ── Estilos da seção de coerência ───────────────────────── #}
+<style>
+  .coe-gauge__track { stroke: #e2e8f0; }
+  .coe-gauge__fill  { stroke: #667eea; stroke-dasharray: 0 157; transition: stroke-dasharray .9s ease; }
+  .coe-gauge__num   { font-size: 18px; font-weight: 700; fill: #1a202c; font-family: inherit; }
+
+  .coe-legend-bar {
+    display: flex; flex-wrap: wrap; gap: .5rem 1.25rem;
+    padding: .75rem 0 .5rem; margin-bottom: .25rem;
+  }
+  .coe-legend-bar__item {
+    display: flex; align-items: center; gap: .35rem;
+    font-size: .78rem; color: #4a5568;
+  }
+  .coe-legend-bar__item .dot {
+    width: 9px; height: 9px; border-radius: 50%; display: inline-block;
+  }
+  .coe-legend-bar__item--alta  .dot { background: #38a169; }
+  .coe-legend-bar__item--mod   .dot { background: #d69e2e; }
+  .coe-legend-bar__item--parc  .dot { background: #dd6b20; }
+  .coe-legend-bar__item--baixa .dot { background: #e53e3e; }
+
+  .coe-formula-hint {
+    font-size: .75rem; color: #a0aec0; margin-bottom: 1rem;
+    border-left: 3px solid #e2e8f0; padding-left: .65rem;
+  }
+
+  .coe-bar { background: #667eea; transition: width .8s ease; }
+
+  .coe-tag {
+    font-size: .68rem; font-weight: 600;
+    padding: 2px 7px; border-radius: 20px; white-space: nowrap;
+  }
+  .coe-tag--alta  { background: #f0fff4; color: #276749; }
+  .coe-tag--mod   { background: #fffff0; color: #975a16; }
+  .coe-tag--parc  { background: #fffaf0; color: #c05621; }
+  .coe-tag--baixa { background: #fff5f5; color: #9b2c2c; }
+
+  /* ── Três pilares ── */
+  .coe-pilares {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  @media (max-width: 600px) { .coe-pilares { grid-template-columns: 1fr; } }
+
+  .coe-pilar {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+  }
+  .coe-pilar__icone { font-size: 1.4rem; }
+  .coe-pilar__num   { font-size: 2rem; font-weight: 700; color: #1a202c; line-height: 1; }
+  .coe-pilar__label { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #718096; }
+  .coe-pilar__barra-track {
+    background: #e2e8f0; border-radius: 20px; height: 6px; margin: .4rem 0;
+  }
+  .coe-pilar__barra-fill {
+    height: 6px; border-radius: 20px; width: 0; transition: width .9s ease;
+  }
+  .coe-pilar__barra--disc  { background: #667eea; }
+  .coe-pilar__barra--proj  { background: #38a169; }
+  .coe-pilar__barra--aprov { background: #d69e2e; }
+  .coe-pilar__desc { font-size: .72rem; color: #a0aec0; line-height: 1.4; }
+
+  /* ── Perfil interpretativo ── */
+  .coe-perfil {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .9rem 1.1rem;
+    border-radius: 10px;
+    margin-bottom: 1.25rem;
+    border-left: 4px solid;
+  }
+  .coe-perfil--alta     { background: #f0fff4; border-color: #38a169; }
+  .coe-perfil--moderado { background: #fffff0; border-color: #d69e2e; }
+  .coe-perfil--alerta   { background: #fff5f5; border-color: #e53e3e; }
+  .coe-perfil--neutro   { background: #f7fafc; border-color: #a0aec0; }
+
+  .coe-perfil__icon   { font-size: 1.5rem; flex-shrink: 0; }
+  .coe-perfil__titulo { font-size: .9rem; font-weight: 700; color: #1a202c; margin-bottom: .2rem; }
+  .coe-perfil__texto  { font-size: .82rem; color: #4a5568; line-height: 1.5; }
+</style>
 
 {% endblock %}
 
@@ -364,6 +565,61 @@ SEÇÃO DE GASTOS
       document.getElementById('propToggle')?.classList.add('open');
       document.getElementById('propBody')?.classList.add('open');
     }
+
+    // ── Coerência: anima barras e gauge ao abrir ──────────────
+    function animarCoerencia() {
+      function corBarra(v) {
+        if (v >= 80) return '#38a169';
+        if (v >= 55) return '#d69e2e';
+        if (v >= 30) return '#dd6b20';
+        return '#e53e3e';
+      }
+      function classeTag(v) {
+        if (v >= 80) return ['coe-tag--alta',  'Alta coerência'];
+        if (v >= 55) return ['coe-tag--mod',   'Moderada'];
+        if (v >= 30) return ['coe-tag--parc',  'Parcial'];
+        return              ['coe-tag--baixa', 'Baixa'];
+      }
+
+      document.querySelectorAll('.coe-bar[data-valor]').forEach(function (el) {
+        var v = parseFloat(el.dataset.valor) || 0;
+        el.style.background = corBarra(v);
+        requestAnimationFrame(function () { el.style.width = Math.min(v, 100) + 'px'; });
+      });
+
+      document.querySelectorAll('.coe-tag[data-valor]').forEach(function (el) {
+        var v = parseFloat(el.dataset.valor) || 0;
+        var r = classeTag(v);
+        el.classList.add(r[0]);
+        el.textContent = r[1];
+      });
+
+      var arcTotal = 157;
+      document.querySelectorAll('.coe-gauge__fill[data-valor]').forEach(function (el) {
+        var v    = parseFloat(el.dataset.valor) || 0;
+        var fill = (v / 100) * arcTotal;
+        el.style.stroke = corBarra(v);
+        requestAnimationFrame(function () {
+          el.setAttribute('stroke-dasharray', fill + ' ' + (arcTotal - fill));
+        });
+      });
+    }
+
+    // Anima barras dos pilares
+    function animarPilares() {
+      document.querySelectorAll('.coe-pilar__barra-fill').forEach(function(el) {
+        var val = parseFloat(el.dataset.val) || 0;
+        var max = parseFloat(el.dataset.max) || 1;
+        var pct = max > 0 ? (val / max) * 100 : 0;
+        requestAnimationFrame(function() { el.style.width = pct + '%'; });
+      });
+    }
+
+    animarCoerencia();
+    animarPilares();
+    document.getElementById('coerenciaToggle')?.addEventListener('click', function () {
+      setTimeout(function() { animarCoerencia(); animarPilares(); }, 50);
+    });
   })();
 </script>
 {% endblock %}

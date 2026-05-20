@@ -16,6 +16,7 @@ from database.repository import (
     contar_ranking,
     buscar_ranking_proposicoes_deputado,
     buscar_dados_ranking_pl,
+    buscar_resumo_coerencia,          # ← novo
 )
 from src.utils.data_processor import processar_metricas_pandas, gasto_total_numerico
 from src.utils.ceap import resumo_ceap_deputado, formatar_resumo_ceap_exibicao
@@ -96,6 +97,7 @@ def deputado_detalhe(id_deputado):
     tipos_despesa = buscar_tipos_despesa_deputado(id_deputado)
     anos_despesa  = buscar_anos_despesa_deputado(id_deputado)
     metrics       = processar_metricas_pandas(despesas, 1)
+    coerencia     = buscar_resumo_coerencia(id_deputado, anos=3)
 
     gasto_total = gasto_total_numerico(despesas)
     ceap_bruto  = resumo_ceap_deputado(
@@ -155,6 +157,22 @@ def deputado_detalhe(id_deputado):
         prop_situacao=prop_situacao,
         posicao_prop=posicao_prop,
         total_aprovadas=total_aprovadas,
+        coerencia=coerencia,
+    )
+
+
+@app.route("/deputado/<int:id_deputado>/coerencia")
+def coerencia_deputado(id_deputado):
+    deputado = buscar_deputado_por_id(id_deputado)
+    if not deputado:
+        abort(404)
+
+    coerencia = buscar_resumo_coerencia(id_deputado, anos=3)
+
+    return render_template(
+        "deputado/coerencia.html",
+        deputado=deputado,
+        coerencia=coerencia,
     )
 
 

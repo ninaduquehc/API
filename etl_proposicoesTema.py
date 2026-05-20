@@ -70,12 +70,34 @@ def salvar_proposicoes_temas(vinculos: list[dict], tamanho_lote=500) -> bool:
         print("  ⚠️  Nenhum vínculo para salvar.")
         return False
 
-    # Deduplica e normaliza
+    # Debug: inspeciona estrutura real dos vínculos brutos
+    print("\n  🔍 Amostra dos vínculos brutos (primeiros 3):")
+    for v in vinculos[:3]:
+        print(f"     {v}")
+
+    # Verifica cod da tabela temas para garantir compatibilidade
+    conn_check = get_connection()
+    cur_check  = conn_check.cursor()
+    cur_check.execute("SELECT cod FROM temas LIMIT 5")
+    temas_sample = [row[0] for row in cur_check.fetchall()]
+    cur_check.close()
+    conn_check.close()
+    print(f"  🔍 temas.cod amostra (tipo={type(temas_sample[0]).__name__ if temas_sample else 'N/A'}): {temas_sample}")
+
+    # Deduplica e normaliza — tenta campo 'cod' e alternativa 'codTema'
     vistos = set()
     registros = []
     for v in vinculos:
-        id_prop  = v.get("_id_proposicao")
-        cod_tema = str(v.get("cod", "")).strip()
+        id_prop = v.get("_id_proposicao")
+        cod_raw = v.get("cod") or v.get("codTema")
+        # Normaliza para o mesmo tipo que temas.cod no banco
+        if temas_sample and isinstance(temas_sample[0], int):
+            try:
+                cod_tema = int(cod_raw)
+            except (TypeError, ValueError):
+                continue
+        else:
+            cod_tema = str(cod_raw).strip() if cod_raw is not None else ""
         if id_prop and cod_tema and (id_prop, cod_tema) not in vistos:
             vistos.add((id_prop, cod_tema))
             registros.append((id_prop, cod_tema))

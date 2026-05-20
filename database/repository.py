@@ -457,3 +457,145 @@ def contar_ranking_pl(uf=None):
     cursor.close()
     conn.close()
     return total
+
+def buscar_indice_coerencia(id_deputado, anos=3):
+    conn   = get_connection()
+    cursor = conn.cursor(dictionary=True)
+ 
+    cursor.execute("""
+        WITH base AS (
+            SELECT
+                t.cod                                    AS cod_tema,
+                t.nome                                   AS tema,
+                COALESCE(disc.total_discursos,   0)      AS discursos,
+                COALESCE(prop.total_proposicoes, 0)      AS proposicoes,
+                COALESCE(apro.total_aprovacoes,  0)      AS aprovacoes
+            FROM temas t
+ 
+            LEFT JOIN (
+                SELECT dt.cod_tema, COUNT(*) AS total_discursos
+                FROM discursos d
+                JOIN discursos_temas dt ON dt.id_discurso = d.id
+                WHERE d.id_deputado = %s
+                  AND d.ano >= YEAR(CURDATE()) - %s
+                GROUP BY dt.cod_tema
+            ) disc ON disc.cod_tema = t.cod
+ 
+            LEFT JOIN (
+                SELECT pt.cod_tema, COUNT(DISTINCT p.id) AS total_proposicoes
+                FROM proposicoes p
+                JOIN proposicoes_temas pt ON pt.id_proposicao = p.id
+                WHERE p.id_deputado = %s
+                  AND p.ano >= YEAR(CURDATE()) - %s
+                GROUP BY pt.cod_tema
+            ) prop ON prop.cod_tema = t.cod
+ 
+            LEFT JOIN (
+                SELECT pt.cod_tema, COUNT(DISTINCT p.id) AS total_aprovacoes
+                FROM proposicoes p
+                JOIN proposicoes_temas pt ON pt.id_proposicao = p.id
+                WHERE p.id_deputado = %s
+                  AND p.ano >= YEAR(CURDATE()) - %s
+                  AND p.situacao = 'Transformado em Norma Jurídica'
+                GROUP BY pt.cod_tema
+            ) apro ON apro.cod_tema = t.cod
+ 
+            WHERE disc.total_discursos   > 0
+               OR prop.total_proposicoes > 0
+        ),
+        maximos AS (
+            SELECT
+                GREATEST(MAX(discursos),   1) AS max_d,
+                GREATEST(MAX(proposicoes), 1) AS max_p,
+                GREATEST(MAX(aprovacoes),  1) AS max_a
+            FROM base
+        )
+        SELECT
+            b.cod_tema,
+            b.tema,
+            b.discursos,
+            b.proposicoes,
+            b.aprovacoes,
+            ROUND(
+                CASE WHEN b.proposicoes = 0 THEN 0
+                ELSE (
+                    (b.discursos   / m.max_d) * 0.30 +
+                    (b.proposicoes / m.max_p) * 0.40 +
+                    (b.aprovacoes  / m.max_a) * 0.30
+                ) * 100
+                END, 1
+            ) AS indice_coerencia
+        FROM base b, maximos m
+        ORDER BY indice_coerencia DESC, b.tema ASC
+    """, (id_deputado, anos, id_deputado, anos, id_deputado, anos))
+ 
+    resultado = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return resultado
+ 
+ 
+def buscar_resumo_coerencia(id_deputado, anos=3):
+    dados = buscar_indice_coerencia(id_deputado, anos)
+ 
+    if not dados:
+        return {
+            "total_temas":       0,
+            "total_discursos":   0,
+            "total_proposicoes": 0,
+            "total_aprovacoes":  0,
+            "indice_medio":      0.0,
+            "temas":             [],
+        }
+ 
+    # Conta direto no banco para evitar dupla contagem por tema
+    conn   = get_connection()
+    cursor = conn.cursor()
+ 
+    cursor.execute(
+        "SELECT COUNT(DISTINCT d.id) FROM discursos d"
+        " JOIN discursos_temas dt ON dt.id_discurso = d.id"
+        " WHERE d.id_deputado = %s AND d.ano >= YEAR(CURDATE()) - %s",
+        (id_deputado, anos)
+    )
+    total_discursos = cursor.fetchone()[0] or 0
+ 
+    cursor.execute(
+        "SELECT COUNT(DISTINCT p.id) FROM proposicoes p"
+        " JOIN proposicoes_temas pt ON pt.id_proposicao = p.id"
+        " WHERE p.id_deputado = %s AND p.ano >= YEAR(CURDATE()) - %s",
+        (id_deputado, anos)
+    )
+    total_proposicoes = cursor.fetchone()[0] or 0
+ 
+    cursor.execute(
+        "SELECT COUNT(DISTINCT p.id) FROM proposicoes p"
+        " JOIN proposicoes_temas pt ON pt.id_proposicao = p.id"
+        " WHERE p.id_deputado = %s AND p.ano >= YEAR(CURDATE()) - %s"
+        " AND p.situacao = 'Transformado em Norma Jur\u00eddica'",
+        (id_deputado, anos)
+    )
+    total_aprovacoes = cursor.fetchone()[0] or 0
+ 
+    cursor.close()
+    conn.close()
+ 
+    temas_com_indice = sorted(
+        [d["indice_coerencia"] for d in dados if d["indice_coerencia"] > 0]
+    )
+    n = len(temas_com_indice)
+    if n == 0:
+        indice_medio = 0.0
+    elif n % 2 == 1:
+        indice_medio = round(temas_com_indice[n // 2], 1)
+    else:
+        indice_medio = round((temas_com_indice[n // 2 - 1] + temas_com_indice[n // 2]) / 2, 1)
+ 
+    return {
+        "total_temas":       len(dados),
+        "total_discursos":   total_discursos,
+        "total_proposicoes": total_proposicoes,
+        "total_aprovacoes":  total_aprovacoes,
+        "indice_medio":      indice_medio,
+        "temas":             dados,
+    }
