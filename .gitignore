@@ -1,7 +1,3 @@
 venv
 .venv
 __pycache__
-etl_deputados.py
-etl_despesas.py
-etl_presencas.py
-etl_proposicoes.py
