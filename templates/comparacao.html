@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}VeritasCode - Comparar Deputados{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="/static/css/comparacao.css">
+
+<div class="comparacao-layout">
+  <aside class="comparacao-sidebar" aria-label="Painel de seleção">
+    <h2>Comparar Deputados</h2>
+    <p class="sidebar-label">Selecione os deputados</p>
+
+    <form method="GET" action="/comparacao" id="formComparacao">
+      {# Hidden inputs que guardam os IDs selecionados #}
+      <input type="hidden" name="id1" id="hiddenId1" value="{{ dep1.id if dep1 else '' }}">
+      <input type="hidden" name="id2" id="hiddenId2" value="{{ dep2.id if dep2 else '' }}">
+
+      {# Dropdown customizado — Deputado 1 #}
+      <div class="deputado-select-wrap">
+        <label class="busca-label">Deputado 1</label>
+        <div class="custom-select" id="customDep1" data-target="hiddenId1">
+          <div class="custom-select-trigger" role="combobox" aria-expanded="false"
+               aria-haspopup="listbox" aria-controls="listboxDep1" tabindex="0">
+            <span class="custom-select-label">
+              {% if dep1 %}{{ dep1.nome }}{% else %}— Selecione —{% endif %}
+            </span>
+            <span class="custom-select-arrow" aria-hidden="true">▾</span>
+          </div>
+          <div class="custom-select-dropdown" id="listboxDep1" role="listbox" hidden>
+            <div class="custom-select-search-wrap">
+              <input
+                type="search"
+                class="custom-select-search"
+                placeholder="Buscar por nome..."
+                autocomplete="off"
+                aria-label="Buscar deputado 1"
+              >
+            </div>
+            <ul class="custom-select-list">
+              <li class="custom-select-option" data-value="" role="option">— Selecione —</li>
+              {% for dep in lista_deputados %}
+              <li
+                class="custom-select-option {% if dep1 and dep.id == dep1.id %}selected{% endif %}"
+                data-value="{{ dep.id }}"
+                role="option"
+                {% if dep1 and dep.id == dep1.id %}aria-selected="true"{% endif %}
+              >{{ dep.nome }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {# Dropdown customizado — Deputado 2 #}
+      <div class="deputado-select-wrap">
+        <label class="busca-label">Deputado 2</label>
+        <div class="custom-select" id="customDep2" data-target="hiddenId2">
+          <div class="custom-select-trigger" role="combobox" aria-expanded="false"
+               aria-haspopup="listbox" aria-controls="listboxDep2" tabindex="0">
+            <span class="custom-select-label">
+              {% if dep2 %}{{ dep2.nome }}{% else %}— Selecione —{% endif %}
+            </span>
+            <span class="custom-select-arrow" aria-hidden="true">▾</span>
+          </div>
+          <div class="custom-select-dropdown" id="listboxDep2" role="listbox" hidden>
+            <div class="custom-select-search-wrap">
+              <input
+                type="search"
+                class="custom-select-search"
+                placeholder="Buscar por nome..."
+                autocomplete="off"
+                aria-label="Buscar deputado 2"
+              >
+            </div>
+            <ul class="custom-select-list">
+              <li class="custom-select-option" data-value="" role="option">— Selecione —</li>
+              {% for dep in lista_deputados %}
+              <li
+                class="custom-select-option {% if dep2 and dep.id == dep2.id %}selected{% endif %}"
+                data-value="{{ dep.id }}"
+                role="option"
+                {% if dep2 and dep.id == dep2.id %}aria-selected="true"{% endif %}
+              >{{ dep.nome }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="periodo-section" style="margin-top: 16px;">
+        <h3>Período analisado</h3>
+        <select name="periodo" id="selectPeriodo" class="periodo-select">
+          {% for p in periodos %}
+          <option value="{{ p.valor }}" {% if periodo == p.valor %}selected{% endif %}>
+            {{ p.rotulo }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+    </form>
+
+    <div class="comparacao-actions">
+      <button type="button" class="btn-trocar" id="btnTrocar" title="Trocar posições dos deputados">
+        <span aria-hidden="true">⇄</span> Trocar posições
+      </button>
+      <button type="button" class="btn-limpar-selecao" id="btnLimpar" title="Limpar seleção">
+        <span aria-hidden="true">🗑</span> Limpar seleção
+      </button>
+    </div>
+
+    <div class="info-box" role="note">
+      <span class="info-box-icon" aria-hidden="true">i</span>
+      <span>A comparação exibe os principais indicadores de atividade parlamentar no período selecionado.</span>
+    </div>
+  </aside>
+
+  <div class="comparacao-main">
+    {% if dep1 and dep2 %}
+
+    <section class="comparacao-card" aria-labelledby="titulo-comparacao">
+      <h2 id="titulo-comparacao">Comparação de Deputados</h2>
+      <div class="vs-header">
+        <div class="vs-profile">
+          <img
+            src="{{ dep1.url_foto }}"
+            alt="Foto oficial de {{ dep1.nome }}"
+            onerror="this.src='/static/img/sem-foto.png'"
+            width="120"
+            height="158"
+          >
+          <h3>{{ dep1.nome }}</h3>
+          <p class="partido">{{ dep1.sigla_partido }} - {{ dep1.sigla_uf }}</p>
+          <span class="badge-cargo">{{ dep1.cargo_label }}</span>
+        </div>
+
+        <div class="vs-circle" role="separator" aria-label="versus">VS</div>
+
+        <div class="vs-profile">
+          <img
+            src="{{ dep2.url_foto }}"
+            alt="Foto oficial de {{ dep2.nome }}"
+            onerror="this.src='/static/img/sem-foto.png'"
+            width="120"
+            height="158"
+          >
+          <h3>{{ dep2.nome }}</h3>
+          <p class="partido">{{ dep2.sigla_partido }} - {{ dep2.sigla_uf }}</p>
+          <span class="badge-cargo">{{ dep2.cargo_label }}</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="comparacao-card sintese-card" aria-labelledby="titulo-sintese">
+      <h2 id="titulo-sintese">Síntese Geral</h2>
+      <div class="sintese-grid">
+        <div class="sintese-col">
+          <strong>{{ dep1.nome.split()[0] if dep1.nome else 'Deputado 1' }}</strong>
+          {{ sintese1 }}
+        </div>
+        <div class="sintese-col">
+          <strong>{{ dep2.nome.split()[0] if dep2.nome else 'Deputado 2' }}</strong>
+          {{ sintese2 }}
+        </div>
+      </div>
+    </section>
+
+    <section class="comparacao-card indicadores-card" aria-labelledby="titulo-indicadores">
+      <h2 id="titulo-indicadores">Indicadores de Desempenho</h2>
+
+      {% for ind in indicadores %}
+      <div class="indicador-row {% if ind.disponivel is defined and not ind.disponivel %}indisponivel{% endif %}" role="row">
+        <div class="indicador-icon" aria-hidden="true">{{ ind.icone }}</div>
+        <div class="indicador-nome">{{ ind.nome }}</div>
+
+        <div class="indicador-valor {% if ind.melhor == 1 %}melhor{% endif %}"
+             aria-label="{{ dep1.nome }}: {{ ind.valor1 }}{% if ind.melhor == 1 %} (melhor){% endif %}">
+          {{ ind.valor1 }}
+        </div>
+        <div class="indicador-bar-track" aria-hidden="true">
+          <div
+            class="indicador-bar-fill {% if ind.melhor != 1 %}secundario{% endif %}"
+            style="width: {{ ind.barra1 }}%;"
+          ></div>
+        </div>
+
+        <div class="indicador-trend" aria-hidden="true">
+          {% if ind.melhor == 1 %}
+          <span class="trend-up" title="{{ dep1.nome }} tem melhor desempenho">▲</span>
+          {% elif ind.melhor == 2 %}
+          <span class="trend-down" title="{{ dep2.nome }} tem melhor desempenho">▼</span>
+          {% else %}
+          <span class="trend-neutral">—</span>
+          {% endif %}
+        </div>
+
+        <div class="indicador-valor {% if ind.melhor == 2 %}melhor{% endif %}"
+             aria-label="{{ dep2.nome }}: {{ ind.valor2 }}{% if ind.melhor == 2 %} (melhor){% endif %}">
+          {{ ind.valor2 }}
+        </div>
+        <div class="indicador-bar-track" aria-hidden="true">
+          <div
+            class="indicador-bar-fill {% if ind.melhor != 2 %}secundario{% endif %}"
+            style="width: {{ ind.barra2 }}%;"
+          ></div>
+        </div>
+      </div>
+      {% endfor %}
+    </section>
+
+    <div class="comparacao-legend" role="note">
+      <span class="trophy" aria-hidden="true">🏆</span>
+      <span>Os indicadores destacam em verde o melhor desempenho entre os deputados comparados.</span>
+    </div>
+
+    {% else %}
+    <section class="comparacao-card comparacao-empty" aria-labelledby="titulo-vazio">
+      <h2 id="titulo-vazio">Comparação de Deputados</h2>
+      <p>Selecione dois deputados na barra lateral para visualizar a comparação.</p>
+    </section>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const form    = document.getElementById("formComparacao");
+  const periodo = document.getElementById("selectPeriodo");
+
+  periodo.addEventListener("change", () => form.submit());
+
+  function initCustomSelect(wrapper) {
+    const trigger  = wrapper.querySelector(".custom-select-trigger");
+    const dropdown = wrapper.querySelector(".custom-select-dropdown");
+    const search   = wrapper.querySelector(".custom-select-search");
+    const list     = wrapper.querySelector(".custom-select-list");
+    const label    = wrapper.querySelector(".custom-select-label");
+    const hidden   = document.getElementById(wrapper.dataset.target);
+
+    function openDropdown() {
+      dropdown.hidden = false;
+      trigger.setAttribute("aria-expanded", "true");
+      search.value = "";
+      filtrar("");
+      search.focus();
+    }
+
+    function closeDropdown() {
+      dropdown.hidden = true;
+      trigger.setAttribute("aria-expanded", "false");
+    }
+
+    function filtrar(termo) {
+      const q = termo.trim().toLowerCase();
+      list.querySelectorAll(".custom-select-option").forEach((opt, i) => {
+        if (i === 0) { opt.hidden = false; return; } // "— Selecione —" sempre visível
+        opt.hidden = q ? !opt.textContent.toLowerCase().includes(q) : false;
+      });
+    }
+
+    function selecionar(opt) {
+      list.querySelectorAll(".custom-select-option").forEach(o => {
+        o.classList.remove("selected");
+        o.removeAttribute("aria-selected");
+      });
+      opt.classList.add("selected");
+      if (opt.dataset.value) opt.setAttribute("aria-selected", "true");
+
+      label.textContent = opt.textContent.trim();
+      hidden.value      = opt.dataset.value;
+      closeDropdown();
+      form.submit();
+    }
+
+    trigger.addEventListener("click", () => {
+      dropdown.hidden ? openDropdown() : closeDropdown();
+    });
+
+    trigger.addEventListener("keydown", (e) => {
+      if (["Enter", " ", "ArrowDown"].includes(e.key)) {
+        e.preventDefault();
+        openDropdown();
+      }
+    });
+
+    search.addEventListener("input", () => filtrar(search.value));
+
+    list.addEventListener("click", (e) => {
+      const opt = e.target.closest(".custom-select-option");
+      if (opt) selecionar(opt);
+    });
+
+    list.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const focused = list.querySelector(".custom-select-option:focus");
+        if (focused) selecionar(focused);
+      }
+      if (e.key === "Escape") closeDropdown();
+    });
+
+    // Fechar ao clicar fora
+    document.addEventListener("click", (e) => {
+      if (!wrapper.contains(e.target)) closeDropdown();
+    });
+  }
+
+  document.querySelectorAll(".custom-select").forEach(initCustomSelect);
+
+  document.getElementById("btnTrocar")?.addEventListener("click", () => {
+    const h1 = document.getElementById("hiddenId1");
+    const h2 = document.getElementById("hiddenId2");
+    const v1 = h1.value;
+    const v2 = h2.value;
+    if (!v1 && !v2) return;
+    h1.value = v2;
+    h2.value = v1;
+    form.submit();
+  });
+
+  document.getElementById("btnLimpar")?.addEventListener("click", () => {
+    document.getElementById("hiddenId1").value = "";
+    document.getElementById("hiddenId2").value = "";
+    form.submit();
+  });
+</script>
+{% endblock %}

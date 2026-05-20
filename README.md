@@ -14,7 +14,6 @@ O objetivo central do **Radar Cidadão** é desenvolver uma aplicação que tran
 * [Padrões de Qualidade (DoR/DoD)](#-padrões-de-qualidade)
 * [Product Backlog](#-product-backlog)
 * [Registro das Sprints](#-registro-das-sprints)
-* [MVPs](#mvps)
 
 ---
 
@@ -28,7 +27,7 @@ O objetivo central do **Radar Cidadão** é desenvolver uma aplicação que tran
 | Team Member | Leonardo Vilela Matiusso | [![Linkedin](https://img.shields.io/badge/Linkedin-blue?style=flat-square&logo=Linkedin&logoColor=white)](https://www.linkedin.com/in/leonardo-vilela-matiusso-94b405374/) [![GitHub](https://img.shields.io/badge/GitHub-111217?style=flat-square&logo=github&logoColor=white)](https://github.com/leovmatiusso) |
 | Team Member | Nathan Ariel Damasio Leão | [![Linkedin](https://img.shields.io/badge/Linkedin-blue?style=flat-square&logo=Linkedin&logoColor=white)](https://www.linkedin.com/in/nathan-ariel-damasio-le%C3%A3o-7a64522b5/) [![GitHub](https://img.shields.io/badge/GitHub-111217?style=flat-square&logo=github&logoColor=white)](https://github.com/Nathan-ADL) |
 | Team Member | Samuel Estevão Pereira Martins | [![Linkedin](https://img.shields.io/badge/Linkedin-blue?style=flat-square&logo=Linkedin&logoColor=white)](https://www.linkedin.com/in/samuel-martins-210s507em) [![GitHub](https://img.shields.io/badge/GitHub-111217?style=flat-square&logo=github&logoColor=white)](https://github.com/SamuelMartins00) |
-
+| Team Member | Giovanna Noccerino de Freitas | [![Linkedin](https://img.shields.io/badge/Linkedin-blue?style=flat-square&logo=Linkedin&logoColor=white)](https://br.linkedin.com/in/giovanna-noccerino-de-freitas-221aa8401) [![GitHub](https://img.shields.io/badge/GitHub-111217?style=flat-square&logo=github&logoColor=white)](https://github.com/GiNDF) |
 ---
 
 ## 🛠 Tecnologias Utilizadas
@@ -40,6 +39,11 @@ O objetivo central do **Radar Cidadão** é desenvolver uma aplicação que tran
   <img src="https://img.shields.io/badge/Bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white" alt="Bootstrap" />
   <img src="https://img.shields.io/badge/Jira-0052CC?style=for-the-badge&logo=jira&logoColor=white" alt="Jira" />
   <img src="https://img.shields.io/badge/Google%20Colab-F9AB00?style=for-the-badge&logo=googlecolab&logoColor=white" alt="Google Colab" />
+  <img src="https://img.shields.io/badge/AntiGravity%20IDE-5A29A3?style=for-the-badge&logo=rocket&logoColor=white" alt="AntiGravity" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white" alt="AWS" />
+  <img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white" alt="Git" />
+  <img src="https://img.shields.io/badge/Google%20Docs-4285F4?style=for-the-badge&logo=googledocs&logoColor=white" alt="Google Docs" />
 </div>
 
 ---
@@ -78,7 +82,10 @@ Uma entrega é considerada concluída quando:
 | 6 | Média | **US06:** Como eleitor, quero ver a participação em votações comparada à média estadual. | 2 |
 | 7 | Alta | **US07:** Como eleitor, quero ver as propostas apresentadas por tipo (PL, PDC, PEC) e rankings. | 2 |
 | 8 | Alta | **US08:** Como eleitor, quero visualizar as propostas aprovadas para avaliar a efetividade. | 2 |
-
+| 9 | Média | US09 – Como eleitor, quero visualizar os discursos do deputado por tema e filtrar por palavra-chave, para saber o que ele defende. | 3 |
+| 10 | Média | US10 – Como eleitor, quero visualizar um índice de coerência entre discurso e proposições/aprovações, para verificar se o deputado age conforme o que fala. | 3 |
+| 11 | Alta / Meta | US11 – Como eleitor, quero comparar dois deputados lado a lado, para decidir meu voto de forma mais embasada. | 3 |
+| 12 | Média | US12 – Como eleitor, quero acessar a metodologia utilizada nos cálculos, para verificar a transparência dos dados. | 3 |
 ---
 
 ## 🚀 Registro das Sprints
@@ -86,12 +93,6 @@ Uma entrega é considerada concluída quando:
 | Sprint | Previsão | Status | Histórico |
 |:---:|:---:|:---:|:---|
 | 01 | 06/04/2026 | 🟢 Concluído | Implementação dos filtros e visualização básica. |
-| 02 | 04/05/2026 | ⚪ Em andamento | Detalhamento de gastos e métricas de efetividade. |
-
+| 02 | 04/05/2026 | 🟢 Concluído | Detalhamento de gastos e métricas de efetividade. |
+| 03 | 31/05/2026 | ⚪ Em andamento | Apresentação de gráficos e comparação de efetividade. |
 ---
-
-## MVPs
-
-### Sprint 1
-* 📺 [Clique aqui para assistir o vídeo de demonstração](https://youtu.be/sBF46geoj6Y)
-* 📄 [Clique aqui para acessar o arquivo .md do MVP da Sprint](https://github.com/ninaduquehc/API/blob/main/MVP/Sprint1.md)
