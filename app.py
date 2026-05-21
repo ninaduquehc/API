@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, abort
+from flask import Flask, render_template, request, abort, redirect, url_for
 import requests as http_requests
 
 from database.repository import (
@@ -16,7 +16,7 @@ from database.repository import (
     contar_ranking,
     buscar_ranking_proposicoes_deputado,
     buscar_dados_ranking_pl,
-    buscar_resumo_coerencia,          # ← novo
+    buscar_resumo_coerencia,
 )
 from src.utils.data_processor import processar_metricas_pandas, gasto_total_numerico
 from src.utils.ceap import resumo_ceap_deputado, formatar_resumo_ceap_exibicao
@@ -24,9 +24,26 @@ from src.utils.ranking_proposicoes import montar_ranking_pl
 
 app = Flask(__name__)
 
+# Substitua pela sua chave em https://newsapi.org/register
+# Em produção use: import os; NEWS_API_KEY = os.environ.get("NEWS_API_KEY", "")
+NEWS_API_KEY = ""
 
-@app.route("/", methods=["GET"])
-def index():
+
+# ── / → redireciona para /home ────────────────────────────────
+@app.route("/")
+def root():
+    return redirect(url_for("home"))
+
+
+# ── Home / Landing page ───────────────────────────────────────
+@app.route("/home")
+def home():
+    return render_template("home.html", news_api_key=NEWS_API_KEY)
+
+
+# ── Listagem de deputados ─────────────────────────────────────
+@app.route("/listagem", methods=["GET"])
+def listagem():
     page    = request.args.get("page", 1, type=int)
     uf      = request.args.get("uf", "").upper().strip()
     partido = request.args.get("partido", "").upper().strip()
@@ -40,7 +57,6 @@ def index():
     total_paginas = max(1, (total + limit - 1) // limit)
     tem_proxima   = (offset + limit) < total
 
-    # Garante que page não ultrapassa o total real
     if page > total_paginas:
         page = total_paginas
 
@@ -61,6 +77,7 @@ def index():
     )
 
 
+# ── Detalhe do deputado ───────────────────────────────────────
 @app.route("/deputado/<int:id_deputado>")
 def deputado_detalhe(id_deputado):
     from database.repository import (
@@ -182,69 +199,70 @@ def coerencia_deputado(id_deputado):
     )
 
 
+# ── Ranking ───────────────────────────────────────────────────
 @app.route("/ranking")
 def ranking():
     uf       = request.args.get("uf", "").upper().strip()
     partido  = request.args.get("partido", "").upper().strip()
     page     = request.args.get("page", 1, type=int)
-    criterio = request.args.get("criterio", "gastos")
+    criterio = request.args.get("criterio", "presenca")   # padrão: presença
     ordem    = request.args.get("ordem", "")
 
+    POR_PAGINA = 15
+
+    # ── critério: proposições ──────────────────────────────────
     if criterio == "proposicoes":
         if not ordem:
             ordem = "desc"
-        por_pagina   = 15
-        rows         = buscar_dados_ranking_pl(uf if uf else None, partido if partido else None)
+
+        rows         = buscar_dados_ranking_pl(uf or None, partido or None)
         ranking_full = montar_ranking_pl(rows)
 
         if ordem == "asc":
             ranking_full = list(reversed(ranking_full))
 
         total         = len(ranking_full)
-        total_paginas = max(1, (total + por_pagina - 1) // por_pagina)
-        offset        = (page - 1) * por_pagina
-        ranking_pag   = ranking_full[offset:offset + por_pagina]
+        total_paginas = max(1, (total + POR_PAGINA - 1) // POR_PAGINA)
+        offset        = (page - 1) * POR_PAGINA
+        ranking_pag   = ranking_full[offset : offset + POR_PAGINA]
 
+        # injeta posição real (considera a página)
         for i, r in enumerate(ranking_pag):
             r["posicao_display"] = offset + i + 1
 
         return render_template(
             "ranking.html",
             ranking=ranking_pag,
-            uf=uf,
-            partido=partido,
-            page=page,
-            total_paginas=total_paginas,
-            criterio=criterio,
-            ordem=ordem,
-            total=total,
+            uf=uf, partido=partido,
+            page=page, total_paginas=total_paginas,
+            criterio=criterio, ordem=ordem, total=total,
         )
 
+    # ── critério: presença ou gastos ──────────────────────────
     if not ordem:
-        ordem = "asc" if criterio == "presenca" else "desc"
+        ordem = "desc" if criterio == "gastos" else "asc"
 
-    por_pagina = 15
-    offset     = (page - 1) * por_pagina
+    offset = (page - 1) * POR_PAGINA
 
     if criterio == "presenca":
-        ranking_paginado = buscar_ranking_presenca(uf, ordem, partido if partido else None)
-    else:
-        ranking_paginado = buscar_ranking_gastos(uf, ordem, partido if partido else None)
+        ranking_full = buscar_ranking_presenca(uf or None, ordem, partido or None)
+    else:                                  # gastos
+        ranking_full = buscar_ranking_gastos(uf or None, ordem, partido or None)
 
-    total         = contar_ranking(uf, criterio, partido if partido else None)
-    total_paginas = max(1, (total + por_pagina - 1) // por_pagina)
-    ranking_paginado = ranking_paginado[offset:offset + por_pagina]
+    total         = contar_ranking(uf or None, criterio, partido or None)
+    total_paginas = max(1, (total + POR_PAGINA - 1) // POR_PAGINA)
+    ranking_pag   = ranking_full[offset : offset + POR_PAGINA]
+
+    # injeta posição real
+    for i, r in enumerate(ranking_pag):
+        r["posicao_display"] = offset + i + 1
 
     return render_template(
         "ranking.html",
-        ranking=ranking_paginado,
-        uf=uf,
-        partido=partido,
-        page=page,
-        total_paginas=total_paginas,
-        criterio=criterio,
-        ordem=ordem,
-        total=total,
+        ranking=ranking_pag,
+        uf=uf, partido=partido,
+        page=page, total_paginas=total_paginas,
+        criterio=criterio, ordem=ordem, total=total,
     )
 
 

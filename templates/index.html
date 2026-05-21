@@ -1,84 +1,359 @@
-{%- macro paginacao(page, total_paginas, base_url) %}
-{% if total_paginas > 1 %}
-<div class="pagination">
-  {% if page > 1 %}
-  <a class="page-link" href="{{ base_url }}&page=1" title="Primeira">&laquo;&laquo;</a>
-  <a class="page-link" href="{{ base_url }}&page={{ page - 1 }}" title="Anterior">&laquo;</a>
-  {% endif %}
-  {% set p_start = [1, page - 2] | max %}
-  {% set p_end   = [total_paginas, page + 7] | min %}
-  {% for p in range(p_start, p_end + 1) %}
-  <a class="page-link {% if p == page %}active-page{% endif %}"
-     href="{{ base_url }}&page={{ p }}">{{ p }}</a>
-  {% endfor %}
-  {% if page < total_paginas %}
-  <a class="page-link" href="{{ base_url }}&page={{ page + 1 }}" title="Próxima">&raquo;</a>
-  <a class="page-link" href="{{ base_url }}&page={{ total_paginas }}" title="Última">&raquo;&raquo;</a>
-  {% endif %}
-</div>
-{% endif %}
-{%- endmacro %}
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Listagem de Deputados Federais — Voto Consciente 2026" />
+  <title>Listagem de Deputados — Voto Consciente 2026</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="/static/css/style.css">
 
-{% block title %}VeritasCode - Dashboard{% endblock %}
+  <style>
+    /* ── Cards da listagem ─────────────────────────────────── */
+    .dep-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: transform .18s ease, box-shadow .18s ease;
+      height: 100%;
+      text-decoration: none;
+      color: inherit;
+    }
+    .dep-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,.14);
+      color: inherit;
+    }
 
-{% block content %}
-<div class="top-metrics">
-  <div class="card metric-card">
-    <h3>Vistos nesta página</h3>
-    <div class="metric-value">{{ deputados|length }}</div>
-  </div>
-  <div class="card metric-card">
-    <h3>Gasto médio</h3>
-    <div class="metric-value">{{ metrics.gasto_medio }}</div>
-  </div>
-  <div class="card metric-card">
-    <h3>Gasto total</h3>
-    <div class="metric-value">{{ metrics.gasto_total }}</div>
-  </div>
-  <div class="card metric-card">
-    <h3>Mais gastos</h3>
-    <div class="metric-value">{{ metrics.deputado_mais_gastos }}</div>
-  </div>
-</div>
+    /* Área da foto — retângulo com proporção fixa, fundo neutro */
+    .dep-card__foto-wrap {
+      width: 100%;
+      aspect-ratio: 3 / 4;          /* retrato */
+      background: #f0f2f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .dep-card__foto-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;             /* preenche sem cortar rosto */
+      object-position: top center;   /* alinha ao topo p/ rostos */
+      display: block;
+    }
 
-<div class="bottom-section">
-  <aside class="sidebar-options card">
-    <h3>Filtros</h3>
-    <form method="GET">
-      <div class="form-group">
-        <label>UF</label>
-        <input type="text" name="uf" value="{{ uf }}">
-      </div>
-      <div class="form-group">
-        <label>Partido</label>
-        <input type="text" name="partido" value="{{ partido }}">
-      </div>
-      <div class="form-group">
-        <label>Nome</label>
-        <input type="text" name="nome" value="{{ nome }}">
-      </div>
-      <button class="btn">Pesquisar</button>
-    </form>
-  </aside>
+    /* Iniciais quando não há foto */
+    .dep-card__iniciais {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1d3557, #457b9d);
+      color: #fff;
+      font-size: 1.6rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: .5px;
+    }
 
-  <section class="chart-area card">
-    <h3>Deputados (Página {{ current_page }})</h3>
-    <div class="deputados-grid">
-      {% for dep in deputados %}
-      {% set url_volta = "/?page=" ~ current_page ~ "&uf=" ~ uf ~ "&partido=" ~ partido ~ "&nome=" ~ nome %}
-      <a class="deputado-card"
-         href="/deputado/{{ dep.id }}?volta={{ url_volta | urlencode }}">
-        <img src="{{ dep.url_foto }}" alt="Foto de {{ dep.nome }}"
-          onerror="this.src='https://via.placeholder.com/80x106?text=Sem+Foto'">
-        <h4>{{ dep.nome }}</h4>
-        <p>{{ dep.sigla_partido }} - {{ dep.sigla_uf }}</p>
+    /* UF badge no canto */
+    .dep-card__uf {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(29,53,87,.85);
+      color: #fff;
+      font-size: .65rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 20px;
+      letter-spacing: .5px;
+    }
+
+    /* Área de texto */
+    .dep-card__body {
+      padding: .85rem .75rem .9rem;
+      width: 100%;
+    }
+    .dep-card__nome {
+      font-size: .82rem;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: .35rem;
+      color: #1d3557;
+      /* trunca nomes muito longos em 2 linhas */
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .dep-card__partido {
+      display: inline-block;
+      background: #e8f4f8;
+      color: #1d6fa4;
+      font-size: .68rem;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 20px;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="faixa-nav" role="presentation" aria-hidden="true"></div>
+  <nav class="navbar navbar-site navbar-expand-lg" aria-label="Navegação principal">
+    <div class="container justify-content-center">
+      <a class="navbar-brand navbar-brand-logo me-lg-4" href="{{ url_for('home') }}" aria-label="Voto Consciente 2026">
+        <span class="brand-badge" aria-hidden="true">VC</span>
+        <span>Voto Consciente<small>Eleições 2026</small></span>
       </a>
-      {% endfor %}
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+              data-bs-target="#menuListagem" aria-controls="menuListagem"
+              aria-expanded="false" aria-label="Abrir menu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-center" id="menuListagem">
+        <ul class="navbar-nav gap-lg-1">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('home') }}">
+              <i class="bi bi-house-fill me-1"></i>Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('ranking') }}">
+              <i class="bi bi-trophy-fill me-1"></i>Ranking de Deputados
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="{{ url_for('listagem') }}" aria-current="page">
+              <i class="bi bi-people-fill me-1"></i>Listagem de Deputados
+              <span class="badge-novidade">Novo</span>
+            </a>
+          </li>
+        </ul>
+      </div>
     </div>
+  </nav>
 
-    {% set base = "/?uf=" ~ uf ~ "&partido=" ~ partido ~ "&nome=" ~ nome %}
-    {{ paginacao(current_page, total_paginas, base) }}
-  </section>
-</div>
-{% endblock %}
+  <header class="listagem-header" role="banner">
+    <div class="container">
+      <h1><i class="bi bi-people-fill me-2"></i>Listagem de Deputados</h1>
+      <p>Explore os parlamentares federais em exercício e conheça seu perfil completo</p>
+    </div>
+  </header>
+
+  <main id="conteudo-listagem">
+    <div class="container section-py">
+      <div class="row g-4">
+
+        <!-- ASIDE: FILTROS -->
+        <aside class="col-12 col-lg-3" aria-labelledby="titulo-aside-filtros"
+               style="position: relative; z-index: 10;">
+          <div class="aside-filtros">
+            <h2 id="titulo-aside-filtros">
+              <i class="bi bi-funnel-fill"></i> Filtros
+            </h2>
+
+            <form method="GET" action="{{ url_for('listagem') }}" novalidate>
+
+              <div class="mb-3">
+                <label for="filtro-nome-list">Nome</label>
+                <input type="search" id="filtro-nome-list" name="nome"
+                       class="form-control" placeholder="Ex.: Maria..."
+                       autocomplete="off" value="{{ nome }}" />
+              </div>
+
+              <div class="mb-3">
+                <label for="filtro-uf">Estado (UF)</label>
+                <select id="filtro-uf" name="uf" class="form-select">
+                  <option value="">Todos</option>
+                  {% for sigla in ['AC','AL','AP','AM','BA','CE','DF','ES','GO',
+                                   'MA','MT','MS','MG','PA','PB','PR','PE','PI',
+                                   'RJ','RN','RS','RO','RR','SC','SP','SE','TO'] %}
+                  <option value="{{ sigla }}" {% if uf == sigla %}selected{% endif %}>{{ sigla }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label for="filtro-partido-list">Partido</label>
+                <select id="filtro-partido-list" name="partido" class="form-select">
+                  <option value="">Todos</option>
+                  {% for p in ['PT','PL','MDB','UNIÃO','PP','PSD','REPUBLICANOS',
+                               'PDT','PSOL','PSB','PODE','AVANTE','SOLIDARIEDADE','CIDADANIA'] %}
+                  <option value="{{ p }}" {% if partido == p %}selected{% endif %}>{{ p }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <button type="submit" class="btn-filtrar-verde">
+                <i class="bi bi-search me-1"></i>Buscar
+              </button>
+              <a href="{{ url_for('listagem') }}" class="btn-limpar-verde">
+                <i class="bi bi-x-circle me-1"></i>Limpar filtros
+              </a>
+
+            </form>
+          </div>
+        </aside>
+
+        <!-- ÁREA PRINCIPAL -->
+        <div class="col-12 col-lg-9">
+
+          <div class="resultado-info mb-3" aria-live="polite">
+            {% if deputados %}
+              {% set inicio = ((current_page - 1) * 12) + 1 %}
+              {% set fim    = (current_page - 1) * 12 + deputados|length %}
+              Exibindo <strong>{{ inicio }}</strong>–<strong>{{ fim }}</strong>
+              deputados
+              {%- if uf or partido or nome %} filtrados por
+                {%- if nome %} <em>"{{ nome }}"</em>{% endif %}
+                {%- if uf %} <em>{{ uf }}</em>{% endif %}
+                {%- if partido %} <em>{{ partido }}</em>{% endif %}
+              {%- endif %}
+            {% else %}
+              Nenhum deputado encontrado.
+            {% endif %}
+          </div>
+
+          {% if deputados %}
+          <div class="row g-3" id="grade-deputados" aria-label="Lista de deputados">
+            {% for dep in deputados %}
+            <div class="col-6 col-sm-4 col-md-3">
+              {# Card inteiro é o link — sem stretched-link, sem z-index vazando #}
+              <a href="{{ url_for('deputado_detalhe', id_deputado=dep.id) }}"
+                 class="dep-card"
+                 aria-label="Ver perfil de {{ dep.nome }}">
+
+                <div class="dep-card__foto-wrap">
+                  {% if dep.url_foto %}
+                    <img src="{{ dep.url_foto }}"
+                         alt="Foto oficial de {{ dep.nome }}"
+                         loading="lazy" />
+                  {% else %}
+                    <div class="dep-card__iniciais">
+                      {{ dep.nome.split()[0][0] -}}
+                      {{- dep.nome.split()[1][0] if dep.nome.split()|length > 1 else '' }}
+                    </div>
+                  {% endif %}
+                  <span class="dep-card__uf">{{ dep.sigla_uf }}</span>
+                </div>
+
+                <div class="dep-card__body">
+                  <p class="dep-card__nome">{{ dep.nome }}</p>
+                  <span class="dep-card__partido">{{ dep.sigla_partido }}</span>
+                </div>
+
+              </a>
+            </div>
+            {% endfor %}
+          </div>
+
+          {% else %}
+          <div class="alert alert-info mt-3" role="alert">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            Nenhum deputado encontrado com os filtros aplicados.
+            <a href="{{ url_for('listagem') }}" class="alert-link ms-1">Limpar filtros</a>
+          </div>
+          {% endif %}
+
+          <!-- PAGINAÇÃO -->
+          {% if total_paginas > 1 %}
+          <nav class="paginacao-wrapper mt-4" aria-label="Páginas da listagem">
+            <ul class="pagination justify-content-center" id="paginacao">
+
+              <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
+                <a class="page-link"
+                   href="{{ url_for('listagem', page=current_page-1, uf=uf, partido=partido, nome=nome) }}"
+                   aria-label="Anterior">
+                  <i class="bi bi-chevron-left"></i>
+                </a>
+              </li>
+
+              {% set p_start = [1, current_page - 2]|max %}
+              {% set p_end   = [total_paginas, current_page + 2]|min %}
+
+              {% if p_start > 1 %}
+                <li class="page-item">
+                  <a class="page-link" href="{{ url_for('listagem', page=1, uf=uf, partido=partido, nome=nome) }}">1</a>
+                </li>
+                {% if p_start > 2 %}
+                  <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+              {% endif %}
+
+              {% for p in range(p_start, p_end + 1) %}
+              <li class="page-item {% if p == current_page %}active{% endif %}"
+                  {% if p == current_page %}aria-current="page"{% endif %}>
+                <a class="page-link"
+                   href="{{ url_for('listagem', page=p, uf=uf, partido=partido, nome=nome) }}">{{ p }}</a>
+              </li>
+              {% endfor %}
+
+              {% if p_end < total_paginas %}
+                {% if p_end < total_paginas - 1 %}
+                  <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+                <li class="page-item">
+                  <a class="page-link" href="{{ url_for('listagem', page=total_paginas, uf=uf, partido=partido, nome=nome) }}">{{ total_paginas }}</a>
+                </li>
+              {% endif %}
+
+              <li class="page-item {% if not tem_proxima %}disabled{% endif %}">
+                <a class="page-link"
+                   href="{{ url_for('listagem', page=current_page+1, uf=uf, partido=partido, nome=nome) }}"
+                   aria-label="Próxima">
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+              </li>
+
+            </ul>
+          </nav>
+          {% endif %}
+
+        </div>{# /col-lg-9 #}
+      </div>{# /row #}
+    </div>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="container">
+      <div class="row gy-4">
+        <div class="col-12 col-md-4">
+          <div class="footer-logo">
+            <span class="brand-badge">VC</span>
+            <span>Voto Consciente 2026</span>
+          </div>
+          <p>Plataforma independente de informação eleitoral. Sem vínculos partidários ou financiamento político.</p>
+        </div>
+        <div class="col-12 col-md-4">
+          <h3 style="color:#fff;font-size:.9rem;margin-bottom:.75rem;">Navegação</h3>
+          <nav class="footer-links" aria-label="Links do rodapé">
+            <a href="{{ url_for('home') }}"><i class="bi bi-house me-1"></i>Home</a>
+            <a href="{{ url_for('ranking') }}"><i class="bi bi-trophy me-1"></i>Ranking</a>
+            <a href="{{ url_for('listagem') }}"><i class="bi bi-people me-1"></i>Listagem</a>
+          </nav>
+        </div>
+        <div class="col-12 col-md-4">
+          <h3 style="color:#fff;font-size:.9rem;margin-bottom:.75rem;">Fontes de dados</h3>
+          <p>Dados via <a href="https://dadosabertos.camara.leg.br" target="_blank" rel="noopener noreferrer" style="color:var(--amarelo);">API Dados Abertos da Câmara</a>.</p>
+        </div>
+      </div>
+      <hr class="footer-divider" />
+      <p class="footer-copy">&copy; 2026 Voto Consciente — Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
