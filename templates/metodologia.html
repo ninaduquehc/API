@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Metodologia dos cálculos — Voto Consciente 2026" />
+  <title>Metodologia — Voto Consciente 2026</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="/static/css/style.css">
+
+</head>
+<body>
+
+  <!-- ── Navbar (mesmo padrão do projeto) ──────────────────────── -->
+  <div class="faixa-nav" role="presentation" aria-hidden="true"></div>
+  <nav class="navbar navbar-site navbar-expand-lg" aria-label="Navegação principal">
+    <div class="container justify-content-center">
+      <a class="navbar-brand navbar-brand-logo me-lg-4" href="{{ url_for('home') }}" aria-label="Voto Consciente 2026">
+        <span class="brand-badge" aria-hidden="true">VC</span>
+        <span>Voto Consciente<small>Eleições 2026</small></span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+              data-bs-target="#menuMetod" aria-controls="menuMetod"
+              aria-expanded="false" aria-label="Abrir menu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-center" id="menuMetod">
+        <ul class="navbar-nav gap-lg-1">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('home') }}">
+              <i class="bi bi-house-fill me-1"></i>Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('ranking') }}">
+              <i class="bi bi-trophy-fill me-1"></i>Ranking de Deputados
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('listagem') }}">
+              <i class="bi bi-people-fill me-1"></i>Listagem de Deputados
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="{{ url_for('metodologia') }}" aria-current="page">
+              <i class="bi bi-calculator-fill me-1"></i>Metodologia
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Hero ──────────────────────────────────────────────────── -->
+  <header class="metod-hero" role="banner">
+    <div class="container">
+      <a href="{{ url_for('home') }}" class="back-link">
+        <i class="bi bi-arrow-left"></i> Voltar para Home
+      </a>
+      <h1><i class="bi bi-calculator-fill me-2"></i>Metodologia dos Cálculos</h1>
+      <p class="mt-2 mb-0">
+        Transparência total sobre como cada indicador é calculado — fórmulas, fontes e critérios de ponderação utilizados na plataforma.
+      </p>
+    </div>
+  </header>
+
+  <!-- ── Conteúdo principal ─────────────────────────────────────── -->
+  <main class="container section-py" style="padding-top:2.5rem; padding-bottom:3rem;">
+    <div class="row g-4">
+
+      <!-- TOC -->
+      <aside class="col-12 col-lg-3" aria-labelledby="toc-titulo">
+        <div class="toc-card">
+          <h2 id="toc-titulo"><i class="bi bi-list-ul me-1"></i>Seções</h2>
+          <ul class="toc-list" id="toc">
+            <li><a href="#presenca"    class="toc-link"><i class="bi bi-person-check-fill"></i>Presença em Votações</a></li>
+            <li><a href="#ceap"        class="toc-link"><i class="bi bi-cash-stack"></i>Cota CEAP</a></li>
+            <li><a href="#proposicoes" class="toc-link"><i class="bi bi-file-earmark-text-fill"></i>Score de Proposições</a></li>
+            <li><a href="#coerencia"   class="toc-link"><i class="bi bi-arrow-repeat"></i>Índice de Coerência</a></li>
+            <li><a href="#ranking"     class="toc-link"><i class="bi bi-trophy-fill"></i>Ranking Geral</a></li>
+            <li><a href="#fontes"      class="toc-link"><i class="bi bi-database-fill"></i>Fontes de Dados</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- Sections -->
+      <div class="col-12 col-lg-9">
+
+        <!-- 1. Presença -->
+        <section class="metod-section" id="presenca" aria-labelledby="h-presenca">
+          <h2 id="h-presenca">
+            <span class="section-icon"><i class="bi bi-person-check-fill"></i></span>
+            Presença em Votações
+          </h2>
+
+          <p>Mede o percentual de votações nominais em que o deputado registrou voto, em relação ao total de votações realizadas no período analisado.</p>
+
+          <h3>Fórmula</h3>
+          <div class="formula-block">
+            <span class="formula-label">FÓRMULA</span>
+            <strong>Presença (%)</strong> = ( Votações em que o deputado votou ÷ Total de votações do período ) × 100
+          </div>
+
+          <table class="var-table mt-3">
+            <thead>
+              <tr><th>Variável</th><th>Descrição</th><th>Fonte</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>Votações_votou</code></td><td>Número de votações nominais em que o deputado registrou qualquer voto (Sim, Não, Abstenção, Obstrução).</td><td>Tabela <code>presencas</code></td></tr>
+              <tr><td><code>Total_votações</code></td><td>Total de votações ocorridas desde 01/02/2023 (início da legislatura atual).</td><td>API Câmara / tabela <code>presencas</code></td></tr>
+            </tbody>
+          </table>
+
+          <h3>Comparação estadual</h3>
+          <p>A média do estado é calculada como a média aritmética simples das presenças de todos os deputados eleitos pela mesma UF:</p>
+          <div class="formula-block">
+            <strong>Média UF</strong> = Σ Presença(deputados_UF) ÷ N(deputados_UF)
+          </div>
+
+          <div class="callout mt-3">
+            <i class="bi bi-info-circle-fill me-1"></i>
+            Licenças médicas, missões oficiais e lutos são registrados pela Câmara, mas <strong>não são descontados</strong> desta métrica — refletindo o registro público oficial.
+          </div>
+
+          <button class="btn btn-sm btn-outline-secondary mt-2" data-bs-toggle="modal" data-bs-target="#modalPresenca">
+            <i class="bi bi-zoom-in me-1"></i>Ver exemplo de cálculo
+          </button>
+        </section>
+
+        <!-- 2. CEAP -->
+        <section class="metod-section" id="ceap" aria-labelledby="h-ceap">
+          <h2 id="h-ceap">
+            <span class="section-icon"><i class="bi bi-cash-stack"></i></span>
+            Cota para Exercício da Atividade Parlamentar (CEAP)
+          </h2>
+
+          <p>A CEAP é o limite mensal de ressarcimento de despesas do mandato. A plataforma calcula o <strong>percentual de uso</strong> do deputado em relação ao limite da sua UF.</p>
+
+          <h3>Percentual de uso mensal</h3>
+          <div class="formula-block">
+            <strong>Uso CEAP (%)</strong> = ( Gasto total filtrado ÷ Limite mensal da UF ) × 100
+          </div>
+
+          <h3>Percentual de uso anual (sem filtro de mês)</h3>
+          <div class="formula-block">
+            <strong>Uso CEAP (%)</strong> = ( Gasto total filtrado ÷ Limite anual de referência ) × 100<br>
+            <br>
+            onde <strong>Limite anual</strong> = Limite mensal da UF × 12
+          </div>
+
+          <h3>Equivalência em cestas básicas</h3>
+          <div class="formula-block">
+            <strong>Cestas equivalentes</strong> = Gasto total ÷ Valor da cesta básica (UF)
+          </div>
+
+          <table class="var-table mt-3">
+            <thead>
+              <tr><th>Variável</th><th>Descrição</th><th>Referência</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>Limite_mensal_UF</code></td><td>Cota mensal oficial por estado (varia de R$ 41.603,80 a R$ 57.382,10).</td><td>Ato da Mesa / Câmara dos Deputados 2024–2025</td></tr>
+              <tr><td><code>Valor_cesta_UF</code></td><td>Valor da cesta básica na capital do estado.</td><td>DIEESE / Conab — março 2026</td></tr>
+              <tr><td><code>Gasto_filtrado</code></td><td>Soma das despesas após deduplicação por <code>idDocumento</code>.</td><td>Tabela <code>despesas</code></td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout">
+            <i class="bi bi-info-circle-fill me-1"></i>
+            A deduplicação remove notas fiscais duplicadas usando o campo <code>idDocumento</code>: documentos com o mesmo ID são contados uma única vez.
+          </div>
+
+          <button class="btn btn-sm btn-outline-secondary mt-2" data-bs-toggle="modal" data-bs-target="#modalCeap">
+            <i class="bi bi-zoom-in me-1"></i>Ver limites por UF
+          </button>
+        </section>
+
+        <!-- 3. Proposições -->
+        <section class="metod-section" id="proposicoes" aria-labelledby="h-prop">
+          <h2 id="h-prop">
+            <span class="section-icon"><i class="bi bi-file-earmark-text-fill"></i></span>
+            Score de Proposições Legislativas
+          </h2>
+
+          <p>Mede o engajamento legislativo ponderando o tipo de proposição pela sua complexidade e impacto jurídico.</p>
+
+          <h3>Pesos por tipo</h3>
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <span class="weight-chip green"><i class="bi bi-star-fill"></i>PEC × 3</span>
+            <span class="weight-chip orange"><i class="bi bi-star-half"></i>PDC × 2</span>
+            <span class="weight-chip blue"><i class="bi bi-star"></i>PL × 1</span>
+          </div>
+
+          <div class="formula-block">
+            <strong>Score</strong> = (PL × 1) + (PDC × 2) + (PEC × 3)
+          </div>
+
+          <h3>Score relativo ao estado</h3>
+          <div class="formula-block">
+            <strong>Média UF</strong>  = Σ Score(deputados_UF) ÷ N(deputados_UF)<br>
+            <strong>Diff score</strong> = Score do deputado − Média UF
+          </div>
+
+          <table class="var-table mt-3">
+            <thead>
+              <tr><th>Tipo</th><th>Significado</th><th>Peso</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>PL</code></td><td>Projeto de Lei — proposta de norma ordinária</td><td>1</td></tr>
+              <tr><td><code>PDC</code></td><td>Projeto de Decreto Legislativo — atos do Congresso</td><td>2</td></tr>
+              <tr><td><code>PEC</code></td><td>Proposta de Emenda Constitucional — altera a Constituição</td><td>3</td></tr>
+            </tbody>
+          </table>
+
+          <button class="btn btn-sm btn-outline-secondary mt-2" data-bs-toggle="modal" data-bs-target="#modalProp">
+            <i class="bi bi-zoom-in me-1"></i>Ver exemplo de cálculo
+          </button>
+        </section>
+
+        <!-- 4. Coerência -->
+        <section class="metod-section" id="coerencia" aria-labelledby="h-coer">
+          <h2 id="h-coer">
+            <span class="section-icon"><i class="bi bi-arrow-repeat"></i></span>
+            Índice de Coerência Temática
+          </h2>
+
+          <p>Avalia se o deputado <strong>discursa</strong> e <strong>apresenta proposições</strong> sobre os mesmos temas, indicando alinhamento entre fala e ação legislativa.</p>
+
+          <h3>Fórmula por tema</h3>
+          <div class="formula-block">
+            <strong>Índice (tema)</strong> =<br>
+            &nbsp; ( discursos_tema / max_discursos ) × 0,30<br>
+            + ( proposições_tema / max_proposições ) × 0,40<br>
+            + ( aprovações_tema  / max_aprovações  ) × 0,30<br>
+            <br>
+            × 100 &nbsp;[se proposições_tema &gt; 0, caso contrário = 0]
+          </div>
+
+          <table class="var-table mt-3">
+            <thead>
+              <tr><th>Componente</th><th>Peso</th><th>Descrição</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Discursos por tema</td><td>30%</td><td>Número de discursos do deputado vinculados ao tema (últimos N anos).</td></tr>
+              <tr><td>Proposições por tema</td><td>40%</td><td>Proposições vinculadas ao tema. Zera o índice se ausente.</td></tr>
+              <tr><td>Aprovações por tema</td><td>30%</td><td>Proposições com situação "Transformado em Norma Jurídica".</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Índice médio do deputado</h3>
+          <div class="formula-block">
+            <strong>Índice médio</strong> = Mediana dos índices de todos os temas com índice &gt; 0
+          </div>
+
+          <div class="callout">
+            <i class="bi bi-info-circle-fill me-1"></i>
+            A <strong>mediana</strong> é usada (em vez da média) para evitar que um tema com índice muito alto ou muito baixo distorça o resultado geral.
+          </div>
+
+          <p class="mt-2"><strong>Janela temporal:</strong> por padrão são considerados os últimos <strong>3 anos</strong> de atividade parlamentar.</p>
+
+          <button class="btn btn-sm btn-outline-secondary mt-2" data-bs-toggle="modal" data-bs-target="#modalCoer">
+            <i class="bi bi-zoom-in me-1"></i>Ver exemplo passo a passo
+          </button>
+        </section>
+
+        <!-- 5. Ranking -->
+        <section class="metod-section" id="ranking" aria-labelledby="h-rank">
+          <h2 id="h-rank">
+            <span class="section-icon"><i class="bi bi-trophy-fill"></i></span>
+            Ranking Geral
+          </h2>
+
+          <p>O ranking pode ser ordenado por três critérios distintos, cada um usando sua própria métrica principal:</p>
+
+          <div class="row g-3 mt-1">
+            <div class="col-12 col-sm-4">
+              <div class="p-3 rounded-3 h-100" style="background:#f0f8ff;border:1px solid #cce5f6;">
+                <div class="fw-700 mb-1" style="color:#1d3557;font-size:.85rem;font-weight:700;"><i class="bi bi-person-check-fill me-1"></i>Presença</div>
+                <p style="font-size:.8rem;color:#445;margin:0;">Percentual de votações com voto registrado. Padrão: ordem crescente (piores primeiro).</p>
+              </div>
+            </div>
+            <div class="col-12 col-sm-4">
+              <div class="p-3 rounded-3 h-100" style="background:#fff8f0;border:1px solid #f6d8b0;">
+                <div class="fw-700 mb-1" style="color:#7c4000;font-size:.85rem;font-weight:700;"><i class="bi bi-cash-stack me-1"></i>Gastos CEAP</div>
+                <p style="font-size:.8rem;color:#445;margin:0;">Total gasto na CEAP (soma de todas as despesas). Padrão: ordem decrescente (maiores gastadores primeiro).</p>
+              </div>
+            </div>
+            <div class="col-12 col-sm-4">
+              <div class="p-3 rounded-3 h-100" style="background:#f0fff4;border:1px solid #b2dfdb;">
+                <div class="fw-700 mb-1" style="color:#1b5e20;font-size:.85rem;font-weight:700;"><i class="bi bi-file-earmark-text-fill me-1"></i>Proposições</div>
+                <p style="font-size:.8rem;color:#445;margin:0;">Score ponderado (PL×1 + PDC×2 + PEC×3). Padrão: ordem decrescente (mais ativos primeiro).</p>
+              </div>
+            </div>
+          </div>
+
+          <h3 class="mt-3">Paginação e filtros</h3>
+          <p>Todos os critérios suportam filtragem por <strong>UF</strong> e <strong>partido</strong>, com 15 deputados por página. A posição exibida considera o offset completo (ex.: posição 16 na página 2).</p>
+        </section>
+
+        <!-- 6. Fontes -->
+        <section class="metod-section" id="fontes" aria-labelledby="h-fontes">
+          <h2 id="h-fontes">
+            <span class="section-icon"><i class="bi bi-database-fill"></i></span>
+            Fontes de Dados
+          </h2>
+
+          <p>Todos os dados são públicos e de acesso livre. A plataforma não altera, interpreta politicamente nem modera os dados recebidos das fontes oficiais.</p>
+
+          <div class="row g-3 mt-1">
+            <div class="col-12">
+              <table class="var-table">
+                <thead>
+                  <tr><th>Dado</th><th>Fonte</th><th>Link</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Deputados, votações, votos, proposições, discursos</td>
+                    <td>API Dados Abertos da Câmara dos Deputados</td>
+                    <td><a href="https://dadosabertos.camara.leg.br" target="_blank" rel="noopener" class="source-badge"><i class="bi bi-box-arrow-up-right"></i>dadosabertos.camara.leg.br</a></td>
+                  </tr>
+                  <tr>
+                    <td>Limites mensais da CEAP por UF</td>
+                    <td>Ato da Mesa Diretora da Câmara (2024–2025)</td>
+                    <td><a href="https://www.camara.leg.br/transparencia/recursos-humanos/remuneracao/cota-parlamentar" target="_blank" rel="noopener" class="source-badge"><i class="bi bi-box-arrow-up-right"></i>camara.leg.br</a></td>
+                  </tr>
+                  <tr>
+                    <td>Valor da cesta básica por estado</td>
+                    <td>DIEESE / Conab — referência março 2026</td>
+                    <td><a href="https://www.dieese.org.br" target="_blank" rel="noopener" class="source-badge"><i class="bi bi-box-arrow-up-right"></i>dieese.org.br</a></td>
+                  </tr>
+                  <tr>
+                    <td>Temas e classificação de proposições</td>
+                    <td>API Câmara — endpoint <code>/proposicoes/{id}/temas</code></td>
+                    <td><a href="https://dadosabertos.camara.leg.br/swagger/api.html" target="_blank" rel="noopener" class="source-badge"><i class="bi bi-box-arrow-up-right"></i>Swagger API</a></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="callout mt-3">
+            <i class="bi bi-shield-check-fill me-1"></i>
+            <strong>Independência editorial:</strong> esta plataforma não possui vínculos partidários nem recebe financiamento político. Os cálculos são aplicados de forma idêntica a todos os deputados.
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ── Footer ─────────────────────────────────────────────────── -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="container">
+      <div class="row gy-4">
+        <div class="col-12 col-md-4">
+          <div class="footer-logo">
+            <span class="brand-badge">VC</span>
+            <span>Voto Consciente 2026</span>
+          </div>
+          <p>Plataforma independente de informação eleitoral. Sem vínculos partidários ou financiamento político.</p>
+        </div>
+        <div class="col-12 col-md-4">
+          <h3 style="color:#fff;font-size:.9rem;margin-bottom:.75rem;">Navegação</h3>
+          <nav class="footer-links" aria-label="Links do rodapé">
+            <a href="{{ url_for('home') }}"><i class="bi bi-house me-1"></i>Home</a>
+            <a href="{{ url_for('ranking') }}"><i class="bi bi-trophy me-1"></i>Ranking</a>
+            <a href="{{ url_for('listagem') }}"><i class="bi bi-people me-1"></i>Listagem</a>
+            <a href="{{ url_for('metodologia') }}"><i class="bi bi-calculator me-1"></i>Metodologia</a>
+          </nav>
+        </div>
+        <div class="col-12 col-md-4">
+          <h3 style="color:#fff;font-size:.9rem;margin-bottom:.75rem;">Fontes de dados</h3>
+          <p>Dados via <a href="https://dadosabertos.camara.leg.br" target="_blank" rel="noopener noreferrer" style="color:var(--amarelo);">API Dados Abertos da Câmara</a>.</p>
+        </div>
+      </div>
+      <hr class="footer-divider" />
+      <p class="footer-copy">&copy; 2026 Voto Consciente — Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- ══════════════════════════════════════════════════════════
+       MODAIS — demos de cálculo
+  ══════════════════════════════════════════════════════════ -->
+
+  <!-- Modal Presença -->
+  <div class="modal fade metod-modal" id="modalPresenca" tabindex="-1" aria-labelledby="modalPresencaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalPresencaLabel"><i class="bi bi-person-check-fill me-2"></i>Exemplo — Presença</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body" style="font-size:.86rem;">
+          <p><strong>Cenário hipotético:</strong> deputado A votou em 312 das 400 votações ocorridas no período.</p>
+          <div class="formula-block">
+            Presença = ( 312 ÷ 400 ) × 100 = <strong>78,0%</strong>
+          </div>
+          <p class="mt-2">Média do estado (ex.: SP) com 70 deputados com presença média 71,4%:</p>
+          <div class="formula-block">
+            Média UF = Σ presenças ÷ 70 = <strong>71,4%</strong>
+          </div>
+          <p class="mt-2 text-success fw-bold"><i class="bi bi-arrow-up-circle-fill me-1"></i>Deputado A está <strong>6,6 p.p. acima</strong> da média estadual.</p>
+          <div class="mt-3">
+            <small class="text-muted">Barra de presença do deputado:</small>
+            <div class="demo-bar-wrap"><div class="demo-bar" style="width:78%"></div></div>
+            <div class="d-flex justify-content-between mt-1" style="font-size:.75rem;color:#888">
+              <span>0%</span><span>78% (dep. A)</span><span>100%</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Fechar</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal CEAP -->
+  <div class="modal fade metod-modal" id="modalCeap" tabindex="-1" aria-labelledby="modalCeapLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalCeapLabel"><i class="bi bi-cash-stack me-2"></i>Limites CEAP por UF (2024–2025)</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body p-0" style="max-height:420px;overflow-y:auto;">
+          <table class="var-table" style="font-size:.78rem;">
+            <thead><tr><th>UF</th><th>Limite mensal</th><th>Limite anual (ref.)</th></tr></thead>
+            <tbody id="tabelaCeap"></tbody>
+          </table>
+        </div>
+        <div class="modal-footer"><button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Fechar</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Proposições -->
+  <div class="modal fade metod-modal" id="modalProp" tabindex="-1" aria-labelledby="modalPropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalPropLabel"><i class="bi bi-file-earmark-text-fill me-2"></i>Exemplo — Score de Proposições</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body" style="font-size:.86rem;">
+          <p><strong>Deputado B:</strong> 45 PLs, 3 PDCs, 1 PEC apresentados na legislatura.</p>
+          <div class="formula-block">
+            Score = (45 × 1) + (3 × 2) + (1 × 3)<br>
+            Score = 45 + 6 + 3 = <strong>54</strong>
+          </div>
+          <p class="mt-2">Média do estado (UF X): <strong>38,7</strong></p>
+          <div class="formula-block">
+            Diff = 54 − 38,7 = <strong>+15,3</strong> (acima da média estadual)
+          </div>
+          <p class="mt-2 text-success fw-bold"><i class="bi bi-arrow-up-circle-fill me-1"></i>Deputado B possui engajamento <strong>39,5% superior</strong> à média do seu estado.</p>
+        </div>
+        <div class="modal-footer"><button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Fechar</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Coerência -->
+  <div class="modal fade metod-modal" id="modalCoer" tabindex="-1" aria-labelledby="modalCoerLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalCoerLabel"><i class="bi bi-arrow-repeat me-2"></i>Exemplo — Coerência Temática</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body" style="font-size:.86rem;">
+          <p><strong>Deputado C</strong> — tema "Educação" (janela: 3 anos):</p>
+          <ul class="step-list">
+            <li>Fez <strong>12 discursos</strong> sobre educação. Máximo entre todos os deputados: 40. <br><em>Componente discursos: 12/40 × 0,30 = 0,090</em></li>
+            <li>Apresentou <strong>5 proposições</strong> sobre educação. Máximo: 20.<br><em>Componente proposições: 5/20 × 0,40 = 0,100</em></li>
+            <li>Teve <strong>1 aprovação</strong>. Máximo: 5.<br><em>Componente aprovações: 1/5 × 0,30 = 0,060</em></li>
+          </ul>
+          <div class="formula-block">
+            Índice (Educação) = (0,090 + 0,100 + 0,060) × 100 = <strong>25,0</strong>
+          </div>
+          <p class="mt-2">Após calcular todos os temas, o <strong>índice médio</strong> é a <em>mediana</em> dos valores &gt; 0.</p>
+        </div>
+        <div class="modal-footer"><button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Fechar</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Scripts ─────────────────────────────────────────────── -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    /* ── Preenche tabela CEAP no modal ── */
+    const LIMITES = {
+      AC:56241.52,AL:49525.18,AM:56402.77,AP:54407.24,BA:48718.06,
+      CE:51528.64,DF:41603.80,ES:45419.10,GO:41745.03,MA:52124.53,
+      MG:43513.67,MS:47169.45,MT:48337.92,PA:52880.51,PB:50812.08,
+      PE:50316.21,PI:51364.59,PR:45922.66,RJ:44825.93,RN:51050.47,
+      RO:47788.14,RR:57382.10,RS:47017.86,SC:46574.18,SE:49208.09,
+      SP:44401.23,TO:46220.16
+    };
+    function fmtBRL(v){
+      return "R$ " + v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+    }
+    const tbody = document.getElementById("tabelaCeap");
+    Object.entries(LIMITES).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([uf,lim],i)=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td><strong>${uf}</strong></td><td>${fmtBRL(lim)}</td><td>${fmtBRL(lim*12)}</td>`;
+      if(i%2===1) tr.style.background="#f8fafc";
+      tbody.appendChild(tr);
+    });
+
+    /* ── TOC highlight on scroll ── */
+    const sections = document.querySelectorAll(".metod-section");
+    const links    = document.querySelectorAll(".toc-link");
+    const observer = new IntersectionObserver(entries=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){
+          links.forEach(l=>l.classList.remove("active"));
+          const active = document.querySelector(`.toc-link[href="#${e.target.id}"]`);
+          if(active) active.classList.add("active");
+        }
+      });
+    },{rootMargin:"-20% 0px -70% 0px"});
+    sections.forEach(s=>observer.observe(s));
+  </script>
+</body>
+</html>

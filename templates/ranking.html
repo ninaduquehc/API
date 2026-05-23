@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,18 +14,20 @@
     .rank-card {
       background: #fff;
       border-radius: 16px;
-      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .08);
       display: flex;
       align-items: center;
       gap: 1rem;
       padding: 1rem 1.25rem;
       margin-bottom: .85rem;
       transition: transform .18s ease, box-shadow .18s ease;
-      position: relative;           /* garante que nada vaze para fora */
+      position: relative;
+      /* garante que nada vaze para fora */
     }
+
     .rank-card:hover {
       transform: translateY(-3px);
-      box-shadow: 0 8px 24px rgba(0,0,0,.13);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .13);
     }
 
     /* Posição */
@@ -36,9 +39,18 @@
       text-align: center;
       flex-shrink: 0;
     }
-    .rank-num.top-1 { color: #f9a825; }
-    .rank-num.top-2 { color: #90a4ae; }
-    .rank-num.top-3 { color: #a1887f; }
+
+    .rank-num.top-1 {
+      color: #f9a825;
+    }
+
+    .rank-num.top-2 {
+      color: #90a4ae;
+    }
+
+    .rank-num.top-3 {
+      color: #a1887f;
+    }
 
     /* Foto circular — não corta o rosto */
     .rank-foto-wrap {
@@ -53,12 +65,14 @@
       justify-content: center;
       border: 2px solid #e9ecef;
     }
+
     .rank-foto-wrap img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       object-position: top center;
     }
+
     .rank-iniciais {
       font-size: 1.2rem;
       font-weight: 700;
@@ -73,7 +87,11 @@
     }
 
     /* Info central */
-    .rank-info { flex: 1; min-width: 0; }
+    .rank-info {
+      flex: 1;
+      min-width: 0;
+    }
+
     .rank-info h3 {
       font-size: .92rem;
       font-weight: 700;
@@ -83,11 +101,16 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
     .rank-info h3 a {
       color: inherit;
       text-decoration: none;
     }
-    .rank-info h3 a:hover { text-decoration: underline; }
+
+    .rank-info h3 a:hover {
+      text-decoration: underline;
+    }
+
     .rank-partido {
       display: inline-block;
       background: #e8f4f8;
@@ -99,6 +122,7 @@
       text-transform: uppercase;
       letter-spacing: .3px;
     }
+
     .rank-uf {
       font-size: .75rem;
       color: #6c757d;
@@ -111,6 +135,7 @@
       flex-shrink: 0;
       min-width: 120px;
     }
+
     .rank-valor .num {
       display: block;
       font-size: 1.05rem;
@@ -118,12 +143,14 @@
       color: #1d3557;
       line-height: 1.1;
     }
+
     .rank-valor .label {
       font-size: .65rem;
       color: #6c757d;
       text-transform: uppercase;
       letter-spacing: .3px;
     }
+
     .rank-valor .secundario {
       font-size: .68rem;
       color: #90a4ae;
@@ -143,17 +170,26 @@
       white-space: nowrap;
       transition: background .15s, color .15s;
     }
+
     .rank-btn:hover {
       background: #1d3557;
       color: #fff;
     }
 
     @media (max-width: 575px) {
-      .rank-valor { min-width: 90px; }
-      .rank-btn   { display: none; }   /* esconde btn em mobile — card inteiro vira link */
+      .rank-valor {
+        min-width: 90px;
+      }
+
+      .rank-btn {
+        display: none;
+      }
+
+      /* esconde btn em mobile — card inteiro vira link */
     }
   </style>
 </head>
+
 <body>
 
   <div class="faixa-nav" role="presentation" aria-hidden="true"></div>
@@ -163,9 +199,8 @@
         <span class="brand-badge">VC</span>
         <span>Voto Consciente<small>Eleições 2026</small></span>
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-              data-bs-target="#menuRanking" aria-controls="menuRanking"
-              aria-expanded="false" aria-label="Abrir menu">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuRanking"
+        aria-controls="menuRanking" aria-expanded="false" aria-label="Abrir menu">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse justify-content-center" id="menuRanking">
@@ -182,6 +217,11 @@
             <a class="nav-link" href="{{ url_for('listagem') }}">
               <i class="bi bi-people-fill me-1"></i>Listagem de Deputados
               <span class="badge-novidade">Novo</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('metodologia') }}">
+              <i class="bi bi-calculator-fill me-1"></i>Metodologia
             </a>
           </li>
         </ul>
@@ -209,17 +249,19 @@
               <div class="col-12 col-sm-6 col-md-3">
                 <label for="filtro-criterio">Critério de ranking</label>
                 <select id="filtro-criterio" name="criterio" class="form-select">
-                  <option value="presenca"    {% if criterio == 'presenca'    %}selected{% endif %}>Presença em votações (%)</option>
-                  <option value="gastos"      {% if criterio == 'gastos'      %}selected{% endif %}>Gastos da cota (R$)</option>
-                  <option value="proposicoes" {% if criterio == 'proposicoes' %}selected{% endif %}>Proposições apresentadas</option>
+                  <option value="presenca" {% if criterio=='presenca' %}selected{% endif %}>Presença em votações (%)
+                  </option>
+                  <option value="gastos" {% if criterio=='gastos' %}selected{% endif %}>Gastos da cota (R$)</option>
+                  <option value="proposicoes" {% if criterio=='proposicoes' %}selected{% endif %}>Proposições
+                    apresentadas</option>
                 </select>
               </div>
 
               <div class="col-12 col-sm-4 col-md-2">
                 <label for="filtro-ordem">Ordem</label>
                 <select id="filtro-ordem" name="ordem" class="form-select">
-                  <option value="desc" {% if ordem == 'desc' %}selected{% endif %}>Maior → Menor ↓</option>
-                  <option value="asc"  {% if ordem == 'asc'  %}selected{% endif %}>Menor → Maior ↑</option>
+                  <option value="desc" {% if ordem=='desc' %}selected{% endif %}>Maior → Menor ↓</option>
+                  <option value="asc" {% if ordem=='asc' %}selected{% endif %}>Menor → Maior ↑</option>
                 </select>
               </div>
 
@@ -228,8 +270,8 @@
                 <select id="filtro-partido-rank" name="partido" class="form-select">
                   <option value="">Todos</option>
                   {% for p in ['PT','PL','MDB','UNIÃO','PP','PSD','REPUBLICANOS',
-                               'PDT','PSOL','PSB','PODE','AVANTE','SOLIDARIEDADE','CIDADANIA'] %}
-                  <option value="{{ p }}" {% if partido == p %}selected{% endif %}>{{ p }}</option>
+                  'PDT','PSOL','PSB','PODE','AVANTE','SOLIDARIEDADE','CIDADANIA'] %}
+                  <option value="{{ p }}" {% if partido==p %}selected{% endif %}>{{ p }}</option>
                   {% endfor %}
                 </select>
               </div>
@@ -239,9 +281,9 @@
                 <select id="filtro-uf-rank" name="uf" class="form-select">
                   <option value="">Todos</option>
                   {% for sigla in ['AC','AL','AP','AM','BA','CE','DF','ES','GO',
-                                   'MA','MT','MS','MG','PA','PB','PR','PE','PI',
-                                   'RJ','RN','RS','RO','RR','SC','SP','SE','TO'] %}
-                  <option value="{{ sigla }}" {% if uf == sigla %}selected{% endif %}>{{ sigla }}</option>
+                  'MA','MT','MS','MG','PA','PB','PR','PE','PI',
+                  'RJ','RN','RS','RO','RR','SC','SP','SE','TO'] %}
+                  <option value="{{ sigla }}" {% if uf==sigla %}selected{% endif %}>{{ sigla }}</option>
                   {% endfor %}
                 </select>
               </div>
@@ -263,17 +305,17 @@
       <!-- RESULTADO INFO -->
       <div class="resultado-info mb-3" aria-live="polite">
         {% if ranking %}
-          <strong>{{ total }}</strong> deputados —
-          critério: <strong>
-            {%- if criterio == 'presenca' %}Presença em votações
-            {%- elif criterio == 'gastos' %}Gastos da cota
-            {%- else %}Proposições apresentadas{% endif -%}
-          </strong>
-          ({{ 'maior → menor' if ordem == 'desc' else 'menor → maior' }})
-          {%- if uf %} · <strong>{{ uf }}</strong>{% endif %}
-          {%- if partido %} · <strong>{{ partido }}</strong>{% endif %}
+        <strong>{{ total }}</strong> deputados —
+        critério: <strong>
+          {%- if criterio == 'presenca' %}Presença em votações
+          {%- elif criterio == 'gastos' %}Gastos da cota
+          {%- else %}Proposições apresentadas{% endif -%}
+        </strong>
+        ({{ 'maior → menor' if ordem == 'desc' else 'menor → maior' }})
+        {%- if uf %} · <strong>{{ uf }}</strong>{% endif %}
+        {%- if partido %} · <strong>{{ partido }}</strong>{% endif %}
         {% else %}
-          Nenhum resultado encontrado.
+        Nenhum resultado encontrado.
         {% endif %}
       </div>
 
@@ -282,9 +324,10 @@
       <div id="lista-ranking" role="list">
         {% for item in ranking %}
 
-        {% set pos      = item['posicao_display'] %}
-        {% set iniciais = item['nome'].split()[0][0] ~ (item['nome'].split()[1][0] if item['nome'].split()|length > 1 else '') %}
-        {% set url_dep  = url_for('deputado_detalhe', id_deputado=item['id']) %}
+        {% set pos = item['posicao_display'] %}
+        {% set iniciais = item['nome'].split()[0][0] ~ (item['nome'].split()[1][0] if item['nome'].split()|length > 1
+        else '') %}
+        {% set url_dep = url_for('deputado_detalhe', id_deputado=item['id']) %}
 
         <article class="rank-card" role="listitem">
 
@@ -298,11 +341,9 @@
           <!-- Foto -->
           <div class="rank-foto-wrap">
             {% if item.get('url_foto') %}
-              <img src="{{ item['url_foto'] }}"
-                   alt="Foto de {{ item['nome'] }}"
-                   loading="lazy" />
+            <img src="{{ item['url_foto'] }}" alt="Foto de {{ item['nome'] }}" loading="lazy" />
             {% else %}
-              <div class="rank-iniciais">{{ iniciais }}</div>
+            <div class="rank-iniciais">{{ iniciais }}</div>
             {% endif %}
           </div>
 
@@ -318,36 +359,36 @@
           <!-- Valor do critério -->
           <div class="rank-valor">
             {% if criterio == 'gastos' %}
-              {% set gasto = item['total_gasto']|float %}
-              <span class="num">R$&nbsp;{{ "{:_.2f}".format(gasto).replace("_",".").replace(".",",",1) }}</span>
-              <span class="label">Gastos da cota</span>
-              {% if item.get('presenca') %}
-              <span class="secundario">
-                <i class="bi bi-calendar-check"></i>
-                {{ "%.1f"|format(item['presenca']|float) }}% presença
-              </span>
-              {% endif %}
+            {% set gasto = item['total_gasto']|float %}
+            <span class="num">R$&nbsp;{{ "{:_.2f}".format(gasto).replace("_",".").replace(".",",",1) }}</span>
+            <span class="label">Gastos da cota</span>
+            {% if item.get('presenca') %}
+            <span class="secundario">
+              <i class="bi bi-calendar-check"></i>
+              {{ "%.1f"|format(item['presenca']|float) }}% presença
+            </span>
+            {% endif %}
 
             {% elif criterio == 'presenca' %}
-              <span class="num">{{ "%.1f"|format(item['presenca']|float) }}%</span>
-              <span class="label">Presença</span>
-              {% if item.get('media_uf') %}
-              <span class="secundario">
-                Média {{ item['sigla_uf'] }}: {{ "%.1f"|format(item['media_uf']|float) }}%
-              </span>
-              {% endif %}
+            <span class="num">{{ "%.1f"|format(item['presenca']|float) }}%</span>
+            <span class="label">Presença</span>
+            {% if item.get('media_uf') %}
+            <span class="secundario">
+              Média {{ item['sigla_uf'] }}: {{ "%.1f"|format(item['media_uf']|float) }}%
+            </span>
+            {% endif %}
 
             {% else %}{# proposicoes #}
-              {% set total_prop = (item.get('total_pl') or 0)|int
-                                + (item.get('total_pec') or 0)|int
-                                + (item.get('total_pdc') or 0)|int %}
-              <span class="num">{{ total_prop }}</span>
-              <span class="label">Proposições</span>
-              <span class="secundario">
-                PL {{ (item.get('total_pl') or 0)|int }} ·
-                PEC {{ (item.get('total_pec') or 0)|int }} ·
-                PDC {{ (item.get('total_pdc') or 0)|int }}
-              </span>
+            {% set total_prop = (item.get('total_pl') or 0)|int
+            + (item.get('total_pec') or 0)|int
+            + (item.get('total_pdc') or 0)|int %}
+            <span class="num">{{ total_prop }}</span>
+            <span class="label">Proposições</span>
+            <span class="secundario">
+              PL {{ (item.get('total_pl') or 0)|int }} ·
+              PEC {{ (item.get('total_pec') or 0)|int }} ·
+              PDC {{ (item.get('total_pdc') or 0)|int }}
+            </span>
             {% endif %}
           </div>
 
@@ -375,40 +416,43 @@
 
           <li class="page-item {% if page == 1 %}disabled{% endif %}">
             <a class="page-link"
-               href="{{ url_for('ranking', page=page-1, criterio=criterio, ordem=ordem, uf=uf, partido=partido) }}"
-               aria-label="Anterior"><i class="bi bi-chevron-left"></i></a>
+              href="{{ url_for('ranking', page=page-1, criterio=criterio, ordem=ordem, uf=uf, partido=partido) }}"
+              aria-label="Anterior"><i class="bi bi-chevron-left"></i></a>
           </li>
 
           {% set p_start = [1, page - 2]|max %}
-          {% set p_end   = [total_paginas, page + 2]|min %}
+          {% set p_end = [total_paginas, page + 2]|min %}
 
           {% if p_start > 1 %}
-            <li class="page-item">
-              <a class="page-link" href="{{ url_for('ranking', page=1, criterio=criterio, ordem=ordem, uf=uf, partido=partido) }}">1</a>
-            </li>
-            {% if p_start > 2 %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+          <li class="page-item">
+            <a class="page-link"
+              href="{{ url_for('ranking', page=1, criterio=criterio, ordem=ordem, uf=uf, partido=partido) }}">1</a>
+          </li>
+          {% if p_start > 2 %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
           {% endif %}
 
           {% for p in range(p_start, p_end + 1) %}
-          <li class="page-item {% if p == page %}active{% endif %}"
-              {% if p == page %}aria-current="page"{% endif %}>
+          <li class="page-item {% if p == page %}active{% endif %}" {% if p==page %}aria-current="page" {% endif %}>
             <a class="page-link"
-               href="{{ url_for('ranking', page=p, criterio=criterio, ordem=ordem, uf=uf, partido=partido) }}">{{ p }}</a>
+              href="{{ url_for('ranking', page=p, criterio=criterio, ordem=ordem, uf=uf, partido=partido) }}">{{ p
+              }}</a>
           </li>
           {% endfor %}
 
-          {% if p_end < total_paginas %}
-            {% if p_end < total_paginas - 1 %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+          {% if p_end < total_paginas %} {% if p_end < total_paginas - 1 %}<li class="page-item disabled"><span
+              class="page-link">…</span></li>{% endif %}
             <li class="page-item">
-              <a class="page-link" href="{{ url_for('ranking', page=total_paginas, criterio=criterio, ordem=ordem, uf=uf, partido=partido) }}">{{ total_paginas }}</a>
+              <a class="page-link"
+                href="{{ url_for('ranking', page=total_paginas, criterio=criterio, ordem=ordem, uf=uf, partido=partido) }}">{{
+                total_paginas }}</a>
             </li>
-          {% endif %}
+            {% endif %}
 
-          <li class="page-item {% if page == total_paginas %}disabled{% endif %}">
-            <a class="page-link"
-               href="{{ url_for('ranking', page=page+1, criterio=criterio, ordem=ordem, uf=uf, partido=partido) }}"
-               aria-label="Próxima"><i class="bi bi-chevron-right"></i></a>
-          </li>
+            <li class="page-item {% if page == total_paginas %}disabled{% endif %}">
+              <a class="page-link"
+                href="{{ url_for('ranking', page=page+1, criterio=criterio, ordem=ordem, uf=uf, partido=partido) }}"
+                aria-label="Próxima"><i class="bi bi-chevron-right"></i></a>
+            </li>
 
         </ul>
       </nav>
@@ -437,7 +481,8 @@
         </div>
         <div class="col-12 col-md-4">
           <h3 style="color:#fff;font-size:.9rem;margin-bottom:.75rem;">Metodologia</h3>
-          <p>Dados via <a href="https://dadosabertos.camara.leg.br" target="_blank" rel="noopener noreferrer" style="color:var(--amarelo);">API Dados Abertos da Câmara</a>.</p>
+          <p>Dados via <a href="https://dadosabertos.camara.leg.br" target="_blank" rel="noopener noreferrer"
+              style="color:var(--amarelo);">API Dados Abertos da Câmara</a>.</p>
         </div>
       </div>
       <hr class="footer-divider" />
@@ -447,4 +492,5 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

@@ -198,6 +198,18 @@ def coerencia_deputado(id_deputado):
         coerencia=coerencia,
     )
 
+@app.route("/metodologia")
+def metodologia():
+    return render_template("metodologia.html")
+ 
+NAVBAR_ITEM = """
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('metodologia') }}">
+              <i class="bi bi-calculator-fill me-1"></i>Metodologia
+            </a>
+          </li>
+"""
+
 
 # ── Ranking ───────────────────────────────────────────────────
 @app.route("/ranking")

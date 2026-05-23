@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,7 +15,7 @@
     .dep-card {
       background: #fff;
       border-radius: 16px;
-      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .08);
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -25,16 +26,18 @@
       text-decoration: none;
       color: inherit;
     }
+
     .dep-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(0,0,0,.14);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .14);
       color: inherit;
     }
 
     /* Área da foto — retângulo com proporção fixa, fundo neutro */
     .dep-card__foto-wrap {
       width: 100%;
-      aspect-ratio: 3 / 4;          /* retrato */
+      aspect-ratio: 3 / 4;
+      /* retrato */
       background: #f0f2f5;
       display: flex;
       align-items: center;
@@ -42,11 +45,14 @@
       overflow: hidden;
       position: relative;
     }
+
     .dep-card__foto-wrap img {
       width: 100%;
       height: 100%;
-      object-fit: cover;             /* preenche sem cortar rosto */
-      object-position: top center;   /* alinha ao topo p/ rostos */
+      object-fit: cover;
+      /* preenche sem cortar rosto */
+      object-position: top center;
+      /* alinha ao topo p/ rostos */
       display: block;
     }
 
@@ -70,7 +76,7 @@
       position: absolute;
       bottom: 8px;
       right: 8px;
-      background: rgba(29,53,87,.85);
+      background: rgba(29, 53, 87, .85);
       color: #fff;
       font-size: .65rem;
       font-weight: 700;
@@ -84,6 +90,7 @@
       padding: .85rem .75rem .9rem;
       width: 100%;
     }
+
     .dep-card__nome {
       font-size: .82rem;
       font-weight: 700;
@@ -95,6 +102,7 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
+
     .dep-card__partido {
       display: inline-block;
       background: #e8f4f8;
@@ -108,6 +116,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <div class="faixa-nav" role="presentation" aria-hidden="true"></div>
@@ -117,9 +126,8 @@
         <span class="brand-badge" aria-hidden="true">VC</span>
         <span>Voto Consciente<small>Eleições 2026</small></span>
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-              data-bs-target="#menuListagem" aria-controls="menuListagem"
-              aria-expanded="false" aria-label="Abrir menu">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuListagem"
+        aria-controls="menuListagem" aria-expanded="false" aria-label="Abrir menu">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse justify-content-center" id="menuListagem">
@@ -140,6 +148,12 @@
               <span class="badge-novidade">Novo</span>
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('metodologia') }}">
+              <i class="bi bi-calculator-fill me-1"></i>Metodologia
+            </a>
+          </li>
+          
         </ul>
       </div>
     </div>
@@ -157,8 +171,7 @@
       <div class="row g-4">
 
         <!-- ASIDE: FILTROS -->
-        <aside class="col-12 col-lg-3" aria-labelledby="titulo-aside-filtros"
-               style="position: relative; z-index: 10;">
+        <aside class="col-12 col-lg-3" aria-labelledby="titulo-aside-filtros" style="position: relative; z-index: 10;">
           <div class="aside-filtros">
             <h2 id="titulo-aside-filtros">
               <i class="bi bi-funnel-fill"></i> Filtros
@@ -168,9 +181,8 @@
 
               <div class="mb-3">
                 <label for="filtro-nome-list">Nome</label>
-                <input type="search" id="filtro-nome-list" name="nome"
-                       class="form-control" placeholder="Ex.: Maria..."
-                       autocomplete="off" value="{{ nome }}" />
+                <input type="search" id="filtro-nome-list" name="nome" class="form-control" placeholder="Ex.: Maria..."
+                  autocomplete="off" value="{{ nome }}" />
               </div>
 
               <div class="mb-3">
@@ -178,9 +190,9 @@
                 <select id="filtro-uf" name="uf" class="form-select">
                   <option value="">Todos</option>
                   {% for sigla in ['AC','AL','AP','AM','BA','CE','DF','ES','GO',
-                                   'MA','MT','MS','MG','PA','PB','PR','PE','PI',
-                                   'RJ','RN','RS','RO','RR','SC','SP','SE','TO'] %}
-                  <option value="{{ sigla }}" {% if uf == sigla %}selected{% endif %}>{{ sigla }}</option>
+                  'MA','MT','MS','MG','PA','PB','PR','PE','PI',
+                  'RJ','RN','RS','RO','RR','SC','SP','SE','TO'] %}
+                  <option value="{{ sigla }}" {% if uf==sigla %}selected{% endif %}>{{ sigla }}</option>
                   {% endfor %}
                 </select>
               </div>
@@ -190,8 +202,8 @@
                 <select id="filtro-partido-list" name="partido" class="form-select">
                   <option value="">Todos</option>
                   {% for p in ['PT','PL','MDB','UNIÃO','PP','PSD','REPUBLICANOS',
-                               'PDT','PSOL','PSB','PODE','AVANTE','SOLIDARIEDADE','CIDADANIA'] %}
-                  <option value="{{ p }}" {% if partido == p %}selected{% endif %}>{{ p }}</option>
+                  'PDT','PSOL','PSB','PODE','AVANTE','SOLIDARIEDADE','CIDADANIA'] %}
+                  <option value="{{ p }}" {% if partido==p %}selected{% endif %}>{{ p }}</option>
                   {% endfor %}
                 </select>
               </div>
@@ -212,17 +224,17 @@
 
           <div class="resultado-info mb-3" aria-live="polite">
             {% if deputados %}
-              {% set inicio = ((current_page - 1) * 12) + 1 %}
-              {% set fim    = (current_page - 1) * 12 + deputados|length %}
-              Exibindo <strong>{{ inicio }}</strong>–<strong>{{ fim }}</strong>
-              deputados
-              {%- if uf or partido or nome %} filtrados por
-                {%- if nome %} <em>"{{ nome }}"</em>{% endif %}
-                {%- if uf %} <em>{{ uf }}</em>{% endif %}
-                {%- if partido %} <em>{{ partido }}</em>{% endif %}
-              {%- endif %}
+            {% set inicio = ((current_page - 1) * 12) + 1 %}
+            {% set fim = (current_page - 1) * 12 + deputados|length %}
+            Exibindo <strong>{{ inicio }}</strong>–<strong>{{ fim }}</strong>
+            deputados
+            {%- if uf or partido or nome %} filtrados por
+            {%- if nome %} <em>"{{ nome }}"</em>{% endif %}
+            {%- if uf %} <em>{{ uf }}</em>{% endif %}
+            {%- if partido %} <em>{{ partido }}</em>{% endif %}
+            {%- endif %}
             {% else %}
-              Nenhum deputado encontrado.
+            Nenhum deputado encontrado.
             {% endif %}
           </div>
 
@@ -231,20 +243,17 @@
             {% for dep in deputados %}
             <div class="col-6 col-sm-4 col-md-3">
               {# Card inteiro é o link — sem stretched-link, sem z-index vazando #}
-              <a href="{{ url_for('deputado_detalhe', id_deputado=dep.id) }}"
-                 class="dep-card"
-                 aria-label="Ver perfil de {{ dep.nome }}">
+              <a href="{{ url_for('deputado_detalhe', id_deputado=dep.id) }}" class="dep-card"
+                aria-label="Ver perfil de {{ dep.nome }}">
 
                 <div class="dep-card__foto-wrap">
                   {% if dep.url_foto %}
-                    <img src="{{ dep.url_foto }}"
-                         alt="Foto oficial de {{ dep.nome }}"
-                         loading="lazy" />
+                  <img src="{{ dep.url_foto }}" alt="Foto oficial de {{ dep.nome }}" loading="lazy" />
                   {% else %}
-                    <div class="dep-card__iniciais">
-                      {{ dep.nome.split()[0][0] -}}
-                      {{- dep.nome.split()[1][0] if dep.nome.split()|length > 1 else '' }}
-                    </div>
+                  <div class="dep-card__iniciais">
+                    {{ dep.nome.split()[0][0] -}}
+                    {{- dep.nome.split()[1][0] if dep.nome.split()|length > 1 else '' }}
+                  </div>
                   {% endif %}
                   <span class="dep-card__uf">{{ dep.sigla_uf }}</span>
                 </div>
@@ -274,48 +283,49 @@
 
               <li class="page-item {% if current_page == 1 %}disabled{% endif %}">
                 <a class="page-link"
-                   href="{{ url_for('listagem', page=current_page-1, uf=uf, partido=partido, nome=nome) }}"
-                   aria-label="Anterior">
+                  href="{{ url_for('listagem', page=current_page-1, uf=uf, partido=partido, nome=nome) }}"
+                  aria-label="Anterior">
                   <i class="bi bi-chevron-left"></i>
                 </a>
               </li>
 
               {% set p_start = [1, current_page - 2]|max %}
-              {% set p_end   = [total_paginas, current_page + 2]|min %}
+              {% set p_end = [total_paginas, current_page + 2]|min %}
 
               {% if p_start > 1 %}
-                <li class="page-item">
-                  <a class="page-link" href="{{ url_for('listagem', page=1, uf=uf, partido=partido, nome=nome) }}">1</a>
-                </li>
-                {% if p_start > 2 %}
-                  <li class="page-item disabled"><span class="page-link">…</span></li>
-                {% endif %}
+              <li class="page-item">
+                <a class="page-link" href="{{ url_for('listagem', page=1, uf=uf, partido=partido, nome=nome) }}">1</a>
+              </li>
+              {% if p_start > 2 %}
+              <li class="page-item disabled"><span class="page-link">…</span></li>
+              {% endif %}
               {% endif %}
 
               {% for p in range(p_start, p_end + 1) %}
-              <li class="page-item {% if p == current_page %}active{% endif %}"
-                  {% if p == current_page %}aria-current="page"{% endif %}>
-                <a class="page-link"
-                   href="{{ url_for('listagem', page=p, uf=uf, partido=partido, nome=nome) }}">{{ p }}</a>
+              <li class="page-item {% if p == current_page %}active{% endif %}" {% if p==current_page
+                %}aria-current="page" {% endif %}>
+                <a class="page-link" href="{{ url_for('listagem', page=p, uf=uf, partido=partido, nome=nome) }}">{{ p
+                  }}</a>
               </li>
               {% endfor %}
 
-              {% if p_end < total_paginas %}
-                {% if p_end < total_paginas - 1 %}
-                  <li class="page-item disabled"><span class="page-link">…</span></li>
+              {% if p_end < total_paginas %} {% if p_end < total_paginas - 1 %} <li class="page-item disabled"><span
+                  class="page-link">…</span></li>
                 {% endif %}
                 <li class="page-item">
-                  <a class="page-link" href="{{ url_for('listagem', page=total_paginas, uf=uf, partido=partido, nome=nome) }}">{{ total_paginas }}</a>
+                  <a class="page-link"
+                    href="{{ url_for('listagem', page=total_paginas, uf=uf, partido=partido, nome=nome) }}">{{
+                    total_paginas }}</a>
                 </li>
-              {% endif %}
+                {% endif %}
 
-              <li class="page-item {% if not tem_proxima %}disabled{% endif %}">
-                <a class="page-link"
-                   href="{{ url_for('listagem', page=current_page+1, uf=uf, partido=partido, nome=nome) }}"
-                   aria-label="Próxima">
-                  <i class="bi bi-chevron-right"></i>
-                </a>
-              </li>
+                <li class="page-item {% if not tem_proxima %}disabled{% endif %}">
+                  <a class="page-link"
+                    href="{{ url_for('listagem', page=current_page+1, uf=uf, partido=partido, nome=nome) }}"
+                    aria-label="Próxima">
+                    <i class="bi bi-chevron-right"></i>
+                  </a>
+                </li>
 
             </ul>
           </nav>
@@ -346,7 +356,8 @@
         </div>
         <div class="col-12 col-md-4">
           <h3 style="color:#fff;font-size:.9rem;margin-bottom:.75rem;">Fontes de dados</h3>
-          <p>Dados via <a href="https://dadosabertos.camara.leg.br" target="_blank" rel="noopener noreferrer" style="color:var(--amarelo);">API Dados Abertos da Câmara</a>.</p>
+          <p>Dados via <a href="https://dadosabertos.camara.leg.br" target="_blank" rel="noopener noreferrer"
+              style="color:var(--amarelo);">API Dados Abertos da Câmara</a>.</p>
         </div>
       </div>
       <hr class="footer-divider" />
@@ -356,4 +367,5 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
