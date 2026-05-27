@@ -101,8 +101,6 @@ CREATE TABLE IF NOT EXISTS discursos_temas (
     FOREIGN KEY (cod_tema)    REFERENCES temas(cod)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-TRUNCATE TABLE discursos_temas;
-
 CREATE INDEX idx_presenca_dep ON presencas(id_deputado);
 CREATE INDEX idx_despesas_deputado ON despesas(id_deputado);
 CREATE INDEX idx_despesas_ano ON despesas(ano);
