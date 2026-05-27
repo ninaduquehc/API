@@ -1,26 +1,17 @@
--- database/schema.sql
-
--- Criação do banco
 CREATE DATABASE IF NOT EXISTS camara_db;
-
--- Seleciona o banco
 USE camara_db;
 
--- =========================
--- TABELA DEPUTADOS
--- =========================
-CREATE TABLE deputados (
+CREATE TABLE IF NOT EXISTS deputados (
     id INT PRIMARY KEY,
-    nome VARCHAR(255),
-    sigla_partido VARCHAR(100),
-    sigla_uf VARCHAR(10),
+    nome VARCHAR(255) NOT NULL,
+    sigla_partido VARCHAR(20),
+    sigla_uf VARCHAR(20),
     url_foto TEXT,
-    email VARCHAR(255)
+    email VARCHAR(255),
+    cargo_partido VARCHAR(50)
 );
 
--- =========================
--- TABELA DESPESAS
--- =========================
+
 CREATE TABLE IF NOT EXISTS despesas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_deputado INT NOT NULL,
@@ -47,10 +38,9 @@ CREATE TABLE IF NOT EXISTS presencas (
     faltas INT,
     percentual_presenca DECIMAL(5,2),
     percentual_faltas DECIMAL(5,2),
-     -- Impede duplicidade de registro para o mesmo deputado no mesmo ano
+
     UNIQUE KEY unique_dep_ano (id_deputado, ano),
 
-    -- Relacionamento com a tabela de deputados
     FOREIGN KEY (id_deputado) REFERENCES deputados(id)
 );
 
@@ -81,17 +71,43 @@ CREATE TABLE IF NOT EXISTS proposicoes_temas (
     FOREIGN KEY (cod_tema)      REFERENCES temas(cod)
 );
 
+CREATE TABLE IF NOT EXISTS discursos (
+    id               INT          NOT NULL AUTO_INCREMENT,
+    id_deputado      INT          NOT NULL,
+    ano              YEAR         NOT NULL,
+    data_hora_inicio DATETIME     NOT NULL,
+    data_hora_fim    DATETIME         NULL,
+    tipo_discurso    VARCHAR(100)     NULL,
+    sumario          TEXT             NULL,
+    keywords         TEXT             NULL,
+    fase_evento      VARCHAR(200)     NULL,
+    transcricao      LONGTEXT         NULL,
+    uri_evento       VARCHAR(500)     NULL,
+ 
+    PRIMARY KEY (id),
+    UNIQUE  KEY uq_discurso          (id_deputado, data_hora_inicio),
+    FOREIGN KEY (id_deputado) REFERENCES deputados(id) ON DELETE CASCADE,
+    INDEX idx_discursos_ano          (ano),
+    INDEX idx_discursos_deputado     (id_deputado),
+    INDEX idx_discursos_tipo         (tipo_discurso)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =========================
--- ÍNDICES
--- =========================
+CREATE TABLE IF NOT EXISTS discursos_temas (
+    id_discurso INT          NOT NULL,
+    cod_tema    VARCHAR(20)  NOT NULL,
+ 
+    PRIMARY KEY (id_discurso, cod_tema),
+    FOREIGN KEY (id_discurso) REFERENCES discursos(id) ON DELETE CASCADE,
+    FOREIGN KEY (cod_tema)    REFERENCES temas(cod)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+TRUNCATE TABLE discursos_temas;
+
+CREATE INDEX idx_presenca_dep ON presencas(id_deputado);
 CREATE INDEX idx_despesas_deputado ON despesas(id_deputado);
 CREATE INDEX idx_despesas_ano ON despesas(ano);
 CREATE UNIQUE INDEX idx_doc_unique ON despesas(id_documento);
 CREATE INDEX idx_proposicoes_deputado ON proposicoes(id_deputado);
 CREATE INDEX idx_proposicoes_ano      ON proposicoes(ano);
 CREATE INDEX idx_proposicoes_tipo     ON proposicoes(sigla_tipo);
-
-
-
 
