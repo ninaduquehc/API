@@ -462,6 +462,33 @@ def buscar_ranking_proposicoes_deputado(id_deputado):
     return resultado
 
 
+def buscar_total_proposicoes_aprovadas_deputado(id_deputado, ano_minimo=None):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    query = """
+        SELECT COUNT(*)
+        FROM proposicoes p
+        WHERE p.id_deputado = %s
+          AND (
+              p.situacao LIKE '%Aprovad%'
+              OR p.situacao = 'Transformado em Norma Jurídica'
+          )
+    """
+    params = [id_deputado]
+
+    if ano_minimo:
+        query += " AND p.ano >= %s"
+        params.append(ano_minimo)
+
+    cursor.execute(query, params)
+    total = cursor.fetchone()[0] or 0
+
+    cursor.close()
+    conn.close()
+    return total
+
+
 def contar_ranking_pl(uf=None):
     conn   = get_connection()
     cursor = conn.cursor()

@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, abort, redirect, url_for
 import requests as http_requests
+from datetime import datetime
 
 from database.repository import (
     buscar_deputados,
@@ -15,8 +16,10 @@ from database.repository import (
     media_presenca_estado,
     contar_ranking,
     buscar_ranking_proposicoes_deputado,
+    buscar_total_proposicoes_aprovadas_deputado,
     buscar_dados_ranking_pl,
     buscar_resumo_coerencia,
+    buscar_todos_deputados,
 )
 from src.utils.data_processor import processar_metricas_pandas, gasto_total_numerico
 from src.utils.ceap import resumo_ceap_deputado, formatar_resumo_ceap_exibicao
@@ -135,7 +138,7 @@ def deputado_detalhe(id_deputado):
     media_estado    = media_presenca_estado(deputado["sigla_uf"])
     ranking_prop    = buscar_ranking_proposicoes_deputado(id_deputado)
     posicao_prop    = ranking_prop["posicao"]         if ranking_prop else None
-    total_aprovadas = ranking_prop["total_aprovadas"] if ranking_prop else 0
+    total_aprovadas = buscar_total_proposicoes_aprovadas_deputado(id_deputado)
     valor_presenca  = float(presenca["percentual_presenca"]) if presenca else 0.0
     cargo_partido   = deputado.get("cargo_partido") or "Membro"
 
@@ -201,6 +204,155 @@ def coerencia_deputado(id_deputado):
 @app.route("/metodologia")
 def metodologia():
     return render_template("metodologia.html")
+
+
+def _cargo_label(deputado):
+    cargo = (deputado or {}).get("cargo_partido") or ""
+    cargo = cargo.strip().lower()
+    if cargo in {"presidente", "lider", "líder", "vice-lider", "vice-líder"}:
+        return cargo.title()
+    return "Membro"
+
+
+def _formatar_moeda_br(valor):
+    texto = f"{valor:,.2f}"
+    return "R$ " + texto.replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def _formatar_numero_br(valor):
+    return f"{int(round(valor)):,}".replace(",", ".")
+
+
+def _formatar_percentual(valor):
+    return f"{valor:.1f}%".replace(".", ",")
+
+
+def _filtro_periodo(periodo):
+    agora = datetime.now()
+    if periodo == "12m":
+        return agora.year - 1
+    if periodo == "24m":
+        return agora.year - 2
+    if periodo == "48m":
+        return agora.year - 4
+    return None
+
+
+def _normalizar_indicador(nome, icone, valor1, valor2, melhor_maior=True, formatter=str):
+    limite = max(valor1, valor2, 0.0)
+    if limite <= 0:
+        barra1 = 0.0
+        barra2 = 0.0
+        melhor = 0
+    else:
+        barra1 = (valor1 / limite) * 100
+        barra2 = (valor2 / limite) * 100
+        if valor1 == valor2:
+            melhor = 0
+        elif melhor_maior:
+            melhor = 1 if valor1 > valor2 else 2
+        else:
+            melhor = 1 if valor1 < valor2 else 2
+
+    return {
+        "nome": nome,
+        "icone": icone,
+        "valor1": formatter(valor1),
+        "valor2": formatter(valor2),
+        "barra1": round(barra1, 1),
+        "barra2": round(barra2, 1),
+        "melhor": melhor,
+        "disponivel": True,
+    }
+
+
+@app.route("/comparacao")
+def comparacao():
+    lista_deputados = buscar_todos_deputados()
+    id1 = request.args.get("id1", type=int)
+    id2 = request.args.get("id2", type=int)
+    periodo = request.args.get("periodo", "24m")
+
+    periodos = [
+        {"valor": "12m", "rotulo": "Últimos 12 meses"},
+        {"valor": "24m", "rotulo": "Últimos 24 meses"},
+        {"valor": "48m", "rotulo": "Últimos 48 meses"},
+        {"valor": "todo", "rotulo": "Histórico completo"},
+    ]
+    valores_periodo = {p["valor"] for p in periodos}
+    if periodo not in valores_periodo:
+        periodo = "24m"
+
+    dep1 = buscar_deputado_por_id(id1) if id1 else None
+    dep2 = buscar_deputado_por_id(id2) if id2 else None
+
+    indicadores = []
+    sintese1 = "Selecione o deputado para gerar a síntese."
+    sintese2 = "Selecione o deputado para gerar a síntese."
+
+    if dep1:
+        dep1["cargo_label"] = _cargo_label(dep1)
+    if dep2:
+        dep2["cargo_label"] = _cargo_label(dep2)
+
+    if dep1 and dep2:
+        ano_minimo = _filtro_periodo(periodo)
+
+        despesas1 = buscar_despesas_deputado(dep1["id"])
+        despesas2 = buscar_despesas_deputado(dep2["id"])
+
+        if ano_minimo is not None:
+            despesas1 = [d for d in despesas1 if (d.get("ano") or 0) >= ano_minimo]
+            despesas2 = [d for d in despesas2 if (d.get("ano") or 0) >= ano_minimo]
+
+        gasto1 = sum(float(d.get("valorDocumento") or 0) for d in despesas1)
+        gasto2 = sum(float(d.get("valorDocumento") or 0) for d in despesas2)
+
+        presenca1 = buscar_presenca_deputado(dep1["id"]) or {}
+        presenca2 = buscar_presenca_deputado(dep2["id"]) or {}
+        pct_presenca1 = float(presenca1.get("percentual_presenca") or 0.0)
+        pct_presenca2 = float(presenca2.get("percentual_presenca") or 0.0)
+
+        aprovadas1 = float(buscar_total_proposicoes_aprovadas_deputado(dep1["id"], ano_minimo))
+        aprovadas2 = float(buscar_total_proposicoes_aprovadas_deputado(dep2["id"], ano_minimo))
+
+        coerencia1 = buscar_resumo_coerencia(dep1["id"], anos=3)
+        coerencia2 = buscar_resumo_coerencia(dep2["id"], anos=3)
+        indice1 = float(coerencia1.get("indice_medio") or 0.0)
+        indice2 = float(coerencia2.get("indice_medio") or 0.0)
+        temas1 = float(coerencia1.get("total_temas") or 0.0)
+        temas2 = float(coerencia2.get("total_temas") or 0.0)
+
+        indicadores = [
+            _normalizar_indicador("Presença em plenário", "✅", pct_presenca1, pct_presenca2, True, _formatar_percentual),
+            _normalizar_indicador("Projetos aprovados", "📜", aprovadas1, aprovadas2, True, _formatar_numero_br),
+            _normalizar_indicador("Índice de coerência", "🎯", indice1, indice2, True, _formatar_percentual),
+            _normalizar_indicador("Temas com atuação", "🧭", temas1, temas2, True, _formatar_numero_br),
+            _normalizar_indicador("Gasto declarado", "💸", gasto1, gasto2, False, _formatar_moeda_br),
+        ]
+
+        sintese1 = (
+            f"{dep1['nome'].split()[0]} registra {_formatar_percentual(pct_presenca1)} de presença, "
+            f"{_formatar_numero_br(aprovadas1)} projetos aprovados e {_formatar_moeda_br(gasto1)} "
+            "de gasto declarado no período selecionado."
+        )
+        sintese2 = (
+            f"{dep2['nome'].split()[0]} registra {_formatar_percentual(pct_presenca2)} de presença, "
+            f"{_formatar_numero_br(aprovadas2)} projetos aprovados e {_formatar_moeda_br(gasto2)} "
+            "de gasto declarado no período selecionado."
+        )
+
+    return render_template(
+        "comparacao.html",
+        lista_deputados=lista_deputados,
+        dep1=dep1,
+        dep2=dep2,
+        periodo=periodo,
+        periodos=periodos,
+        indicadores=indicadores,
+        sintese1=sintese1,
+        sintese2=sintese2,
+    )
  
 NAVBAR_ITEM = """
           <li class="nav-item">

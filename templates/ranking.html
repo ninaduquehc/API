@@ -214,6 +214,11 @@
             </a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('comparacao') }}">
+              <i class="bi bi-columns-gap me-1" aria-hidden="true"></i>Comparar Deputados
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="{{ url_for('listagem') }}">
               <i class="bi bi-people-fill me-1"></i>Listagem de Deputados
               <span class="badge-novidade">Novo</span>
@@ -477,6 +482,7 @@
             <a href="{{ url_for('home') }}"><i class="bi bi-house me-1"></i>Home</a>
             <a href="{{ url_for('ranking') }}"><i class="bi bi-trophy me-1"></i>Ranking</a>
             <a href="{{ url_for('listagem') }}"><i class="bi bi-people me-1"></i>Listagem</a>
+            <a href="{{ url_for('comparacao') }}"><i class="bi bi-columns-gap me-1"></i>Comparar</a>
           </nav>
         </div>
         <div class="col-12 col-md-4">
