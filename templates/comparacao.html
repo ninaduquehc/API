@@ -12,265 +12,208 @@
 </head>
 
 <body>
+  {% extends "base.html" %}
 
-<div class="faixa-nav" role="presentation" aria-hidden="true"></div>
-<nav class="navbar navbar-site navbar-expand-lg" aria-label="Navegação principal">
-  <div class="container justify-content-center">
-    <a class="navbar-brand navbar-brand-logo me-lg-4" href="{{ url_for('home') }}"
-      aria-label="Voto Consciente 2026">
-      <span class="brand-badge" aria-hidden="true">VC</span>
-      <span>Voto Consciente<small>Eleições 2026</small></span>
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-      data-bs-target="#menuComparacao" aria-controls="menuComparacao" aria-expanded="false"
-      aria-label="Abrir menu">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse justify-content-center" id="menuComparacao">
-      <ul class="navbar-nav gap-lg-1">
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('home') }}">
-            <i class="bi bi-house-fill me-1"></i>Home
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('ranking') }}">
-            <i class="bi bi-trophy-fill me-1"></i>Ranking de Deputados
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" href="{{ url_for('comparacao') }}" aria-current="page">
-            <i class="bi bi-columns-gap me-1"></i>Comparar Deputados
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('listagem') }}">
-            <i class="bi bi-people-fill me-1"></i>Listagem de Deputados
-            <span class="badge-novidade">Novo</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('metodologia') }}">
-            <i class="bi bi-calculator-fill me-1"></i>Metodologia
-          </a>
-        </li>
-      </ul>
+  {% block title %}VeritasCode - Ranking{% endblock %}
+
+  {% block content %}
+  
+  <div class="faixa-nav" role="presentation" aria-hidden="true"></div>
+
+  
+  <header class="ranking-header" role="banner">
+    <div class="container">
+      <h1><i class="bi bi-columns-gap me-2"></i>Comparação de Deputados</h1>
+      <p>Selecione dois deputados e compare indicadores no período escolhido.</p>
     </div>
-  </div>
-</nav>
+  </header>
 
-<header class="ranking-header" role="banner">
-  <div class="container">
-    <h1><i class="bi bi-columns-gap me-2"></i>Comparação de Deputados</h1>
-    <p>Selecione dois deputados e compare indicadores no período escolhido.</p>
-  </div>
-</header>
-
-<main class="container section-py">
-  <div class="comparacao-layout">
-  <aside class="comparacao-sidebar" aria-label="Painel de seleção">
-    <h2>Comparar Deputados</h2>
-    <p class="sidebar-label">Selecione os deputados</p>
-    <div class="comparacao-search-wrap">
-      <label class="busca-label" for="buscaDeputadosComparacao">Pesquisar deputados</label>
-      <input
-        id="buscaDeputadosComparacao"
-        type="search"
-        class="comparacao-search-input"
-        placeholder="Digite parte do nome..."
-        autocomplete="off"
-        aria-label="Pesquisar deputado para filtrar as listas"
-      >
-    </div>
-
-    {#
-      Formulário principal: seleciona dep1, dep2 e período.
-      Sem JS: o usuário escolhe e clica em "Comparar".
-    #}
-    <form method="GET" action="{{ url_for('comparacao') }}" id="formComparacao">
-
-      <div class="deputado-select-wrap">
-        <label class="busca-label" for="selectDep1">Deputado 1</label>
-        <select id="selectDep1" name="id1" class="select-nativo" aria-label="Selecionar Deputado 1">
-          <option value="">— Selecione —</option>
-          {% for dep in lista_deputados %}
-          <option value="{{ dep.id }}"
-            {% if dep1 and dep.id == dep1.id %}selected{% endif %}>
-            {{ dep.nome }}
-          </option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div class="deputado-select-wrap">
-        <label class="busca-label" for="selectDep2">Deputado 2</label>
-        <select id="selectDep2" name="id2" class="select-nativo" aria-label="Selecionar Deputado 2">
-          <option value="">— Selecione —</option>
-          {% for dep in lista_deputados %}
-          <option value="{{ dep.id }}"
-            {% if dep2 and dep.id == dep2.id %}selected{% endif %}>
-            {{ dep.nome }}
-          </option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div class="periodo-section" style="margin-top: 16px;">
-        <h3>Período analisado</h3>
-        <select name="periodo" id="selectPeriodo" class="periodo-select">
-          {% for p in periodos %}
-          <option value="{{ p.valor }}" {% if periodo == p.valor %}selected{% endif %}>
-            {{ p.rotulo }}
-          </option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <button type="submit" class="btn-comparar">
-        <span aria-hidden="true">🔍</span> Comparar
-      </button>
-    </form>
-
-    <div class="comparacao-actions">
-
-      {#
-        Trocar: form separado com id1 e id2 invertidos.
-        Só aparece quando ambos estão selecionados.
-      #}
-      {% if dep1 and dep2 %}
-      <form method="GET" action="{{ url_for('comparacao') }}">
-        <input type="hidden" name="id1" value="{{ dep2.id }}">
-        <input type="hidden" name="id2" value="{{ dep1.id }}">
-        <input type="hidden" name="periodo" value="{{ periodo }}">
-        <button type="submit" class="btn-trocar" title="Trocar posições dos deputados">
-          <span aria-hidden="true">⇄</span> Trocar posições
-        </button>
-      </form>
-      {% else %}
-      <button type="button" class="btn-trocar" disabled title="Selecione dois deputados primeiro">
-        <span aria-hidden="true">⇄</span> Trocar posições
-      </button>
-      {% endif %}
-
-      {# Limpar: simples link para /comparacao sem parâmetros #}
-      <a href="{{ url_for('comparacao') }}" class="btn-limpar-selecao" title="Limpar seleção">
-        <span aria-hidden="true">🗑</span> Limpar seleção
-      </a>
-    </div>
-
-    <div class="info-box" role="note">
-      <span class="info-box-icon" aria-hidden="true">i</span>
-      <span>A comparação exibe os principais indicadores de atividade parlamentar no período selecionado.</span>
-    </div>
-  </aside>
-
-  <div class="comparacao-main">
-    {% if dep1 and dep2 %}
-
-    <section class="comparacao-card" aria-labelledby="titulo-comparacao">
-      <h2 id="titulo-comparacao">Comparação de Deputados</h2>
-      <div class="vs-header">
-        <div class="vs-profile">
-          <img
-            src="{{ dep1.url_foto }}"
-            alt="Foto oficial de {{ dep1.nome }}"
-            width="120"
-            height="158"
-          >
-          <h3>{{ dep1.nome }}</h3>
-          <p class="partido">{{ dep1.sigla_partido }} - {{ dep1.sigla_uf }}</p>
-          <span class="badge-cargo">{{ dep1.cargo_label }}</span>
+  <main class="container section-py">
+    <div class="comparacao-layout">
+      <aside class="comparacao-sidebar" aria-label="Painel de seleção">
+        <h2>Comparar Deputados</h2>
+        <p class="sidebar-label">Selecione os deputados</p>
+        <div class="comparacao-search-wrap">
+          <label class="busca-label" for="buscaDeputadosComparacao">Pesquisar deputados</label>
+          <input id="buscaDeputadosComparacao" type="search" class="comparacao-search-input"
+            placeholder="Digite parte do nome..." autocomplete="off"
+            aria-label="Pesquisar deputado para filtrar as listas">
         </div>
 
-        <div class="vs-circle" role="separator" aria-label="versus">VS</div>
+        {#
+        Formulário principal: seleciona dep1, dep2 e período.
+        Sem JS: o usuário escolhe e clica em "Comparar".
+        #}
+        <form method="GET" action="{{ url_for('comparacao') }}" id="formComparacao">
 
-        <div class="vs-profile">
-          <img
-            src="{{ dep2.url_foto }}"
-            alt="Foto oficial de {{ dep2.nome }}"
-            width="120"
-            height="158"
-          >
-          <h3>{{ dep2.nome }}</h3>
-          <p class="partido">{{ dep2.sigla_partido }} - {{ dep2.sigla_uf }}</p>
-          <span class="badge-cargo">{{ dep2.cargo_label }}</span>
-        </div>
-      </div>
-    </section>
+          <div class="deputado-select-wrap">
+            <label class="busca-label" for="selectDep1">Deputado 1</label>
+            <select id="selectDep1" name="id1" class="select-nativo" aria-label="Selecionar Deputado 1">
+              <option value="">— Selecione —</option>
+              {% for dep in lista_deputados %}
+              <option value="{{ dep.id }}" {% if dep1 and dep.id==dep1.id %}selected{% endif %}>
+                {{ dep.nome }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
 
-    <section class="comparacao-card sintese-card" aria-labelledby="titulo-sintese">
-      <h2 id="titulo-sintese">Síntese Geral</h2>
-      <div class="sintese-grid">
-        <div class="sintese-col">
-          <strong>{{ dep1.nome.split()[0] if dep1.nome else 'Deputado 1' }}</strong>
-          {{ sintese1 }}
-        </div>
-        <div class="sintese-col">
-          <strong>{{ dep2.nome.split()[0] if dep2.nome else 'Deputado 2' }}</strong>
-          {{ sintese2 }}
-        </div>
-      </div>
-    </section>
+          <div class="deputado-select-wrap">
+            <label class="busca-label" for="selectDep2">Deputado 2</label>
+            <select id="selectDep2" name="id2" class="select-nativo" aria-label="Selecionar Deputado 2">
+              <option value="">— Selecione —</option>
+              {% for dep in lista_deputados %}
+              <option value="{{ dep.id }}" {% if dep2 and dep.id==dep2.id %}selected{% endif %}>
+                {{ dep.nome }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
 
-    <section class="comparacao-card indicadores-card" aria-labelledby="titulo-indicadores">
-      <h2 id="titulo-indicadores">Indicadores de Desempenho</h2>
+          <div class="periodo-section" style="margin-top: 16px;">
+            <h3>Período analisado</h3>
+            <select name="periodo" id="selectPeriodo" class="periodo-select">
+              {% for p in periodos %}
+              <option value="{{ p.valor }}" {% if periodo==p.valor %}selected{% endif %}>
+                {{ p.rotulo }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
 
-      {% for ind in indicadores %}
-      <div class="indicador-row {% if ind.disponivel is defined and not ind.disponivel %}indisponivel{% endif %}" role="row">
-        <div class="indicador-icon" aria-hidden="true">{{ ind.icone }}</div>
-        <div class="indicador-nome">{{ ind.nome }}</div>
+          <button type="submit" class="btn-comparar">
+            <span aria-hidden="true">🔍</span> Comparar
+          </button>
+        </form>
 
-        <div class="indicador-valor {% if ind.melhor == 1 %}melhor{% endif %}"
-             aria-label="{{ dep1.nome }}: {{ ind.valor1 }}{% if ind.melhor == 1 %} (melhor){% endif %}">
-          {{ ind.valor1 }}
-        </div>
-        <div class="indicador-bar-track" aria-hidden="true">
-          <div
-            class="indicador-bar-fill {% if ind.melhor != 1 %}secundario{% endif %}"
-            style="width: {{ ind.barra1 }}%;"
-          ></div>
-        </div>
+        <div class="comparacao-actions">
 
-        <div class="indicador-trend" aria-hidden="true">
-          {% if ind.melhor == 1 %}
-          <span class="trend-up" title="{{ dep1.nome }} tem melhor desempenho">▲</span>
-          {% elif ind.melhor == 2 %}
-          <span class="trend-down" title="{{ dep2.nome }} tem melhor desempenho">▼</span>
+          {#
+          Trocar: form separado com id1 e id2 invertidos.
+          Só aparece quando ambos estão selecionados.
+          #}
+          {% if dep1 and dep2 %}
+          <form method="GET" action="{{ url_for('comparacao') }}">
+            <input type="hidden" name="id1" value="{{ dep2.id }}">
+            <input type="hidden" name="id2" value="{{ dep1.id }}">
+            <input type="hidden" name="periodo" value="{{ periodo }}">
+            <button type="submit" class="btn-trocar" title="Trocar posições dos deputados">
+              <span aria-hidden="true">⇄</span> Trocar posições
+            </button>
+          </form>
           {% else %}
-          <span class="trend-neutral">—</span>
+          <button type="button" class="btn-trocar" disabled title="Selecione dois deputados primeiro">
+            <span aria-hidden="true">⇄</span> Trocar posições
+          </button>
           {% endif %}
+
+          {# Limpar: simples link para /comparacao sem parâmetros #}
+          <a href="{{ url_for('comparacao') }}" class="btn-limpar-selecao" title="Limpar seleção">
+            <span aria-hidden="true">🗑</span> Limpar seleção
+          </a>
         </div>
 
-        <div class="indicador-valor {% if ind.melhor == 2 %}melhor{% endif %}"
-             aria-label="{{ dep2.nome }}: {{ ind.valor2 }}{% if ind.melhor == 2 %} (melhor){% endif %}">
-          {{ ind.valor2 }}
+        <div class="info-box" role="note">
+          <span class="info-box-icon" aria-hidden="true">i</span>
+          <span>A comparação exibe os principais indicadores de atividade parlamentar no período selecionado.</span>
         </div>
-        <div class="indicador-bar-track" aria-hidden="true">
-          <div
-            class="indicador-bar-fill {% if ind.melhor != 2 %}secundario{% endif %}"
-            style="width: {{ ind.barra2 }}%;"
-          ></div>
+      </aside>
+
+      <div class="comparacao-main">
+        {% if dep1 and dep2 %}
+
+        <section class="comparacao-card" aria-labelledby="titulo-comparacao">
+          <h2 id="titulo-comparacao">Comparação de Deputados</h2>
+          <div class="vs-header">
+            <div class="vs-profile">
+              <img src="{{ dep1.url_foto }}" alt="Foto oficial de {{ dep1.nome }}" width="120" height="158">
+              <h3>{{ dep1.nome }}</h3>
+              <p class="partido">{{ dep1.sigla_partido }} - {{ dep1.sigla_uf }}</p>
+              <span class="badge-cargo">{{ dep1.cargo_label }}</span>
+            </div>
+
+            <div class="vs-circle" role="separator" aria-label="versus">VS</div>
+
+            <div class="vs-profile">
+              <img src="{{ dep2.url_foto }}" alt="Foto oficial de {{ dep2.nome }}" width="120" height="158">
+              <h3>{{ dep2.nome }}</h3>
+              <p class="partido">{{ dep2.sigla_partido }} - {{ dep2.sigla_uf }}</p>
+              <span class="badge-cargo">{{ dep2.cargo_label }}</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="comparacao-card sintese-card" aria-labelledby="titulo-sintese">
+          <h2 id="titulo-sintese">Síntese Geral</h2>
+          <div class="sintese-grid">
+            <div class="sintese-col">
+              <strong>{{ dep1.nome.split()[0] if dep1.nome else 'Deputado 1' }}</strong>
+              {{ sintese1 }}
+            </div>
+            <div class="sintese-col">
+              <strong>{{ dep2.nome.split()[0] if dep2.nome else 'Deputado 2' }}</strong>
+              {{ sintese2 }}
+            </div>
+          </div>
+        </section>
+
+        <section class="comparacao-card indicadores-card" aria-labelledby="titulo-indicadores">
+          <h2 id="titulo-indicadores">Indicadores de Desempenho</h2>
+
+          {% for ind in indicadores %}
+          <div class="indicador-row {% if ind.disponivel is defined and not ind.disponivel %}indisponivel{% endif %}"
+            role="row">
+            <div class="indicador-icon" aria-hidden="true">{{ ind.icone }}</div>
+            <div class="indicador-nome">{{ ind.nome }}</div>
+
+            <div class="indicador-valor {% if ind.melhor == 1 %}melhor{% endif %}"
+              aria-label="{{ dep1.nome }}: {{ ind.valor1 }}{% if ind.melhor == 1 %} (melhor){% endif %}">
+              {{ ind.valor1 }}
+            </div>
+            <div class="indicador-bar-track" aria-hidden="true">
+              <div class="indicador-bar-fill {% if ind.melhor != 1 %}secundario{% endif %}"
+                style="width: {{ ind.barra1 }}%;"></div>
+            </div>
+
+            <div class="indicador-trend" aria-hidden="true">
+              {% if ind.melhor == 1 %}
+              <span class="trend-up" title="{{ dep1.nome }} tem melhor desempenho">▲</span>
+              {% elif ind.melhor == 2 %}
+              <span class="trend-down" title="{{ dep2.nome }} tem melhor desempenho">▼</span>
+              {% else %}
+              <span class="trend-neutral">—</span>
+              {% endif %}
+            </div>
+
+            <div class="indicador-valor {% if ind.melhor == 2 %}melhor{% endif %}"
+              aria-label="{{ dep2.nome }}: {{ ind.valor2 }}{% if ind.melhor == 2 %} (melhor){% endif %}">
+              {{ ind.valor2 }}
+            </div>
+            <div class="indicador-bar-track" aria-hidden="true">
+              <div class="indicador-bar-fill {% if ind.melhor != 2 %}secundario{% endif %}"
+                style="width: {{ ind.barra2 }}%;"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </section>
+
+        <div class="comparacao-legend" role="note">
+          <span class="trophy" aria-hidden="true">🏆</span>
+          <span>Os indicadores destacam em verde o melhor desempenho entre os deputados comparados.</span>
         </div>
+
+        {% else %}
+        <section class="comparacao-card comparacao-empty" aria-labelledby="titulo-vazio">
+          <h2 id="titulo-vazio">Comparação de Deputados</h2>
+          <p>Selecione dois deputados na barra lateral e clique em <strong>Comparar</strong> para visualizar a
+            comparação.</p>
+        </section>
+        {% endif %}
       </div>
-      {% endfor %}
-    </section>
-
-    <div class="comparacao-legend" role="note">
-      <span class="trophy" aria-hidden="true">🏆</span>
-      <span>Os indicadores destacam em verde o melhor desempenho entre os deputados comparados.</span>
     </div>
+  </main>
 
-    {% else %}
-    <section class="comparacao-card comparacao-empty" aria-labelledby="titulo-vazio">
-      <h2 id="titulo-vazio">Comparação de Deputados</h2>
-      <p>Selecione dois deputados na barra lateral e clique em <strong>Comparar</strong> para visualizar a comparação.</p>
-    </section>
-    {% endif %}
-  </div>
-  </div>
-</main>
-
-<footer class="site-footer" role="contentinfo">
+  <footer class="site-footer" role="contentinfo">
     <div class="container">
       <div class="row gy-4">
         <div class="col-12 col-md-4">
@@ -300,35 +243,36 @@
     </div>
   </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  (function () {
-    const buscaInput = document.getElementById("buscaDeputadosComparacao");
-    const selectDep1 = document.getElementById("selectDep1");
-    const selectDep2 = document.getElementById("selectDep2");
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (function () {
+      const buscaInput = document.getElementById("buscaDeputadosComparacao");
+      const selectDep1 = document.getElementById("selectDep1");
+      const selectDep2 = document.getElementById("selectDep2");
 
-    if (!buscaInput || !selectDep1 || !selectDep2) return;
+      if (!buscaInput || !selectDep1 || !selectDep2) return;
 
-    function filtrarSelect(select, termo) {
-      const termoNormalizado = termo.trim().toLowerCase();
-      Array.from(select.options).forEach((option, index) => {
-        if (index === 0) {
-          option.hidden = false;
-          return;
-        }
-        const nome = (option.textContent || "").toLowerCase();
-        option.hidden = termoNormalizado ? !nome.includes(termoNormalizado) : false;
+      function filtrarSelect(select, termo) {
+        const termoNormalizado = termo.trim().toLowerCase();
+        Array.from(select.options).forEach((option, index) => {
+          if (index === 0) {
+            option.hidden = false;
+            return;
+          }
+          const nome = (option.textContent || "").toLowerCase();
+          option.hidden = termoNormalizado ? !nome.includes(termoNormalizado) : false;
 
-        if (option.selected) option.hidden = false;
+          if (option.selected) option.hidden = false;
+        });
+      }
+
+      buscaInput.addEventListener("input", function () {
+        filtrarSelect(selectDep1, buscaInput.value);
+        filtrarSelect(selectDep2, buscaInput.value);
       });
-    }
-
-    buscaInput.addEventListener("input", function () {
-      filtrarSelect(selectDep1, buscaInput.value);
-      filtrarSelect(selectDep2, buscaInput.value);
-    });
-  })();
-</script>
+    })();
+  </script>
 </body>
 
 </html>
+{% endblock %}

@@ -11,560 +11,572 @@
 </head>
 
 <body>
+  {% extends "base.html" %}
 
+  {% block title %}VeritasCode - Ranking{% endblock %}
+
+  {% block content %}
   <div class="faixa-nav" role="presentation" aria-hidden="true"></div>
-  <nav class="navbar navbar-site navbar-expand-lg" aria-label="Navegação principal">
-    <div class="container justify-content-center">
-      <a class="navbar-brand navbar-brand-logo me-lg-4" href="{{ url_for('home') }}" aria-label="Voto Consciente 2026">
-        <span class="brand-badge" aria-hidden="true">VC</span>
-        <span>Voto Consciente<small>Eleições 2026</small></span>
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuDeputado"
-        aria-controls="menuDeputado" aria-expanded="false" aria-label="Abrir menu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse justify-content-center" id="menuDeputado">
-        <ul class="navbar-nav gap-lg-1">
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('home') }}"><i class="bi bi-house-fill me-1"></i>Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('ranking') }}"><i class="bi bi-trophy-fill me-1"></i>Ranking</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('comparacao') }}"><i class="bi bi-columns-gap me-1"></i>Comparar</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('listagem') }}"><i class="bi bi-people-fill me-1"></i>Listagem</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('metodologia') }}"><i class="bi bi-calculator-fill me-1"></i>Metodologia</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+
 
   <main class="container section-py" id="conteudo-deputado">
 
-{#
-  CSS: sobrescreve o comportamento das seções para usar <details>/<summary>
-  em vez de classes .open controladas por JS.
-#}
-<style>
-  /* Remove o marcador padrão do <summary> */
-  details.dep-secao > summary { list-style: none; cursor: pointer; }
-  details.dep-secao > summary::-webkit-details-marker { display: none; }
-  details.dep-secao > summary::marker { display: none; }
+    {#
+    CSS: sobrescreve o comportamento das seções para usar <details>/<summary>
+        em vez de classes .open controladas por JS.
+        #}
+        <style>
+          /* Remove o marcador padrão do <summary> */
+          details.dep-secao>summary {
+            list-style: none;
+            cursor: pointer;
+          }
 
-  /* Rotaciona o chevron quando aberto */
-  details.dep-secao[open] > summary .dep-secao__chevron {
-    transform: rotate(180deg);
-  }
+          details.dep-secao>summary::-webkit-details-marker {
+            display: none;
+          }
 
-  /* O <details> revela o conteúdo nativamente; sobrescreve max-height:0 do CSS global */
-  details.dep-secao .dep-secao__body {
-    max-height: none;
-    overflow: visible;
-    padding: 1.25rem 1.5rem 1.5rem;
-  }
+          details.dep-secao>summary::marker {
+            display: none;
+          }
 
-  /* Hover no summary (igual ao botão original) */
-  details.dep-secao > summary:hover { background: var(--cinza-claro); }
-</style>
+          /* Rotaciona o chevron quando aberto */
+          details.dep-secao[open]>summary .dep-secao__chevron {
+            transform: rotate(180deg);
+          }
 
-{# --- Navegação de volta --- #}
-{% set volta = request.args.get('volta', '') %}
-{% if volta %}
-  {% set destino = volta %}
-  {% set label   = "Voltar para ranking" if "/ranking" in volta else "Voltar para lista" %}
-{% else %}
-  {% set destino = "/" %}
-  {% set label   = "Voltar para lista" %}
-{% endif %}
+          /* O <details> revela o conteúdo nativamente; sobrescreve max-height:0 do CSS global */
+          details.dep-secao .dep-secao__body {
+            max-height: none;
+            overflow: visible;
+            padding: 1.25rem 1.5rem 1.5rem;
+          }
 
-<div class="dep-volta-wrap">
-  <a href="{{ destino }}" class="dep-back-link">
-    <i class="bi bi-arrow-left me-1"></i>{{ label }}
-  </a>
-</div>
+          /* Hover no summary (igual ao botão original) */
+          details.dep-secao>summary:hover {
+            background: var(--cinza-claro);
+          }
+        </style>
 
-{# --- Hero / Perfil --- #}
-<div class="dep-hero">
-  <div class="dep-hero__foto-wrap">
-    <img class="dep-hero__foto"
-         src="{{ deputado.url_foto }}"
-         alt="Foto de {{ deputado.nome }}">
-  </div>
+        {# --- Navegação de volta --- #}
+        {% set volta = request.args.get('volta', '') %}
+        {% if volta %}
+        {% set destino = volta %}
+        {% set label = "Voltar para ranking" if "/ranking" in volta else "Voltar para lista" %}
+        {% else %}
+        {% set destino = "/" %}
+        {% set label = "Voltar para listagem de deputados" %}
+        {% endif %}
 
-  <div class="dep-hero__info">
-    <span class="dep-hero__label"><i class="bi bi-person-badge me-1"></i>Deputado Federal</span>
-    <h1 class="dep-hero__nome">{{ deputado.nome }}</h1>
-
-    <div class="dep-hero__badges">
-      <span class="badge-partido">{{ deputado.sigla_partido }} &bull; {{ deputado.sigla_uf }}</span>
-      {% set cargo = deputado.cargo_partido or cargo_partido or 'Membro' %}
-      {% set is_lider = cargo not in ('Membro', '', none) %}
-      <span class="badge-partido" style="{{ 'background:rgba(146,64,14,.12);color:#92400e;border-color:#fbbf24;' if is_lider else '' }}">
-        {{ '👑' if is_lider else '🪑' }} {{ cargo }}
-      </span>
-    </div>
-
-    <div class="dep-hero__grid">
-      {% if detalhes.get('nomeCivil') %}
-      <div class="dep-info-item">
-        <div class="dep-info-label">Nome Civil</div>
-        <div class="dep-info-value">{{ detalhes.nomeCivil }}</div>
-      </div>
-      {% endif %}
-
-      {% if detalhes.get('dataNascimento') %}
-      <div class="dep-info-item">
-        <div class="dep-info-label">Nascimento</div>
-        <div class="dep-info-value">{{ detalhes.dataNascimento }}</div>
-      </div>
-      {% endif %}
-
-      {% set p_val = presenca|float if presenca else 0.0 %}
-      {% set m_val = media|float if media else 0.0 %}
-      {% set diff = p_val - m_val %}
-      <div class="dep-info-item">
-        <div class="dep-info-label">Presença em Votações</div>
-        <div class="dep-info-value" style="color:{{ 'var(--verde-claro)' if diff >= 0 else '#dc2626' }};font-weight:700;">
-          {{ "%.1f"|format(p_val) }}%
-          <span class="dep-presenca-diff">
-            ({{ '+' if diff >= 0 else '' }}{{ "%.1f"|format(diff) }}% vs média {{ deputado.sigla_uf }})
-          </span>
+        <div class="dep-volta-wrap">
+          <a href="{{ destino }}" class="dep-back-link">
+            <i class="bi bi-arrow-left me-1"></i>{{ label }}
+          </a>
         </div>
-      </div>
 
-      {% if deputado.email %}
-      <div class="dep-info-item">
-        <div class="dep-info-label">E-mail</div>
-        <div class="dep-info-value" style="font-size:.88rem;">{{ deputado.email }}</div>
-      </div>
-      {% endif %}
-
-      {% if detalhes.get('gabinete') %}
-      <div class="dep-info-item">
-        <div class="dep-info-label">Gabinete</div>
-        <div class="dep-info-value">Sala {{ detalhes.gabinete.get('sala','-') }}, Prédio {{ detalhes.gabinete.get('anexo','-') }}</div>
-      </div>
-      {% endif %}
-    </div>
-  </div>
-</div>
-
-{# ═══════════════ PROPOSIÇÕES ═══════════════ #}
-{#
-  <details> abre/fecha via HTML nativo.
-  Fica aberto se já houver algum filtro ativo de proposições.
-#}
-<details class="dep-secao" id="proposicoesSection"
-         {% if prop_tipo or prop_ano or prop_situacao %}open{% endif %}>
-
-  <summary class="dep-secao__toggle">
-    <div class="dep-secao__toggle-left">
-      <i class="bi bi-file-earmark-text-fill me-2" aria-hidden="true"></i>
-      <h2>Proposições Legislativas</h2>
-      <span class="dep-secao__badge">{{ proposicoes|length }} resultado(s)</span>
-    </div>
-    <i class="bi bi-chevron-down dep-secao__chevron"></i>
-  </summary>
-
-  {# Preview: sempre visível quando o details está aberto #}
-  <div class="dep-secao__preview">
-    <div class="dep-tipo-pills">
-      {% for sigla, total in totais_tipo.items() %}
-      <div class="dep-tipo-pill">
-        <span class="dep-tipo-sigla">{{ sigla }}</span>
-        <span class="dep-tipo-total">{{ total }}</span>
-      </div>
-      {% endfor %}
-      {% if not totais_tipo %}
-      <span style="color:var(--cinza-texto);font-size:.85rem;">Nenhuma proposição registrada.</span>
-      {% endif %}
-    </div>
-
-    {% if top_temas %}
-    <div class="dep-top-temas">
-      <span class="dep-top-temas__label">Top temas:</span>
-      <div class="dep-top-temas__list">
-        {% for tema in top_temas %}
-        <div class="dep-tema-row">
-          <span class="dep-tema-nome">{{ tema.nome }}</span>
-          <div class="dep-tema-track">
-            <div class="dep-tema-fill" style="width:{{ ((tema.total / top_temas[0].total) * 100)|int }}%"></div>
+        {# --- Hero / Perfil --- #}
+        <div class="dep-hero">
+          <div class="dep-hero__foto-wrap">
+            <img class="dep-hero__foto" src="{{ deputado.url_foto }}" alt="Foto de {{ deputado.nome }}">
           </div>
-          <span class="dep-tema-count">{{ tema.total }}</span>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-  </div>
 
-  <div class="dep-secao__body">
-    <form method="GET" action="/deputado/{{ deputado.id }}#proposicoesSection">
-      {% if filtro_ano %}<input type="hidden" name="ano" value="{{ filtro_ano }}">{% endif %}
-      {% if filtro_mes %}<input type="hidden" name="mes" value="{{ filtro_mes }}">{% endif %}
-      {% if filtro_tipo %}<input type="hidden" name="tipo" value="{{ filtro_tipo }}">{% endif %}
+          <div class="dep-hero__info">
+            <span class="dep-hero__label"><i class="bi bi-person-badge me-1"></i>Deputado Federal</span>
+            <h1 class="dep-hero__nome">{{ deputado.nome }}</h1>
 
-      <div class="dep-filtros-bar">
-        <div class="dep-filtro-group">
-          <label>Tipo</label>
-          <select name="prop_tipo" class="form-select form-select-sm">
-            <option value="">Todos</option>
-            {% for t in ['PL','PDC','PEC'] %}
-            <option value="{{ t }}" {% if prop_tipo==t %}selected{% endif %}>{{ t }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="dep-filtro-group">
-          <label>Ano</label>
-          <select name="prop_ano" class="form-select form-select-sm">
-            <option value="">Todos</option>
-            {% for a in anos_proposicoes %}
-            <option value="{{ a }}" {% if prop_ano|string==a|string %}selected{% endif %}>{{ a }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="dep-filtro-group" style="min-width:200px;">
-          <label>Situação</label>
-          <select name="prop_situacao" class="form-select form-select-sm">
-            <option value="">Todas</option>
-            {% for s in situacoes_prop %}
-            <option value="{{ s }}" {% if prop_situacao==s %}selected{% endif %}>{{ s|truncate(40) }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <button type="submit" class="btn-filtrar">
-          <i class="bi bi-funnel-fill me-1"></i>Filtrar
-        </button>
-        <a href="/deputado/{{ deputado.id }}#proposicoesSection" class="btn-filtrar-limpar">
-          <i class="bi bi-x-lg"></i>
-        </a>
-      </div>
-    </form>
+            <div class="dep-hero__badges">
+              <span class="badge-partido">{{ deputado.sigla_partido }} &bull; {{ deputado.sigla_uf }}</span>
+              {% set cargo = deputado.cargo_partido or cargo_partido or 'Membro' %}
+              {% set is_lider = cargo not in ('Membro', '', none) %}
+              <span class="badge-partido"
+                style="{{ 'background:rgba(146,64,14,.12);color:#92400e;border-color:#fbbf24;' if is_lider else '' }}">
+                {{ '👑' if is_lider else '🪑' }} {{ cargo }}
+              </span>
+            </div>
 
-    {% if proposicoes %}
-    <p class="dep-results-count">{{ proposicoes|length }} proposição(ões) encontrada(s)</p>
-    <div style="overflow-x:auto;">
-      <table class="dep-table">
-        <thead>
-          <tr><th>Tipo</th><th>Número</th><th>Ano</th><th>Situação</th><th>Ementa</th><th>Doc.</th></tr>
-        </thead>
-        <tbody>
-          {% for p in proposicoes %}
-          <tr>
-            <td><span class="dep-tipo-badge">{{ p.sigla_tipo }}</span></td>
-            <td>{{ p.numero }}</td>
-            <td>{{ p.ano }}</td>
-            <td style="font-size:.8rem;color:var(--cinza-texto);">{{ p.situacao|truncate(40) or '-' }}</td>
-            <td style="font-size:.8rem;" title="{{ p.ementa }}">{{ p.ementa|truncate(70) or '-' }}</td>
-            <td>
-              {% if p.url_inteiro_teor %}
-              <a class="dep-doc-link" href="{{ p.url_inteiro_teor }}" target="_blank" aria-label="Ver documento">
-                <i class="bi bi-file-earmark-pdf"></i>
-              </a>
-              {% else %}-{% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <div class="dep-empty">Nenhuma proposição encontrada com os filtros selecionados.</div>
-    {% endif %}
-  </div>
-</details>
-
-{# ═══════════════ COERÊNCIA ═══════════════ #}
-{#
-  Barras e tags calculadas aqui no Jinja, sem JS.
-  max_coe_val usado para normalizar as barras dos pilares.
-#}
-{% set _max_coe = [coerencia.total_discursos, coerencia.total_proposicoes, coerencia.total_aprovacoes]|max %}
-{% set _max_coe = _max_coe if _max_coe > 0 else 1 %}
-
-<details class="dep-secao" id="coerenciaSection">
-
-  <summary class="dep-secao__toggle">
-    <div class="dep-secao__toggle-left">
-      <i class="bi bi-bullseye me-2" aria-hidden="true"></i>
-      <h2>Coerência Parlamentar</h2>
-      <span class="dep-secao__badge">últimos 3 anos</span>
-    </div>
-    <i class="bi bi-chevron-down dep-secao__chevron"></i>
-  </summary>
-
-  <div class="dep-secao__body">
-
-    <div class="coe-pilares">
-      {# Pilar: Discursos #}
-      {% set _disc_pct = ((coerencia.total_discursos / _max_coe) * 100)|int %}
-      <div class="coe-pilar">
-        <div class="coe-pilar__icone">🗣️</div>
-        <div class="coe-pilar__num">{{ coerencia.total_discursos }}</div>
-        <div class="coe-pilar__label">Discursos</div>
-        <div class="coe-pilar__barra-track">
-          <div class="coe-pilar__barra-fill coe-pilar__barra--disc"
-               style="width:{{ _disc_pct }}%;"></div>
-        </div>
-        <div class="coe-pilar__desc">Vezes que discursou em plenário sobre temas com tema identificado</div>
-      </div>
-
-      {# Pilar: Projetos #}
-      {% set _proj_pct = ((coerencia.total_proposicoes / _max_coe) * 100)|int %}
-      <div class="coe-pilar">
-        <div class="coe-pilar__icone">📋</div>
-        <div class="coe-pilar__num">{{ coerencia.total_proposicoes }}</div>
-        <div class="coe-pilar__label">Projetos</div>
-        <div class="coe-pilar__barra-track">
-          <div class="coe-pilar__barra-fill coe-pilar__barra--proj"
-               style="width:{{ _proj_pct }}%;"></div>
-        </div>
-        <div class="coe-pilar__desc">Projetos de lei (PL, PDC, PEC) apresentados nos últimos 3 anos</div>
-      </div>
-
-      {# Pilar: Aprovações #}
-      {% set _aprov_pct = ((coerencia.total_aprovacoes / _max_coe) * 100)|int %}
-      <div class="coe-pilar">
-        <div class="coe-pilar__icone">✅</div>
-        <div class="coe-pilar__num">{{ coerencia.total_aprovacoes }}</div>
-        <div class="coe-pilar__label">Aprovações</div>
-        <div class="coe-pilar__barra-track">
-          <div class="coe-pilar__barra-fill coe-pilar__barra--aprov"
-               style="width:{{ _aprov_pct }}%;"></div>
-        </div>
-        <div class="coe-pilar__desc">Projetos transformados em norma jurídica</div>
-      </div>
-    </div>
-
-    {% set disc = coerencia.total_discursos %}
-    {% set proj = coerencia.total_proposicoes %}
-    {% set aprov = coerencia.total_aprovacoes %}
-
-    {% if disc == 0 and proj == 0 %}
-      {% set perfil_icon = "⚪" %}{% set perfil_titulo = "Sem dados suficientes" %}
-      {% set perfil_texto = "Não foram encontrados discursos ou projetos com tema identificado nos últimos 3 anos." %}
-      {% set perfil_classe = "coe-perfil--neutro" %}
-    {% elif proj == 0 and disc > 0 %}
-      {% set perfil_icon = "🗣️" %}{% set perfil_titulo = "Discursa mas não propõe" %}
-      {% set perfil_texto = "O deputado faz discursos, mas não apresentou projetos de lei nos temas em que fala. Atenção: discurso sem ação legislativa." %}
-      {% set perfil_classe = "coe-perfil--alerta" %}
-    {% elif disc == 0 and proj > 0 %}
-      {% set perfil_icon = "📋" %}{% set perfil_titulo = "Propõe mas não discursa" %}
-      {% set perfil_texto = "O deputado apresenta projetos, mas não faz discursos sobre eles. Age nos bastidores, sem comunicação pública sobre suas prioridades." %}
-      {% set perfil_classe = "coe-perfil--moderado" %}
-    {% elif aprov == 0 %}
-      {% set perfil_icon = "⚠️" %}{% set perfil_titulo = "Discursa e propõe, sem aprovações" %}
-      {% set perfil_texto = "O deputado fala e apresenta projetos, mas nenhum foi transformado em lei. Pode indicar projetos sem viabilidade ou pouca articulação política." %}
-      {% set perfil_classe = "coe-perfil--alerta" %}
-    {% elif aprov > 0 and proj > 0 and disc > 0 %}
-      {% set taxa = ((aprov / proj) * 100)|round(1) %}
-      {% if taxa >= 10 %}
-        {% set perfil_icon = "🏆" %}{% set perfil_titulo = "Alta efetividade legislativa" %}
-        {% set perfil_texto = "O deputado discursa, propõe e tem projetos aprovados. Taxa de aprovação de " ~ taxa ~ "% indica forte atuação parlamentar." %}
-        {% set perfil_classe = "coe-perfil--alta" %}
-      {% else %}
-        {% set perfil_icon = "📊" %}{% set perfil_titulo = "Atuação legislativa presente" %}
-        {% set perfil_texto = "O deputado discursa, propõe e tem projetos aprovados. Taxa de aprovação de " ~ taxa ~ "% — acompanhe os temas prioritários abaixo." %}
-        {% set perfil_classe = "coe-perfil--moderado" %}
-      {% endif %}
-    {% else %}
-      {% set perfil_icon = "📊" %}{% set perfil_titulo = "Atuação em análise" %}
-      {% set perfil_texto = "Confira os detalhes por tema abaixo para entender as prioridades deste deputado." %}
-      {% set perfil_classe = "coe-perfil--neutro" %}
-    {% endif %}
-
-    <div class="coe-perfil {{ perfil_classe }}">
-      <div class="coe-perfil__icon">{{ perfil_icon }}</div>
-      <div>
-        <div class="coe-perfil__titulo">{{ perfil_titulo }}</div>
-        <div class="coe-perfil__texto">{{ perfil_texto }}</div>
-      </div>
-    </div>
-
-    {% if coerencia.temas %}
-    <p class="coe-formula-hint">
-      Índice por tema: discursos (30%) + projetos (40%) + aprovações (30%), normalizado pelo máximo do deputado.
-      Temas sem projetos apresentados têm índice zerado.
-      Um mesmo projeto pode aparecer em mais de um tema — o total de aprovações nos cards conta projetos únicos.
-    </p>
-    <div style="overflow-x:auto;">
-      <table class="dep-table">
-        <thead>
-          <tr>
-            <th>Tema</th>
-            <th style="text-align:right;">Discursos</th>
-            <th style="text-align:right;">Projetos</th>
-            <th style="text-align:right;">Aprovações</th>
-            <th style="text-align:right;">Índice</th>
-            <th>Nível</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for t in coerencia.temas %}
-          {# Calcular cor da barra e classe/label da tag aqui no Jinja #}
-          {% set v = t.indice_coerencia|float %}
-          {% if v >= 80 %}
-            {% set _bar_cor = 'var(--verde-claro)' %}
-            {% set _tag_cls = 'coe-tag--alta' %}
-            {% set _tag_txt = 'Alta coerência' %}
-          {% elif v >= 55 %}
-            {% set _bar_cor = '#d69e2e' %}
-            {% set _tag_cls = 'coe-tag--mod' %}
-            {% set _tag_txt = 'Moderada' %}
-          {% elif v >= 30 %}
-            {% set _bar_cor = '#dd6b20' %}
-            {% set _tag_cls = 'coe-tag--parc' %}
-            {% set _tag_txt = 'Parcial' %}
-          {% else %}
-            {% set _bar_cor = '#dc2626' %}
-            {% set _tag_cls = 'coe-tag--baixa' %}
-            {% set _tag_txt = 'Baixa' %}
-          {% endif %}
-          <tr>
-            <td style="font-weight:600;">{{ t.tema }}</td>
-            <td style="text-align:right;">{{ t.discursos }}</td>
-            <td style="text-align:right;">{{ t.proposicoes }}</td>
-            <td style="text-align:right;">{{ t.aprovacoes }}</td>
-            <td style="text-align:right;font-weight:700;color:var(--azul-nav);">{{ t.indice_coerencia }}%</td>
-            <td>
-              <div style="display:flex;align-items:center;gap:.5rem;">
-                <div style="background:var(--cinza-claro);border-radius:20px;height:6px;width:80px;flex-shrink:0;overflow:hidden;">
-                  <div style="background:{{ _bar_cor }};height:6px;border-radius:20px;width:{{ [v, 100]|min|int }}px;"></div>
-                </div>
-                <span class="coe-tag {{ _tag_cls }}">{{ _tag_txt }}</span>
+            <div class="dep-hero__grid">
+              {% if detalhes.get('nomeCivil') %}
+              <div class="dep-info-item">
+                <div class="dep-info-label">Nome Civil</div>
+                <div class="dep-info-value">{{ detalhes.nomeCivil }}</div>
               </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <div class="dep-empty">Nenhum dado com tema identificado nos últimos 3 anos.</div>
-    {% endif %}
+              {% endif %}
 
-  </div>
-</details>
+              {% if detalhes.get('dataNascimento') %}
+              <div class="dep-info-item">
+                <div class="dep-info-label">Nascimento</div>
+                <div class="dep-info-value">{{ detalhes.dataNascimento }}</div>
+              </div>
+              {% endif %}
 
-{# ═══════════════ GASTOS ═══════════════ #}
-<details class="dep-secao" id="gastosSection"
-         {% if filtro_ano or filtro_mes or filtro_tipo %}open{% endif %}>
+              {% set p_val = presenca|float if presenca else 0.0 %}
+              {% set m_val = media|float if media else 0.0 %}
+              {% set diff = p_val - m_val %}
+              <div class="dep-info-item">
+                <div class="dep-info-label">Presença em Votações</div>
+                <div class="dep-info-value"
+                  style="color:{{ 'var(--verde-claro)' if diff >= 0 else '#dc2626' }};font-weight:700;">
+                  {{ "%.1f"|format(p_val) }}%
+                  <span class="dep-presenca-diff">
+                    ({{ '+' if diff >= 0 else '' }}{{ "%.1f"|format(diff) }}% vs média {{ deputado.sigla_uf }})
+                  </span>
+                </div>
+              </div>
 
-  <summary class="dep-secao__toggle">
-    <div class="dep-secao__toggle-left">
-      <i class="bi bi-cash-stack me-2" aria-hidden="true"></i>
-      <h2>Gastos &amp; Despesas</h2>
-      <span class="dep-secao__badge">{{ despesas|length }} registro(s)</span>
-    </div>
-    <i class="bi bi-chevron-down dep-secao__chevron"></i>
-  </summary>
+              {% if deputado.email %}
+              <div class="dep-info-item">
+                <div class="dep-info-label">E-mail</div>
+                <div class="dep-info-value" style="font-size:.88rem;">{{ deputado.email }}</div>
+              </div>
+              {% endif %}
 
-  <div class="dep-secao__body">
-
-    <div class="dep-metrics-row">
-      <div class="dep-metric-box dep-metric-box--total">
-        <div class="dep-metric-label">Gasto Total</div>
-        <div class="dep-metric-value">{{ metrics.gasto_total or 'R$ 0,00' }}</div>
-        <div class="dep-metric-sub">
-          <i class="bi bi-cart3 me-1"></i>≈ {{ ceap.cestas_equivalentes_fmt or '0' }} cestas básicas
+              {% if detalhes.get('gabinete') %}
+              <div class="dep-info-item">
+                <div class="dep-info-label">Gabinete</div>
+                <div class="dep-info-value">Sala {{ detalhes.gabinete.get('sala','-') }}, Prédio {{
+                  detalhes.gabinete.get('anexo','-') }}</div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div class="dep-metric-box dep-metric-box--cota {% if ceap.uso_pct > 100 %}dep-metric-box--over{% endif %}">
-        <div class="dep-metric-label">% da Cota Utilizada</div>
-        <div class="dep-metric-value">{{ ceap.uso_pct_fmt or '0' }}%</div>
-        <div class="dep-cota-track">
-          <div class="dep-cota-fill" style="width:{{ ceap.uso_pct_barra|default(0) }}%;"></div>
-        </div>
-        <div style="font-size:.72rem;color:var(--cinza-texto);margin-top:.25rem;">
-          Ref: {{ ceap.limite_mensal_fmt if ceap.modo_referencia == 'mensal' else ceap.limite_anual_fmt }}
-        </div>
-      </div>
-    </div>
+        {# ═══════════════ PROPOSIÇÕES ═══════════════ #}
+        {#
+        <details> abre/fecha via HTML nativo.
+          Fica aberto se já houver algum filtro ativo de proposições.
+          #}
+          <details class="dep-secao" id="proposicoesSection" {% if prop_tipo or prop_ano or prop_situacao %}open{% endif
+            %}>
 
-    <form method="GET" action="/deputado/{{ deputado.id }}#gastosSection">
-      {% if prop_tipo %}<input type="hidden" name="prop_tipo" value="{{ prop_tipo }}">{% endif %}
-      {% if prop_ano %}<input type="hidden" name="prop_ano" value="{{ prop_ano }}">{% endif %}
-      {% if prop_situacao %}<input type="hidden" name="prop_situacao" value="{{ prop_situacao }}">{% endif %}
+            <summary class="dep-secao__toggle">
+              <div class="dep-secao__toggle-left">
+                <i class="bi bi-file-earmark-text-fill me-2" aria-hidden="true"></i>
+                <h2>Proposições Legislativas</h2>
+                <span class="dep-secao__badge">{{ proposicoes|length }} resultado(s)</span>
+              </div>
+              <i class="bi bi-chevron-down dep-secao__chevron"></i>
+            </summary>
 
-      <div class="dep-filtros-bar">
-        <div class="dep-filtro-group">
-          <label>Ano</label>
-          <select name="ano" class="form-select form-select-sm">
-            <option value="">Todos</option>
-            {% for a in anos_despesa %}
-            <option value="{{ a }}" {% if filtro_ano|string==a|string %}selected{% endif %}>{{ a }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="dep-filtro-group">
-          <label>Mês</label>
-          <select name="mes" class="form-select form-select-sm">
-            <option value="">Todos</option>
-            {% for num, nome_mes in
-            [('1','Jan'),('2','Fev'),('3','Mar'),('4','Abr'),('5','Mai'),('6','Jun'),
-             ('7','Jul'),('8','Ago'),('9','Set'),('10','Out'),('11','Nov'),('12','Dez')] %}
-            <option value="{{ num }}" {% if filtro_mes|string==num|string %}selected{% endif %}>{{ nome_mes }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="dep-filtro-group" style="min-width:220px;">
-          <label>Tipo de Despesa</label>
-          <select name="tipo" class="form-select form-select-sm">
-            <option value="">Todos</option>
-            {% for t in tipos_despesa %}
-            <option value="{{ t }}" {% if filtro_tipo==t %}selected{% endif %}>{{ t|truncate(35) }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <button type="submit" class="btn-filtrar">
-          <i class="bi bi-funnel-fill me-1"></i>Filtrar
-        </button>
-        <a href="/deputado/{{ deputado.id }}#gastosSection" class="btn-filtrar-limpar">
-          <i class="bi bi-x-lg"></i>
-        </a>
-      </div>
-    </form>
+            {# Preview: sempre visível quando o details está aberto #}
+            <div class="dep-secao__preview">
+              <div class="dep-tipo-pills">
+                {% for sigla, total in totais_tipo.items() %}
+                <div class="dep-tipo-pill">
+                  <span class="dep-tipo-sigla">{{ sigla }}</span>
+                  <span class="dep-tipo-total">{{ total }}</span>
+                </div>
+                {% endfor %}
+                {% if not totais_tipo %}
+                <span style="color:var(--cinza-texto);font-size:.85rem;">Nenhuma proposição registrada.</span>
+                {% endif %}
+              </div>
 
-    {% if despesas %}
-    <div style="overflow-x:auto;">
-      <table class="dep-table">
-        <thead>
-          <tr><th>Data</th><th>Tipo</th><th>Fornecedor</th><th>Valor</th><th>Doc.</th></tr>
-        </thead>
-        <tbody>
-          {% for d in despesas %}
-          <tr>
-            <td>{{ d.data_documento or '-' }}</td>
-            <td><span class="dep-tipo-badge">{{ d.tipo_despesa|default('-')|truncate(30) }}</span></td>
-            <td title="{{ d.nome_fornecedor }}">{{ d.nome_fornecedor|default('-')|truncate(25) }}</td>
-            <td class="dep-valor-cell">
-              R$ {{ "%.2f"|format((d.get('valor') or d.get('valorLiquido') or d.get('valorDocumento') or 0)|float)|replace('.', ',') }}
-            </td>
-            <td>
-              {% if d.url_documento %}
-              <a class="dep-doc-link" href="{{ d.url_documento }}" target="_blank" aria-label="Ver documento">
-                <i class="bi bi-link-45deg"></i>
-              </a>
-              {% else %}-{% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <div class="dep-empty">Nenhuma despesa encontrada.</div>
-    {% endif %}
+              {% if top_temas %}
+              <div class="dep-top-temas">
+                <span class="dep-top-temas__label">Top temas:</span>
+                <div class="dep-top-temas__list">
+                  {% for tema in top_temas %}
+                  <div class="dep-tema-row">
+                    <span class="dep-tema-nome">{{ tema.nome }}</span>
+                    <div class="dep-tema-track">
+                      <div class="dep-tema-fill" style="width:{{ ((tema.total / top_temas[0].total) * 100)|int }}%">
+                      </div>
+                    </div>
+                    <span class="dep-tema-count">{{ tema.total }}</span>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+            </div>
 
-  </div>
- </details>
+            <div class="dep-secao__body">
+              <form method="GET" action="/deputado/{{ deputado.id }}#proposicoesSection">
+                {% if filtro_ano %}<input type="hidden" name="ano" value="{{ filtro_ano }}">{% endif %}
+                {% if filtro_mes %}<input type="hidden" name="mes" value="{{ filtro_mes }}">{% endif %}
+                {% if filtro_tipo %}<input type="hidden" name="tipo" value="{{ filtro_tipo }}">{% endif %}
+
+                <div class="dep-filtros-bar">
+                  <div class="dep-filtro-group">
+                    <label>Tipo</label>
+                    <select name="prop_tipo" class="form-select form-select-sm">
+                      <option value="">Todos</option>
+                      {% for t in ['PL','PDC','PEC'] %}
+                      <option value="{{ t }}" {% if prop_tipo==t %}selected{% endif %}>{{ t }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="dep-filtro-group">
+                    <label>Ano</label>
+                    <select name="prop_ano" class="form-select form-select-sm">
+                      <option value="">Todos</option>
+                      {% for a in anos_proposicoes %}
+                      <option value="{{ a }}" {% if prop_ano|string==a|string %}selected{% endif %}>{{ a }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="dep-filtro-group" style="min-width:200px;">
+                    <label>Situação</label>
+                    <select name="prop_situacao" class="form-select form-select-sm">
+                      <option value="">Todas</option>
+                      {% for s in situacoes_prop %}
+                      <option value="{{ s }}" {% if prop_situacao==s %}selected{% endif %}>{{ s|truncate(40) }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <button type="submit" class="btn-filtrar">
+                    <i class="bi bi-funnel-fill me-1"></i>Filtrar
+                  </button>
+                  <a href="/deputado/{{ deputado.id }}#proposicoesSection" class="btn-filtrar-limpar">
+                    <i class="bi bi-x-lg"></i>
+                  </a>
+                </div>
+              </form>
+
+              {% if proposicoes %}
+              <p class="dep-results-count">{{ proposicoes|length }} proposição(ões) encontrada(s)</p>
+              <div style="overflow-x:auto;">
+                <table class="dep-table">
+                  <thead>
+                    <tr>
+                      <th>Tipo</th>
+                      <th>Número</th>
+                      <th>Ano</th>
+                      <th>Situação</th>
+                      <th>Ementa</th>
+                      <th>Doc.</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for p in proposicoes %}
+                    <tr>
+                      <td><span class="dep-tipo-badge">{{ p.sigla_tipo }}</span></td>
+                      <td>{{ p.numero }}</td>
+                      <td>{{ p.ano }}</td>
+                      <td style="font-size:.8rem;color:var(--cinza-texto);">{{ p.situacao|truncate(40) or '-' }}</td>
+                      <td style="font-size:.8rem;" title="{{ p.ementa }}">{{ p.ementa|truncate(70) or '-' }}</td>
+                      <td>
+                        {% if p.url_inteiro_teor %}
+                        <a class="dep-doc-link" href="{{ p.url_inteiro_teor }}" target="_blank"
+                          aria-label="Ver documento">
+                          <i class="bi bi-file-earmark-pdf"></i>
+                        </a>
+                        {% else %}-{% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+              <div class="dep-empty">Nenhuma proposição encontrada com os filtros selecionados.</div>
+              {% endif %}
+            </div>
+          </details>
+
+          {# ═══════════════ COERÊNCIA ═══════════════ #}
+          {#
+          Barras e tags calculadas aqui no Jinja, sem JS.
+          max_coe_val usado para normalizar as barras dos pilares.
+          #}
+          {% set _max_coe = [coerencia.total_discursos, coerencia.total_proposicoes, coerencia.total_aprovacoes]|max %}
+          {% set _max_coe = _max_coe if _max_coe > 0 else 1 %}
+
+          <details class="dep-secao" id="coerenciaSection">
+
+            <summary class="dep-secao__toggle">
+              <div class="dep-secao__toggle-left">
+                <i class="bi bi-bullseye me-2" aria-hidden="true"></i>
+                <h2>Coerência Parlamentar</h2>
+                <span class="dep-secao__badge">últimos 3 anos</span>
+              </div>
+              <i class="bi bi-chevron-down dep-secao__chevron"></i>
+            </summary>
+
+            <div class="dep-secao__body">
+
+              <div class="coe-pilares">
+                {# Pilar: Discursos #}
+                {% set _disc_pct = ((coerencia.total_discursos / _max_coe) * 100)|int %}
+                <div class="coe-pilar">
+                  <div class="coe-pilar__icone">🗣️</div>
+                  <div class="coe-pilar__num">{{ coerencia.total_discursos }}</div>
+                  <div class="coe-pilar__label">Discursos</div>
+                  <div class="coe-pilar__barra-track">
+                    <div class="coe-pilar__barra-fill coe-pilar__barra--disc" style="width:{{ _disc_pct }}%;"></div>
+                  </div>
+                  <div class="coe-pilar__desc">Vezes que discursou em plenário sobre temas com tema identificado</div>
+                </div>
+
+                {# Pilar: Projetos #}
+                {% set _proj_pct = ((coerencia.total_proposicoes / _max_coe) * 100)|int %}
+                <div class="coe-pilar">
+                  <div class="coe-pilar__icone">📋</div>
+                  <div class="coe-pilar__num">{{ coerencia.total_proposicoes }}</div>
+                  <div class="coe-pilar__label">Projetos</div>
+                  <div class="coe-pilar__barra-track">
+                    <div class="coe-pilar__barra-fill coe-pilar__barra--proj" style="width:{{ _proj_pct }}%;"></div>
+                  </div>
+                  <div class="coe-pilar__desc">Projetos de lei (PL, PDC, PEC) apresentados nos últimos 3 anos</div>
+                </div>
+
+                {# Pilar: Aprovações #}
+                {% set _aprov_pct = ((coerencia.total_aprovacoes / _max_coe) * 100)|int %}
+                <div class="coe-pilar">
+                  <div class="coe-pilar__icone">✅</div>
+                  <div class="coe-pilar__num">{{ coerencia.total_aprovacoes }}</div>
+                  <div class="coe-pilar__label">Aprovações</div>
+                  <div class="coe-pilar__barra-track">
+                    <div class="coe-pilar__barra-fill coe-pilar__barra--aprov" style="width:{{ _aprov_pct }}%;"></div>
+                  </div>
+                  <div class="coe-pilar__desc">Projetos transformados em norma jurídica</div>
+                </div>
+              </div>
+
+              {% set disc = coerencia.total_discursos %}
+              {% set proj = coerencia.total_proposicoes %}
+              {% set aprov = coerencia.total_aprovacoes %}
+
+              {% if disc == 0 and proj == 0 %}
+              {% set perfil_icon = "⚪" %}{% set perfil_titulo = "Sem dados suficientes" %}
+              {% set perfil_texto = "Não foram encontrados discursos ou projetos com tema identificado nos últimos 3
+              anos." %}
+              {% set perfil_classe = "coe-perfil--neutro" %}
+              {% elif proj == 0 and disc > 0 %}
+              {% set perfil_icon = "🗣️" %}{% set perfil_titulo = "Discursa mas não propõe" %}
+              {% set perfil_texto = "O deputado faz discursos, mas não apresentou projetos de lei nos temas em que fala.
+              Atenção: discurso sem ação legislativa." %}
+              {% set perfil_classe = "coe-perfil--alerta" %}
+              {% elif disc == 0 and proj > 0 %}
+              {% set perfil_icon = "📋" %}{% set perfil_titulo = "Propõe mas não discursa" %}
+              {% set perfil_texto = "O deputado apresenta projetos, mas não faz discursos sobre eles. Age nos
+              bastidores, sem comunicação pública sobre suas prioridades." %}
+              {% set perfil_classe = "coe-perfil--moderado" %}
+              {% elif aprov == 0 %}
+              {% set perfil_icon = "⚠️" %}{% set perfil_titulo = "Discursa e propõe, sem aprovações" %}
+              {% set perfil_texto = "O deputado fala e apresenta projetos, mas nenhum foi transformado em lei. Pode
+              indicar projetos sem viabilidade ou pouca articulação política." %}
+              {% set perfil_classe = "coe-perfil--alerta" %}
+              {% elif aprov > 0 and proj > 0 and disc > 0 %}
+              {% set taxa = ((aprov / proj) * 100)|round(1) %}
+              {% if taxa >= 10 %}
+              {% set perfil_icon = "🏆" %}{% set perfil_titulo = "Alta efetividade legislativa" %}
+              {% set perfil_texto = "O deputado discursa, propõe e tem projetos aprovados. Taxa de aprovação de " ~ taxa
+              ~ "% indica forte atuação parlamentar." %}
+              {% set perfil_classe = "coe-perfil--alta" %}
+              {% else %}
+              {% set perfil_icon = "📊" %}{% set perfil_titulo = "Atuação legislativa presente" %}
+              {% set perfil_texto = "O deputado discursa, propõe e tem projetos aprovados. Taxa de aprovação de " ~ taxa
+              ~ "% — acompanhe os temas prioritários abaixo." %}
+              {% set perfil_classe = "coe-perfil--moderado" %}
+              {% endif %}
+              {% else %}
+              {% set perfil_icon = "📊" %}{% set perfil_titulo = "Atuação em análise" %}
+              {% set perfil_texto = "Confira os detalhes por tema abaixo para entender as prioridades deste deputado."
+              %}
+              {% set perfil_classe = "coe-perfil--neutro" %}
+              {% endif %}
+
+              <div class="coe-perfil {{ perfil_classe }}">
+                <div class="coe-perfil__icon">{{ perfil_icon }}</div>
+                <div>
+                  <div class="coe-perfil__titulo">{{ perfil_titulo }}</div>
+                  <div class="coe-perfil__texto">{{ perfil_texto }}</div>
+                </div>
+              </div>
+
+              {% if coerencia.temas %}
+              <p class="coe-formula-hint">
+                Índice por tema: discursos (30%) + projetos (40%) + aprovações (30%), normalizado pelo máximo do
+                deputado.
+                Temas sem projetos apresentados têm índice zerado.
+                Um mesmo projeto pode aparecer em mais de um tema — o total de aprovações nos cards conta projetos
+                únicos.
+              </p>
+              <div style="overflow-x:auto;">
+                <table class="dep-table">
+                  <thead>
+                    <tr>
+                      <th>Tema</th>
+                      <th style="text-align:right;">Discursos</th>
+                      <th style="text-align:right;">Projetos</th>
+                      <th style="text-align:right;">Aprovações</th>
+                      <th style="text-align:right;">Índice</th>
+                      <th>Nível</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for t in coerencia.temas %}
+                    {# Calcular cor da barra e classe/label da tag aqui no Jinja #}
+                    {% set v = t.indice_coerencia|float %}
+                    {% if v >= 80 %}
+                    {% set _bar_cor = 'var(--verde-claro)' %}
+                    {% set _tag_cls = 'coe-tag--alta' %}
+                    {% set _tag_txt = 'Alta coerência' %}
+                    {% elif v >= 55 %}
+                    {% set _bar_cor = '#d69e2e' %}
+                    {% set _tag_cls = 'coe-tag--mod' %}
+                    {% set _tag_txt = 'Moderada' %}
+                    {% elif v >= 30 %}
+                    {% set _bar_cor = '#dd6b20' %}
+                    {% set _tag_cls = 'coe-tag--parc' %}
+                    {% set _tag_txt = 'Parcial' %}
+                    {% else %}
+                    {% set _bar_cor = '#dc2626' %}
+                    {% set _tag_cls = 'coe-tag--baixa' %}
+                    {% set _tag_txt = 'Baixa' %}
+                    {% endif %}
+                    <tr>
+                      <td style="font-weight:600;">{{ t.tema }}</td>
+                      <td style="text-align:right;">{{ t.discursos }}</td>
+                      <td style="text-align:right;">{{ t.proposicoes }}</td>
+                      <td style="text-align:right;">{{ t.aprovacoes }}</td>
+                      <td style="text-align:right;font-weight:700;color:var(--azul-nav);">{{ t.indice_coerencia }}%</td>
+                      <td>
+                        <div style="display:flex;align-items:center;gap:.5rem;">
+                          <div
+                            style="background:var(--cinza-claro);border-radius:20px;height:6px;width:80px;flex-shrink:0;overflow:hidden;">
+                            <div
+                              style="background:{{ _bar_cor }};height:6px;border-radius:20px;width:{{ [v, 100]|min|int }}px;">
+                            </div>
+                          </div>
+                          <span class="coe-tag {{ _tag_cls }}">{{ _tag_txt }}</span>
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+              <div class="dep-empty">Nenhum dado com tema identificado nos últimos 3 anos.</div>
+              {% endif %}
+
+            </div>
+          </details>
+
+          {# ═══════════════ GASTOS ═══════════════ #}
+          <details class="dep-secao" id="gastosSection" {% if filtro_ano or filtro_mes or filtro_tipo %}open{% endif %}>
+
+            <summary class="dep-secao__toggle">
+              <div class="dep-secao__toggle-left">
+                <i class="bi bi-cash-stack me-2" aria-hidden="true"></i>
+                <h2>Gastos &amp; Despesas</h2>
+                <span class="dep-secao__badge">{{ despesas|length }} registro(s)</span>
+              </div>
+              <i class="bi bi-chevron-down dep-secao__chevron"></i>
+            </summary>
+
+            <div class="dep-secao__body">
+
+              <div class="dep-metrics-row">
+                <div class="dep-metric-box dep-metric-box--total">
+                  <div class="dep-metric-label">Gasto Total</div>
+                  <div class="dep-metric-value">{{ metrics.gasto_total or 'R$ 0,00' }}</div>
+                  <div class="dep-metric-sub">
+                    <i class="bi bi-cart3 me-1"></i>≈ {{ ceap.cestas_equivalentes_fmt or '0' }} cestas básicas
+                  </div>
+                </div>
+
+                <div
+                  class="dep-metric-box dep-metric-box--cota {% if ceap.uso_pct > 100 %}dep-metric-box--over{% endif %}">
+                  <div class="dep-metric-label">% da Cota Utilizada</div>
+                  <div class="dep-metric-value">{{ ceap.uso_pct_fmt or '0' }}%</div>
+                  <div class="dep-cota-track">
+                    <div class="dep-cota-fill" style="width:{{ ceap.uso_pct_barra|default(0) }}%;"></div>
+                  </div>
+                  <div style="font-size:.72rem;color:var(--cinza-texto);margin-top:.25rem;">
+                    Ref: {{ ceap.limite_mensal_fmt if ceap.modo_referencia == 'mensal' else ceap.limite_anual_fmt }}
+                  </div>
+                </div>
+              </div>
+
+              <form method="GET" action="/deputado/{{ deputado.id }}#gastosSection">
+                {% if prop_tipo %}<input type="hidden" name="prop_tipo" value="{{ prop_tipo }}">{% endif %}
+                {% if prop_ano %}<input type="hidden" name="prop_ano" value="{{ prop_ano }}">{% endif %}
+                {% if prop_situacao %}<input type="hidden" name="prop_situacao" value="{{ prop_situacao }}">{% endif %}
+
+                <div class="dep-filtros-bar">
+                  <div class="dep-filtro-group">
+                    <label>Ano</label>
+                    <select name="ano" class="form-select form-select-sm">
+                      <option value="">Todos</option>
+                      {% for a in anos_despesa %}
+                      <option value="{{ a }}" {% if filtro_ano|string==a|string %}selected{% endif %}>{{ a }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="dep-filtro-group">
+                    <label>Mês</label>
+                    <select name="mes" class="form-select form-select-sm">
+                      <option value="">Todos</option>
+                      {% for num, nome_mes in
+                      [('1','Jan'),('2','Fev'),('3','Mar'),('4','Abr'),('5','Mai'),('6','Jun'),
+                      ('7','Jul'),('8','Ago'),('9','Set'),('10','Out'),('11','Nov'),('12','Dez')] %}
+                      <option value="{{ num }}" {% if filtro_mes|string==num|string %}selected{% endif %}>{{ nome_mes }}
+                      </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="dep-filtro-group" style="min-width:220px;">
+                    <label>Tipo de Despesa</label>
+                    <select name="tipo" class="form-select form-select-sm">
+                      <option value="">Todos</option>
+                      {% for t in tipos_despesa %}
+                      <option value="{{ t }}" {% if filtro_tipo==t %}selected{% endif %}>{{ t|truncate(35) }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <button type="submit" class="btn-filtrar">
+                    <i class="bi bi-funnel-fill me-1"></i>Filtrar
+                  </button>
+                  <a href="/deputado/{{ deputado.id }}#gastosSection" class="btn-filtrar-limpar">
+                    <i class="bi bi-x-lg"></i>
+                  </a>
+                </div>
+              </form>
+
+              {% if despesas %}
+              <div style="overflow-x:auto;">
+                <table class="dep-table">
+                  <thead>
+                    <tr>
+                      <th>Data</th>
+                      <th>Tipo</th>
+                      <th>Fornecedor</th>
+                      <th>Valor</th>
+                      <th>Doc.</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for d in despesas %}
+                    <tr>
+                      <td>{{ d.data_documento or '-' }}</td>
+                      <td><span class="dep-tipo-badge">{{ d.tipo_despesa|default('-')|truncate(30) }}</span></td>
+                      <td title="{{ d.nome_fornecedor }}">{{ d.nome_fornecedor|default('-')|truncate(25) }}</td>
+                      <td class="dep-valor-cell">
+                        R$ {{ "%.2f"|format((d.get('valor') or d.get('valorLiquido') or d.get('valorDocumento') or
+                        0)|float)|replace('.', ',') }}
+                      </td>
+                      <td>
+                        {% if d.url_documento %}
+                        <a class="dep-doc-link" href="{{ d.url_documento }}" target="_blank" aria-label="Ver documento">
+                          <i class="bi bi-link-45deg"></i>
+                        </a>
+                        {% else %}-{% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+              <div class="dep-empty">Nenhuma despesa encontrada.</div>
+              {% endif %}
+
+            </div>
+          </details>
 
   </main>
 
@@ -602,3 +614,4 @@
 </body>
 
 </html>
+{% endblock %}
