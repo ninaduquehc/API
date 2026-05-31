@@ -94,5 +94,5 @@ Uma entrega é considerada concluída quando:
 |:---:|:---:|:---:|:---|
 | 01 | 06/04/2026 | 🟢 Concluído | Implementação dos filtros e visualização básica. |
 | 02 | 04/05/2026 | 🟢 Concluído | Detalhamento de gastos e métricas de efetividade. |
-| 03 | 31/05/2026 | ⚪ Em andamento | Apresentação de gráficos e comparação de efetividade. |
+| 03 | 31/05/2026 | 🟢 Concluído | Apresentação de gráficos e comparação de efetividade. |
 ---
