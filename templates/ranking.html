@@ -191,48 +191,13 @@
 </head>
 
 <body>
+  {% extends "base.html" %}
 
+  {% block title %}VeritasCode - Ranking{% endblock %}
+
+  {% block content %}
   <div class="faixa-nav" role="presentation" aria-hidden="true"></div>
-  <nav class="navbar navbar-site navbar-expand-lg" aria-label="Navegação principal">
-    <div class="container justify-content-center">
-      <a class="navbar-brand navbar-brand-logo me-lg-4" href="{{ url_for('home') }}" aria-label="Início">
-        <span class="brand-badge">VC</span>
-        <span>Voto Consciente<small>Eleições 2026</small></span>
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuRanking"
-        aria-controls="menuRanking" aria-expanded="false" aria-label="Abrir menu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse justify-content-center" id="menuRanking">
-        <ul class="navbar-nav gap-lg-1">
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('home') }}"><i class="bi bi-house-fill me-1"></i>Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="{{ url_for('ranking') }}" aria-current="page">
-              <i class="bi bi-trophy-fill me-1"></i>Ranking de Deputados
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('comparacao') }}">
-              <i class="bi bi-columns-gap me-1" aria-hidden="true"></i>Comparar Deputados
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('listagem') }}">
-              <i class="bi bi-people-fill me-1"></i>Listagem de Deputados
-              <span class="badge-novidade">Novo</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('metodologia') }}">
-              <i class="bi bi-calculator-fill me-1"></i>Metodologia
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+
 
   <header class="ranking-header" role="banner">
     <div class="container">
@@ -332,7 +297,11 @@
         {% set pos = item['posicao_display'] %}
         {% set iniciais = item['nome'].split()[0][0] ~ (item['nome'].split()[1][0] if item['nome'].split()|length > 1
         else '') %}
-        {% set url_dep = url_for('deputado_detalhe', id_deputado=item['id']) %}
+        {% set url_dep = url_for(
+        'deputado_detalhe',
+        id_deputado=item['id'],
+        volta=request.full_path
+        ) %}
 
         <article class="rank-card" role="listitem">
 
@@ -345,11 +314,11 @@
 
           <!-- Foto -->
           <div class="rank-foto-wrap">
-            {% if item.get('url_foto') %}
-            <img src="{{ item['url_foto'] }}" alt="Foto de {{ item['nome'] }}" loading="lazy" />
-            {% else %}
-            <div class="rank-iniciais">{{ iniciais }}</div>
-            {% endif %}
+            {% set foto_url = item.get('url_foto') or 'https://www.camara.leg.br/internet/deputado/bandep/' ~ item['id']
+            ~ '.jpg' %}
+            <img src="{{ foto_url }}" alt="Foto de {{ item['nome'] }}" loading="lazy"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+            <div class="rank-iniciais" style="display:none;">{{ iniciais }}</div>
           </div>
 
           <!-- Nome + partido + UF -->
@@ -500,3 +469,4 @@
 </body>
 
 </html>
+{% endblock %}

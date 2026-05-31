@@ -118,51 +118,13 @@
 </head>
 
 <body>
+  {% extends "base.html" %}
 
+  {% block title %}VeritasCode - Ranking{% endblock %}
+
+  {% block content %}
   <div class="faixa-nav" role="presentation" aria-hidden="true"></div>
-  <nav class="navbar navbar-site navbar-expand-lg" aria-label="Navegação principal">
-    <div class="container justify-content-center">
-      <a class="navbar-brand navbar-brand-logo me-lg-4" href="{{ url_for('home') }}" aria-label="Voto Consciente 2026">
-        <span class="brand-badge" aria-hidden="true">VC</span>
-        <span>Voto Consciente<small>Eleições 2026</small></span>
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuListagem"
-        aria-controls="menuListagem" aria-expanded="false" aria-label="Abrir menu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse justify-content-center" id="menuListagem">
-        <ul class="navbar-nav gap-lg-1">
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('home') }}">
-              <i class="bi bi-house-fill me-1"></i>Home
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('ranking') }}">
-              <i class="bi bi-trophy-fill me-1"></i>Ranking de Deputados
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('comparacao') }}">
-              <i class="bi bi-columns-gap me-1" aria-hidden="true"></i>Comparar Deputados
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="{{ url_for('listagem') }}" aria-current="page">
-              <i class="bi bi-people-fill me-1"></i>Listagem de Deputados
-              <span class="badge-novidade">Novo</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('metodologia') }}">
-              <i class="bi bi-calculator-fill me-1"></i>Metodologia
-            </a>
-          </li>
-          
-        </ul>
-      </div>
-    </div>
-  </nav>
+
 
   <header class="listagem-header" role="banner">
     <div class="container">
@@ -248,8 +210,9 @@
             {% for dep in deputados %}
             <div class="col-6 col-sm-4 col-md-3">
               {# Card inteiro é o link — sem stretched-link, sem z-index vazando #}
-              <a href="{{ url_for('deputado_detalhe', id_deputado=dep.id) }}" class="dep-card"
-                aria-label="Ver perfil de {{ dep.nome }}">
+              <a href="{{ url_for('deputado_detalhe',
+                id_deputado=dep.id,
+                volta=request.full_path) }}" class="dep-card">
 
                 <div class="dep-card__foto-wrap">
                   {% if dep.url_foto %}
@@ -375,3 +338,4 @@
 </body>
 
 </html>
+{% endblock %}
