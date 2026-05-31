@@ -387,6 +387,19 @@
               </div>
 
               {% if coerencia.temas %}
+              <div class="mt-4 mb-4" style="background:#fff; padding:1.5rem; border-radius:12px; border:1px solid #e2e8f0;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h3 style="font-size:1.1rem; color:var(--azul-escuro); margin:0;">Análise Visual por Tema</h3>
+                  <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary active" id="btnRadarCoe">Radar</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btnBarCoe">Barras</button>
+                  </div>
+                </div>
+                <div style="position: relative; height:300px; width:100%; display: flex; justify-content: center;">
+                  <canvas id="coeChart"></canvas>
+                </div>
+              </div>
+
               <p class="coe-formula-hint">
                 Índice por tema: discursos (30%) + projetos (40%) + aprovações (30%), normalizado pelo máximo do
                 deputado.
@@ -612,6 +625,127 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% if coerencia.temas %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const canvas = document.getElementById('coeChart');
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let chartInstance = null;
+    
+    const labels = [
+      {% for t in coerencia.temas %}
+      "{{ t.tema|safe }}",
+      {% endfor %}
+    ];
+    
+    const dataIndice = [
+      {% for t in coerencia.temas %}
+      {{ t.indice_coerencia|default(0) }},
+      {% endfor %}
+    ];
+
+    function renderChart(type) {
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      let config = {
+        type: type === 'bar' ? 'bar' : 'radar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Índice de Coerência (%)',
+            data: dataIndice,
+            backgroundColor: 'rgba(17, 119, 92, 0.5)',
+            borderColor: 'rgba(17, 119, 92, 1)',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.formattedValue + '%';
+                }
+              }
+            }
+          }
+        }
+      };
+
+      if (type === 'radar') {
+          config.data.datasets[0].backgroundColor = 'rgba(17, 119, 92, 0.2)';
+          config.data.datasets[0].pointBackgroundColor = 'rgba(17, 119, 92, 1)';
+          config.data.datasets[0].pointBorderColor = '#fff';
+          config.data.datasets[0].pointHoverBackgroundColor = '#fff';
+          config.data.datasets[0].pointHoverBorderColor = 'rgba(17, 119, 92, 1)';
+          
+          config.options.scales = {
+            r: {
+              angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+              grid: { color: 'rgba(0, 0, 0, 0.1)' },
+              pointLabels: { 
+                color: '#4A5568',
+                font: { size: 11, family: "'Source Sans 3', sans-serif" } 
+              },
+              ticks: { display: false, max: 100, min: 0 }
+            }
+          };
+      } else if (type === 'bar') {
+          config.options.indexAxis = 'y';
+          config.options.scales = {
+            x: {
+              max: 100,
+              min: 0,
+              grid: { color: 'rgba(0, 0, 0, 0.05)' },
+              ticks: {
+                color: '#4A5568',
+                callback: function(value) { return value + '%'; }
+              }
+            },
+            y: {
+              grid: { display: false },
+              ticks: {
+                color: '#4A5568',
+                font: { size: 11, family: "'Source Sans 3', sans-serif" } 
+              }
+            }
+          };
+      }
+      
+      chartInstance = new Chart(ctx, config);
+    }
+
+    renderChart('radar');
+
+    const btnRadar = document.getElementById('btnRadarCoe');
+    const btnBar = document.getElementById('btnBarCoe');
+    
+    if(btnRadar && btnBar) {
+      btnRadar.addEventListener('click', function(e) {
+        e.preventDefault();
+        btnRadar.classList.add('active');
+        btnBar.classList.remove('active');
+        renderChart('radar');
+      });
+      
+      btnBar.addEventListener('click', function(e) {
+        e.preventDefault();
+        btnBar.classList.add('active');
+        btnRadar.classList.remove('active');
+        renderChart('bar');
+      });
+    }
+  });
+</script>
+{% endif %}
 
 </html>
 {% endblock %}

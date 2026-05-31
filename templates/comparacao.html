@@ -12,13 +12,50 @@
 </head>
 
 <body>
-  {% extends "base.html" %}
-
-  {% block title %}VeritasCode - Ranking{% endblock %}
-
-  {% block content %}
-  
+  <!-- FAIXA + NAVBAR -->
   <div class="faixa-nav" role="presentation" aria-hidden="true"></div>
+  <nav class="navbar navbar-site navbar-expand-lg" aria-label="Navegação principal">
+    <div class="container justify-content-center">
+      <a class="navbar-brand navbar-brand-logo me-lg-4" href="{{ url_for('home') }}"
+        aria-label="Voto Consciente 2026 — Página inicial">
+        <span class="brand-badge" aria-hidden="true">VC</span>
+        <span>Voto Consciente<small>Eleições 2026</small></span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal"
+        aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir menu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-center" id="menuPrincipal">
+        <ul class="navbar-nav gap-lg-1">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('home') }}">
+              <i class="bi bi-house-fill me-1" aria-hidden="true"></i>Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('ranking') }}">
+              <i class="bi bi-trophy-fill me-1" aria-hidden="true"></i>Ranking de Deputados
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('listagem') }}">
+              <i class="bi bi-people-fill me-1" aria-hidden="true"></i>Listagem de Deputados
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="{{ url_for('comparacao') }}" aria-current="page">
+              <i class="bi bi-columns-gap me-1" aria-hidden="true"></i>Comparar Deputados
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('metodologia') }}">
+              <i class="bi bi-calculator-fill me-1"></i>Metodologia
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
 
   
   <header class="ranking-header" role="banner">
@@ -156,6 +193,20 @@
             </div>
           </div>
         </section>
+        </section>
+
+        <section class="comparacao-card chart-card mb-4" aria-labelledby="titulo-grafico">
+          <div class="d-flex justify-content-between align-items-center flex-wrap" style="margin-bottom: 1rem;">
+            <h2 id="titulo-grafico" style="margin-bottom: 0;">Análise Visual</h2>
+            <div class="btn-group" role="group" aria-label="Alternar visualização do gráfico">
+              <button type="button" class="btn btn-sm btn-outline-secondary active" id="btnRadarChart">Radar</button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="btnBarChart">Barras</button>
+            </div>
+          </div>
+          <div style="position: relative; height:350px; width:100%; display: flex; justify-content: center;">
+            <canvas id="radarChart"></canvas>
+          </div>
+        </section>
 
         <section class="comparacao-card indicadores-card" aria-labelledby="titulo-indicadores">
           <h2 id="titulo-indicadores">Indicadores de Desempenho</h2>
@@ -272,7 +323,153 @@
       });
     })();
   </script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% if dep1 and dep2 and indicadores %}
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        const canvas = document.getElementById('radarChart');
+        if(!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let chartInstance = null;
+        
+        const labels = [
+          {% for ind in indicadores %}
+          "{{ ind.nome|safe }}",
+          {% endfor %}
+        ];
+        
+        const dataDep1 = [
+          {% for ind in indicadores %}
+          {{ ind.barra1|default(0) }},
+          {% endfor %}
+        ];
+        
+        const dataDep2 = [
+          {% for ind in indicadores %}
+          {{ ind.barra2|default(0) }},
+          {% endfor %}
+        ];
+        
+        const nomeDep1 = "{{ dep1.nome.split()[0] if dep1.nome else 'Deputado 1' }}";
+        const nomeDep2 = "{{ dep2.nome.split()[0] if dep2.nome else 'Deputado 2' }}";
 
+        function renderChart(type) {
+          if (chartInstance) {
+            chartInstance.destroy();
+          }
+
+          let config = {
+            type: type === 'bar' ? 'bar' : 'radar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: nomeDep1,
+                data: dataDep1,
+                backgroundColor: 'rgba(17, 119, 92, 0.5)',
+                borderColor: 'rgba(17, 119, 92, 1)',
+                borderWidth: 2
+              }, {
+                label: nomeDep2,
+                data: dataDep2,
+                backgroundColor: 'rgba(255, 204, 0, 0.5)',
+                borderColor: 'rgba(255, 204, 0, 1)',
+                borderWidth: 2
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: 'bottom',
+                  labels: { 
+                    color: '#11775c',
+                    font: { family: "'Source Sans 3', sans-serif", weight: 'bold' } 
+                  }
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      return context.dataset.label + ': ' + context.formattedValue + '% do max';
+                    }
+                  }
+                }
+              }
+            }
+          };
+
+          if (type === 'radar') {
+              config.data.datasets[0].backgroundColor = 'rgba(17, 119, 92, 0.2)';
+              config.data.datasets[1].backgroundColor = 'rgba(255, 204, 0, 0.2)';
+              config.data.datasets[0].pointBackgroundColor = 'rgba(17, 119, 92, 1)';
+              config.data.datasets[0].pointBorderColor = '#fff';
+              config.data.datasets[0].pointHoverBackgroundColor = '#fff';
+              config.data.datasets[0].pointHoverBorderColor = 'rgba(17, 119, 92, 1)';
+              config.data.datasets[1].pointBackgroundColor = 'rgba(255, 204, 0, 1)';
+              config.data.datasets[1].pointBorderColor = '#fff';
+              config.data.datasets[1].pointHoverBackgroundColor = '#fff';
+              config.data.datasets[1].pointHoverBorderColor = 'rgba(255, 204, 0, 1)';
+              
+              config.options.scales = {
+                r: {
+                  angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                  grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                  pointLabels: { 
+                    color: '#4A5568',
+                    font: { size: 11, family: "'Source Sans 3', sans-serif" } 
+                  },
+                  ticks: { display: false, max: 100, min: 0 }
+                }
+              };
+          } else if (type === 'bar') {
+              config.options.indexAxis = 'y';
+              config.options.scales = {
+                x: {
+                  max: 100,
+                  min: 0,
+                  grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                  ticks: {
+                    color: '#4A5568',
+                    callback: function(value) {
+                      return value + '%';
+                    }
+                  }
+                },
+                y: {
+                  grid: { display: false },
+                  ticks: {
+                    color: '#4A5568',
+                    font: { size: 11, family: "'Source Sans 3', sans-serif" } 
+                  }
+                }
+              };
+          }
+          
+          chartInstance = new Chart(ctx, config);
+        }
+
+        renderChart('radar');
+
+        const btnRadar = document.getElementById('btnRadarChart');
+        const btnBar = document.getElementById('btnBarChart');
+        
+        if(btnRadar && btnBar) {
+          btnRadar.addEventListener('click', function(e) {
+            e.preventDefault();
+            btnRadar.classList.add('active');
+            btnBar.classList.remove('active');
+            renderChart('radar');
+          });
+          
+          btnBar.addEventListener('click', function(e) {
+            e.preventDefault();
+            btnBar.classList.add('active');
+            btnRadar.classList.remove('active');
+            renderChart('bar');
+          });
+        }
+      });
+    </script>
+    {% endif %}
+</body>
 </html>
-{% endblock %}

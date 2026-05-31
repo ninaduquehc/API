@@ -41,7 +41,25 @@ def root():
 # ── Home / Landing page ───────────────────────────────────────
 @app.route("/home")
 def home():
-    return render_template("home.html", news_api_key=NEWS_API_KEY)
+    import random
+    
+    lista = buscar_todos_deputados()
+    if len(lista) >= 2:
+        sorteados = random.sample(lista, 2)
+        id1, id2 = sorteados[0]["id"], sorteados[1]["id"]
+    else:
+        id1, id2 = None, None
+
+    dados = _gerar_dados_comparacao(id1, id2, "24m")
+    
+    return render_template(
+        "home.html", 
+        dep1=dados["dep1"],
+        dep2=dados["dep2"],
+        indicadores=dados["indicadores"],
+        sintese1=dados["sintese1"],
+        sintese2=dados["sintese2"]
+    )
 
 
 # ── Listagem de deputados ─────────────────────────────────────
@@ -266,23 +284,7 @@ def _normalizar_indicador(nome, icone, valor1, valor2, melhor_maior=True, format
     }
 
 
-@app.route("/comparacao")
-def comparacao():
-    lista_deputados = buscar_todos_deputados()
-    id1 = request.args.get("id1", type=int)
-    id2 = request.args.get("id2", type=int)
-    periodo = request.args.get("periodo", "24m")
-
-    periodos = [
-        {"valor": "12m", "rotulo": "Últimos 12 meses"},
-        {"valor": "24m", "rotulo": "Últimos 24 meses"},
-        {"valor": "48m", "rotulo": "Últimos 48 meses"},
-        {"valor": "todo", "rotulo": "Histórico completo"},
-    ]
-    valores_periodo = {p["valor"] for p in periodos}
-    if periodo not in valores_periodo:
-        periodo = "24m"
-
+def _gerar_dados_comparacao(id1, id2, periodo):
     dep1 = buscar_deputado_por_id(id1) if id1 else None
     dep2 = buscar_deputado_por_id(id2) if id2 else None
 
@@ -342,16 +344,44 @@ def comparacao():
             "de gasto declarado no período selecionado."
         )
 
+    return {
+        "dep1": dep1,
+        "dep2": dep2,
+        "indicadores": indicadores,
+        "sintese1": sintese1,
+        "sintese2": sintese2
+    }
+
+
+@app.route("/comparacao")
+def comparacao():
+    lista_deputados = buscar_todos_deputados()
+    id1 = request.args.get("id1", type=int)
+    id2 = request.args.get("id2", type=int)
+    periodo = request.args.get("periodo", "24m")
+
+    periodos = [
+        {"valor": "12m", "rotulo": "Últimos 12 meses"},
+        {"valor": "24m", "rotulo": "Últimos 24 meses"},
+        {"valor": "48m", "rotulo": "Últimos 48 meses"},
+        {"valor": "todo", "rotulo": "Histórico completo"},
+    ]
+    valores_periodo = {p["valor"] for p in periodos}
+    if periodo not in valores_periodo:
+        periodo = "24m"
+
+    dados = _gerar_dados_comparacao(id1, id2, periodo)
+
     return render_template(
         "comparacao.html",
         lista_deputados=lista_deputados,
-        dep1=dep1,
-        dep2=dep2,
+        dep1=dados["dep1"],
+        dep2=dados["dep2"],
         periodo=periodo,
         periodos=periodos,
-        indicadores=indicadores,
-        sintese1=sintese1,
-        sintese2=sintese2,
+        indicadores=dados["indicadores"],
+        sintese1=dados["sintese1"],
+        sintese2=dados["sintese2"],
     )
  
 NAVBAR_ITEM = """

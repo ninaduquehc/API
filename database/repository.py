@@ -169,7 +169,7 @@ def buscar_ranking_gastos(uf=None, ordem="desc", partido=None):
  
     query = f"""
         SELECT
-            d.id, d.nome, d.sigla_uf, d.sigla_partido,
+            d.id, d.nome, d.sigla_uf, d.sigla_partido, d.url_foto,
             SUM(dep.valor) AS total_gasto,
             COALESCE(p.percentual_presenca, 0) AS presenca,
             COALESCE(media_uf.media, 0) AS media_uf
@@ -192,7 +192,7 @@ def buscar_ranking_gastos(uf=None, ordem="desc", partido=None):
         query += " AND d.sigla_partido = %s"
         params.append(partido)
  
-    query += f" GROUP BY d.id, d.nome, d.sigla_uf, d.sigla_partido, p.percentual_presenca, media_uf.media ORDER BY total_gasto {direcao}"
+    query += f" GROUP BY d.id, d.nome, d.sigla_uf, d.sigla_partido, d.url_foto, p.percentual_presenca, media_uf.media ORDER BY total_gasto {direcao}"
  
     cursor.execute(query, params)
     resultados = cursor.fetchall()
@@ -240,7 +240,7 @@ def buscar_ranking_presenca(uf=None, ordem="asc", partido=None):
  
     query = f"""
         SELECT
-            d.id, d.nome, d.sigla_uf, d.sigla_partido,
+            d.id, d.nome, d.sigla_uf, d.sigla_partido, d.url_foto,
             p.percentual_presenca AS presenca,
             COALESCE(media_uf.media, 0) AS media_uf,
             COALESCE(SUM(dep.valor), 0) AS total_gasto
@@ -263,7 +263,7 @@ def buscar_ranking_presenca(uf=None, ordem="asc", partido=None):
         query += " AND d.sigla_partido = %s"
         params.append(partido)
  
-    query += f" GROUP BY d.id, d.nome, d.sigla_uf, d.sigla_partido, p.percentual_presenca, media_uf.media ORDER BY presenca {direcao}"
+    query += f" GROUP BY d.id, d.nome, d.sigla_uf, d.sigla_partido, d.url_foto, p.percentual_presenca, media_uf.media ORDER BY presenca {direcao}"
  
     cursor.execute(query, params)
     resultados = cursor.fetchall()

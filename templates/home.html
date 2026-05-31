@@ -128,119 +128,55 @@
         </div>
       </section>
 
-      <div class="divisor" role="presentation"><span><i class="bi bi-newspaper me-1"></i>Últimas Notícias</span></div>
+      <div class="divisor" role="presentation"><span><i class="bi bi-shuffle me-1"></i>Comparação Aleatória</span></div>
 
-      <section class="secao-noticias" aria-labelledby="titulo-noticias">
+      <section class="secao-comparacao-aleatoria" aria-labelledby="titulo-comparacao-aleatoria">
         <div class="d-flex flex-wrap align-items-baseline justify-content-between mb-3">
           <div>
-            <h2 class="titulo-secao" id="titulo-noticias">Notícias Eleitorais</h2>
-            <p class="subtitulo">Atualizado automaticamente via API de notícias</p>
+            <h2 class="titulo-secao" id="titulo-comparacao-aleatoria">Destaque Aleatório</h2>
+            <p class="subtitulo">Conheça e compare o desempenho de dois parlamentares sorteados</p>
           </div>
-          {#
-            Sem JS: o botão "Atualizar" recarrega a página inteira.
-            O Flask busca as notícias no servidor a cada carregamento.
-          #}
           <a href="{{ url_for('home') }}" class="btn btn-sm btn-outline-secondary"
-             aria-label="Recarregar notícias">
-            <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Atualizar
+             aria-label="Sortear novos deputados">
+            <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Sortear Outros
           </a>
         </div>
 
-        {#
-          Notícias renderizadas no servidor pelo Flask.
-          O route deve passar: articles (lista de dicts) e news_error (bool).
-          Ver nota no rodapé sobre a mudança necessária em app.py.
-        #}
-        {% if articles %}
-        <div id="grade-noticias" class="row g-4">
-          {% for a in articles %}
-          <div class="col-12 col-sm-6 col-lg-4">
-            <article class="card-noticia">
-              <div class="card-img-wrapper">
-                {% if a.urlToImage %}
-                <img src="{{ a.urlToImage }}" alt="{{ a.title or 'Notícia' }}" loading="lazy" />
-                {% else %}
-                <div class="d-flex align-items-center justify-content-center h-100 text-muted">
-                  <i class="bi bi-image" style="font-size:2rem" aria-hidden="true"></i>
-                </div>
-                {% endif %}
-                <span class="categoria-badge">Eleições 2026</span>
-              </div>
-              <div class="card-body">
-                <h3>{{ a.title or 'Sem título' }}</h3>
-                <p>{{ a.description or 'Sem descrição disponível.' }}</p>
-              </div>
-              <div class="card-footer-info">
-                <span class="fonte">{{ a.source.name if a.source else 'Desconhecido' }}</span>
-                {% if a.publishedAt %}
-                  {% set dt = a.publishedAt[:10].split('-') %}
-                  <time datetime="{{ a.publishedAt[:10] }}">{{ dt[2] }}/{{ dt[1] }}/{{ dt[0] }}</time>
-                {% endif %}
-                <a href="{{ a.url }}" target="_blank" rel="noopener noreferrer"
-                   aria-label="Ler notícia completa: {{ a.title or '' }}">
-                  Ler mais <i class="bi bi-arrow-right" aria-hidden="true"></i>
-                </a>
-              </div>
-            </article>
+        {% if dep1 and dep2 %}
+        <div class="comparacao-card chart-card mt-2 mb-4" aria-labelledby="titulo-grafico" style="background:var(--branco); padding:1.5rem; border-radius:var(--radius); border:1px solid rgba(0,53,128,.07); box-shadow: 0 4px 24px rgba(0, 53, 128, .05);">
+          
+          <div class="vs-header mb-4" style="display:flex; justify-content:center; align-items:center; gap:2rem; text-align:center;">
+            <div class="vs-profile">
+              <img src="{{ dep1.url_foto }}" alt="Foto oficial de {{ dep1.nome }}" width="80" height="105" style="border-radius:8px; object-fit:cover; margin-bottom:0.5rem; border:2px solid var(--azul-escuro);" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:0.2rem; color:var(--azul-escuro);">{{ dep1.nome }}</h3>
+              <p class="partido" style="font-size:0.85rem; color:var(--cinza-texto); margin-bottom:0;">{{ dep1.sigla_partido }} - {{ dep1.sigla_uf }}</p>
+            </div>
+            <div class="vs-circle" style="background:var(--amarelo); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; color:var(--azul-escuro); font-size:0.9rem;">VS</div>
+            <div class="vs-profile">
+              <img src="{{ dep2.url_foto }}" alt="Foto oficial de {{ dep2.nome }}" width="80" height="105" style="border-radius:8px; object-fit:cover; margin-bottom:0.5rem; border:2px solid var(--amarelo);" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:0.2rem; color:var(--azul-escuro);">{{ dep2.nome }}</h3>
+              <p class="partido" style="font-size:0.85rem; color:var(--cinza-texto); margin-bottom:0;">{{ dep2.sigla_partido }} - {{ dep2.sigla_uf }}</p>
+            </div>
           </div>
-          {% endfor %}
-        </div>
 
-        {% elif news_error %}
-        <div class="alert alert-warning mt-3" role="alert">
-          <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
-          Não foi possível carregar as notícias. Configure a variável <code>NEWS_API_KEY</code> no
-          <code>app.py</code>.
-        </div>
-
-        {% else %}
-        {# Fallback quando não há chave de API configurada #}
-        <div class="row g-4">
-          {% set fallback = [
-            {
-              'title': 'Configure sua chave de API',
-              'description': 'Adicione NEWS_API_KEY ao app.py para exibir notícias reais sobre as eleições de 2026.',
-              'source': 'NewsAPI.org',
-              'url': 'https://newsapi.org'
-            },
-            {
-              'title': 'Eleições 2026: o que está em jogo',
-              'description': 'Presidente, senadores e deputados federais disputarão as eleições em outubro de 2026.',
-              'source': 'Demo',
-              'url': '#'
-            },
-            {
-              'title': 'Dados abertos da Câmara',
-              'description': 'A API de Dados Abertos da Câmara disponibiliza informações sobre mandatos, votações e gastos de cada parlamentar.',
-              'source': 'Dados Abertos',
-              'url': 'https://dadosabertos.camara.leg.br'
-            }
-          ] %}
-          {% for item in fallback %}
-          <div class="col-12 col-sm-6 col-lg-4">
-            <article class="card-noticia">
-              <div class="card-img-wrapper">
-                <div class="d-flex align-items-center justify-content-center h-100 text-muted">
-                  <i class="bi bi-image" style="font-size:2rem" aria-hidden="true"></i>
-                </div>
-                <span class="categoria-badge">Eleições 2026</span>
-              </div>
-              <div class="card-body">
-                <h3>{{ item.title }}</h3>
-                <p>{{ item.description }}</p>
-              </div>
-              <div class="card-footer-info">
-                <span class="fonte">{{ item.source }}</span>
-                <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">
-                  Saiba mais <i class="bi bi-arrow-right" aria-hidden="true"></i>
-                </a>
-              </div>
-            </article>
+          <div class="d-flex justify-content-between align-items-center flex-wrap" style="margin-bottom: 1rem;">
+            <h3 id="titulo-grafico" style="margin-bottom: 0; font-size: 1.1rem; color: var(--azul-escuro);">Desempenho (Últimos 24 meses)</h3>
+            <div class="btn-group" role="group" aria-label="Alternar visualização do gráfico">
+              <button type="button" class="btn btn-sm btn-outline-secondary active" id="btnRadarChart">Radar</button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="btnBarChart">Barras</button>
+            </div>
           </div>
-          {% endfor %}
+          <div style="position: relative; height:350px; width:100%; display: flex; justify-content: center;">
+            <canvas id="radarChart"></canvas>
+          </div>
+          
+          <div class="mt-4 text-center">
+            <a href="{{ url_for('comparacao', id1=dep1.id, id2=dep2.id, periodo='24m') }}" class="btn btn-outline-secondary" style="font-size:0.95rem; padding:0.6rem 1.2rem; border-color: var(--verde-claro); color: var(--verde-claro);">
+              <i class="bi bi-columns-gap me-2"></i>Ver comparação completa
+            </a>
+          </div>
         </div>
         {% endif %}
-
       </section>
 
     </div>
@@ -280,6 +216,154 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  {% if dep1 and dep2 and indicadores %}
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const canvas = document.getElementById('radarChart');
+      if(!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let chartInstance = null;
+      
+      const labels = [
+        {% for ind in indicadores %}
+        "{{ ind.nome|safe }}",
+        {% endfor %}
+      ];
+      
+      const dataDep1 = [
+        {% for ind in indicadores %}
+        {{ ind.barra1|default(0) }},
+        {% endfor %}
+      ];
+      
+      const dataDep2 = [
+        {% for ind in indicadores %}
+        {{ ind.barra2|default(0) }},
+        {% endfor %}
+      ];
+      
+      const nomeDep1 = "{{ dep1.nome.split()[0] if dep1.nome else 'Deputado 1' }}";
+      const nomeDep2 = "{{ dep2.nome.split()[0] if dep2.nome else 'Deputado 2' }}";
+
+      function renderChart(type) {
+        if (chartInstance) {
+          chartInstance.destroy();
+        }
+
+        let config = {
+          type: type === 'bar' ? 'bar' : 'radar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: nomeDep1,
+              data: dataDep1,
+              backgroundColor: 'rgba(17, 119, 92, 0.5)',
+              borderColor: 'rgba(17, 119, 92, 1)',
+              borderWidth: 2
+            }, {
+              label: nomeDep2,
+              data: dataDep2,
+              backgroundColor: 'rgba(255, 204, 0, 0.5)',
+              borderColor: 'rgba(255, 204, 0, 1)',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { 
+                  color: '#11775c',
+                  font: { family: "'Source Sans 3', sans-serif", weight: 'bold' } 
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return context.dataset.label + ': ' + context.formattedValue + '% do max';
+                  }
+                }
+              }
+            }
+          }
+        };
+
+        if (type === 'radar') {
+            config.data.datasets[0].backgroundColor = 'rgba(17, 119, 92, 0.2)';
+            config.data.datasets[1].backgroundColor = 'rgba(255, 204, 0, 0.2)';
+            config.data.datasets[0].pointBackgroundColor = 'rgba(17, 119, 92, 1)';
+            config.data.datasets[0].pointBorderColor = '#fff';
+            config.data.datasets[0].pointHoverBackgroundColor = '#fff';
+            config.data.datasets[0].pointHoverBorderColor = 'rgba(17, 119, 92, 1)';
+            config.data.datasets[1].pointBackgroundColor = 'rgba(255, 204, 0, 1)';
+            config.data.datasets[1].pointBorderColor = '#fff';
+            config.data.datasets[1].pointHoverBackgroundColor = '#fff';
+            config.data.datasets[1].pointHoverBorderColor = 'rgba(255, 204, 0, 1)';
+            
+            config.options.scales = {
+              r: {
+                angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                pointLabels: { 
+                  color: '#4A5568',
+                  font: { size: 11, family: "'Source Sans 3', sans-serif" } 
+                },
+                ticks: { display: false, max: 100, min: 0 }
+              }
+            };
+        } else if (type === 'bar') {
+            config.options.indexAxis = 'y';
+            config.options.scales = {
+              x: {
+                max: 100,
+                min: 0,
+                grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                ticks: {
+                  color: '#4A5568',
+                  callback: function(value) {
+                    return value + '%';
+                  }
+                }
+              },
+              y: {
+                grid: { display: false },
+                ticks: {
+                  color: '#4A5568',
+                  font: { size: 11, family: "'Source Sans 3', sans-serif" } 
+                }
+              }
+            };
+        }
+        
+        chartInstance = new Chart(ctx, config);
+      }
+
+      renderChart('radar');
+
+      const btnRadar = document.getElementById('btnRadarChart');
+      const btnBar = document.getElementById('btnBarChart');
+      
+      if(btnRadar && btnBar) {
+        btnRadar.addEventListener('click', function(e) {
+          e.preventDefault();
+          btnRadar.classList.add('active');
+          btnBar.classList.remove('active');
+          renderChart('radar');
+        });
+        
+        btnBar.addEventListener('click', function(e) {
+          e.preventDefault();
+          btnBar.classList.add('active');
+          btnRadar.classList.remove('active');
+          renderChart('bar');
+        });
+      }
+    });
+  </script>
+  {% endif %}
 </body>
 
 </html>
