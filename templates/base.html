@@ -11,118 +11,30 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 
-<body>
-
-    {# ═══ Checkbox que controla o sidebar (CSS-only, sem JS) ═══ #}
-    <input type="checkbox" id="sidebar-toggle" class="sidebar-toggle-cb" aria-hidden="true">
-
-    <header class="navbar">
-        <div class="nav-container">
-            {# Label age como o botão hambúrguer #}
-            <label for="sidebar-toggle" class="menu-btn" aria-label="Abrir menu de navegação">☰</label>
-            <div class="logo">VeritasCode</div>
+<body> <!-- CONTROLE SIDEBAR --> <input type="checkbox" id="sidebar-toggle" class="sidebar-toggle">
+    <header class="navbar-global">
+        <div class="navbar-global-container"> <label for="sidebar-toggle" class="navbar-menu-btn"> <i
+                    class="bi bi-list"></i> </label>
+            <div class="navbar-logo">
+                <div class="navbar-logo-text"> <strong>VeritasCode</strong> </div>
+            </div>
         </div>
-    </header>
-
-    {# Overlay: clicar aqui fecha o sidebar (label desmarca o checkbox) #}
-    <label for="sidebar-toggle" class="sidebar-overlay" aria-hidden="true"></label>
-
-    <aside class="sidebar" aria-label="Menu lateral">
-        {# Label age como o botão de fechar #}
-        <label for="sidebar-toggle" class="sidebar-close" aria-label="Fechar menu">&#10005;</label>
-        <a href="/" class="sidebar-link">Home</a>
-        <a href="/ranking" class="sidebar-link">Ranking</a>
-        <a href="/comparacao" class="sidebar-link">Comparar Deputados</a>
-    </aside>
-
-    <main class="dashboard-container">
-        {% block content %}{% endblock %}
-    </main>
-
-    <style>
-        /* ── Checkbox oculto ─────────────────────────────────── */
-        .sidebar-toggle-cb {
-            display: none;
-        }
-
-        /* ── Overlay: aparece quando checkbox está marcado ────── */
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 998;
-            cursor: pointer;
-        }
-
-        .sidebar-toggle-cb:checked ~ .sidebar-overlay {
-            display: block;
-        }
-
-        /* ── Sidebar ─────────────────────────────────────────── */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: -280px;
-            width: 260px;
-            height: 100%;
-            background: #1e293b;
-            z-index: 999;
-            transition: left 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            padding: 16px 0 0 0;
-            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Abre sidebar quando checkbox está marcado */
-        .sidebar-toggle-cb:checked ~ .sidebar {
-            left: 0;
-        }
-
-        /* ── Botão fechar ────────────────────────────────────── */
-        .sidebar-close {
-            align-self: flex-end;
-            margin-right: 14px;
-            margin-bottom: 16px;
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: 6px;
-            color: #ffffff;
-            font-size: 16px;
-            width: 32px;
-            height: 32px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-
-        .sidebar-close:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        /* ── Links do sidebar ────────────────────────────────── */
-        .sidebar-link {
-            display: block;
-            padding: 12px 24px;
-            color: rgba(255, 255, 255, 0.85);
-            font-size: 0.95rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: background 0.2s, color 0.2s;
-        }
-
-        .sidebar-link:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: #ffffff;
-        }
-    </style>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    {% block scripts %}{% endblock %}
-
+    </header> <label for="sidebar-toggle" class="sidebar-overlay"></label>
+    <aside class="sidebar-global">
+        <div class="sidebar-header"> <span class="sidebar-title"> Navegação </span> <label for="sidebar-toggle"
+                class="sidebar-close-btn"> <i class="bi bi-x-lg"></i> </label> </div>
+        <nav class="sidebar-links"> <a href="{{ url_for('home') }}"
+                class="sidebar-link {% if request.endpoint == 'home' %}active{% endif %}"> <i
+                    class="bi bi-house-fill"></i> Home </a> <a href="{{ url_for('ranking') }}"
+                class="sidebar-link {% if request.endpoint == 'ranking' %}active{% endif %}"> <i
+                    class="bi bi-trophy-fill"></i> Ranking </a> <a href="{{ url_for('listagem') }}"
+                class="sidebar-link {% if request.endpoint == 'listagem' %}active{% endif %}"> <i
+                    class="bi bi-people-fill"></i> Listagem de Deputados </a> <a href="{{ url_for('comparacao') }}"
+                class="sidebar-link {% if request.endpoint == 'comparacao' %}active{% endif %}"> <i
+                    class="bi bi-people-fill"></i> Comparação </a> <a href="{{ url_for('metodologia') }}"
+                class="sidebar-link {% if request.endpoint == 'metodologia' %}active{% endif %}"> <i
+                    class="bi bi-calculator-fill"></i> Metodologia </a> </nav>
+    </aside> <!-- CONTEÚDO --> {% block content %}{% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> {% block
+    scripts %}{% endblock %}
 </body>
-
-</html>
