@@ -1,13 +1,13 @@
 from database.connection import get_connection
-
-
+ 
+ 
 def buscar_deputados(uf="", partido="", nome="", limit=12, offset=0):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-
+ 
     query = "SELECT * FROM deputados WHERE 1=1"
     params = []
-
+ 
     if uf:
         query += " AND sigla_uf = %s"
         params.append(uf)
@@ -17,17 +17,17 @@ def buscar_deputados(uf="", partido="", nome="", limit=12, offset=0):
     if nome:
         query += " AND nome LIKE %s"
         params.append(f"%{nome}%")
-
+ 
     query += " ORDER BY nome ASC LIMIT %s OFFSET %s"
     params.extend([limit, offset])
-
+ 
     cursor.execute(query, params)
     resultados = cursor.fetchall()
     cursor.close()
     conn.close()
     return resultados
-
-
+ 
+ 
 def buscar_todos_deputados():
     """Retorna todos os deputados ordenados por nome (sem limite de paginação)."""
     conn = get_connection()
@@ -41,15 +41,15 @@ def buscar_todos_deputados():
     cursor.close()
     conn.close()
     return resultados
-
-
+ 
+ 
 def contar_deputados(uf="", partido="", nome=""):
     conn = get_connection()
     cursor = conn.cursor()
-
+ 
     query = "SELECT COUNT(*) FROM deputados WHERE 1=1"
     params = []
-
+ 
     if uf:
         query += " AND sigla_uf = %s"
         params.append(uf)
@@ -59,21 +59,21 @@ def contar_deputados(uf="", partido="", nome=""):
     if nome:
         query += " AND nome LIKE %s"
         params.append(f"%{nome}%")
-
+ 
     cursor.execute(query, params)
     total = cursor.fetchone()[0]
     cursor.close()
     conn.close()
     return total
-
-
+ 
+ 
 def buscar_despesas_por_deputados(ids):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-
+ 
     if not ids:
         return []
-
+ 
     format_strings = ','.join(['%s'] * len(ids))
     query = f"""
         SELECT d.*, d.valor AS valorDocumento, dep.nome as nome_deputado
@@ -81,29 +81,29 @@ def buscar_despesas_por_deputados(ids):
         JOIN deputados dep ON dep.id = d.id_deputado
         WHERE d.id_deputado IN ({format_strings})
     """
-
+ 
     cursor.execute(query, tuple(ids))
     resultados = cursor.fetchall()
     cursor.close()
     conn.close()
     return resultados
-
-
+ 
+ 
 def buscar_deputado_por_id(id_deputado):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-
+ 
     cursor.execute("SELECT * FROM deputados WHERE id = %s", (id_deputado,))
     resultado = cursor.fetchone()
     cursor.close()
     conn.close()
     return resultado
-
-
+ 
+ 
 def buscar_despesas_deputado(id_deputado, ano=None, mes=None, tipo=None):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-
+ 
     query = """
         SELECT
             id_deputado, ano, mes, tipo_despesa,
@@ -115,7 +115,7 @@ def buscar_despesas_deputado(id_deputado, ano=None, mes=None, tipo=None):
         WHERE id_deputado = %s
     """
     params = [id_deputado]
-
+ 
     if ano:
         query += " AND ano = %s"
         params.append(ano)
@@ -125,20 +125,20 @@ def buscar_despesas_deputado(id_deputado, ano=None, mes=None, tipo=None):
     if tipo:
         query += " AND tipo_despesa LIKE %s"
         params.append(f"%{tipo}%")
-
+ 
     query += " ORDER BY ano DESC, mes DESC, data_documento DESC"
-
+ 
     cursor.execute(query, params)
     resultados = cursor.fetchall()
     cursor.close()
     conn.close()
     return resultados
-
-
+ 
+ 
 def buscar_tipos_despesa_deputado(id_deputado):
     conn = get_connection()
     cursor = conn.cursor()
-
+ 
     cursor.execute(
         "SELECT DISTINCT tipo_despesa FROM despesas WHERE id_deputado = %s ORDER BY tipo_despesa",
         (id_deputado,)
@@ -147,12 +147,12 @@ def buscar_tipos_despesa_deputado(id_deputado):
     cursor.close()
     conn.close()
     return resultados
-
-
+ 
+ 
 def buscar_anos_despesa_deputado(id_deputado):
     conn = get_connection()
     cursor = conn.cursor()
-
+ 
     cursor.execute(
         "SELECT DISTINCT ano FROM despesas WHERE id_deputado = %s ORDER BY ano DESC",
         (id_deputado,)
@@ -161,7 +161,8 @@ def buscar_anos_despesa_deputado(id_deputado):
     cursor.close()
     conn.close()
     return resultados
-
+ 
+ 
 def buscar_ranking_gastos(uf=None, ordem="desc", partido=None):
     conn   = get_connection()
     cursor = conn.cursor(dictionary=True)
@@ -199,40 +200,43 @@ def buscar_ranking_gastos(uf=None, ordem="desc", partido=None):
     cursor.close()
     conn.close()
     return resultados
-
+ 
+ 
 def buscar_presenca_deputado(id_deputado):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-
+ 
     cursor.execute("""
         SELECT percentual_presenca
         FROM presencas
         WHERE id_deputado = %s
     """, (id_deputado,))
-
+ 
     result = cursor.fetchone()
-
+ 
     cursor.close()
     conn.close()
     return result
-
+ 
+ 
 def media_presenca_estado(uf):
     conn = get_connection()
     cursor = conn.cursor()
-
+ 
     cursor.execute("""
         SELECT AVG(p.percentual_presenca)
         FROM presencas p
         JOIN deputados d ON d.id = p.id_deputado
         WHERE d.sigla_uf = %s
     """, (uf,))
-
+ 
     media = cursor.fetchone()[0]
-
+ 
     cursor.close()
     conn.close()
     return round(media, 2) if media else 0
-
+ 
+ 
 def buscar_ranking_presenca(uf=None, ordem="asc", partido=None):
     conn   = get_connection()
     cursor = conn.cursor(dictionary=True)
@@ -270,7 +274,8 @@ def buscar_ranking_presenca(uf=None, ordem="asc", partido=None):
     cursor.close()
     conn.close()
     return resultados
-
+ 
+ 
 def contar_ranking(uf=None, criterio="gastos", partido=None):
     conn   = get_connection()
     cursor = conn.cursor()
@@ -293,7 +298,8 @@ def contar_ranking(uf=None, criterio="gastos", partido=None):
     cursor.close()
     conn.close()
     return total
-
+ 
+ 
 def buscar_dados_ranking_pl(uf=None, partido=None):
     conn   = get_connection()
     cursor = conn.cursor(dictionary=True)
@@ -323,13 +329,14 @@ def buscar_dados_ranking_pl(uf=None, partido=None):
     cursor.close()
     conn.close()
     return resultados
-
+ 
+ 
 # ── Proposições ──────────────────────────────────────────────
-
+ 
 def buscar_proposicoes_deputado(id_deputado, tipo=None, ano=None, situacao=None):
     conn   = get_connection()
     cursor = conn.cursor(dictionary=True)
-
+ 
     query  = """
         SELECT p.id, p.sigla_tipo, p.numero, p.ano, p.ementa,
                p.keywords, p.situacao, p.url_inteiro_teor
@@ -337,7 +344,7 @@ def buscar_proposicoes_deputado(id_deputado, tipo=None, ano=None, situacao=None)
         WHERE p.id_deputado = %s
     """
     params = [id_deputado]
-
+ 
     if tipo:
         query += " AND p.sigla_tipo = %s"
         params.append(tipo)
@@ -347,20 +354,20 @@ def buscar_proposicoes_deputado(id_deputado, tipo=None, ano=None, situacao=None)
     if situacao:
         query += " AND p.situacao LIKE %s"
         params.append(f"%{situacao}%")
-
+ 
     query += " ORDER BY p.ano DESC, p.numero DESC"
-
+ 
     cursor.execute(query, params)
     resultados = cursor.fetchall()
     cursor.close()
     conn.close()
     return resultados
-
-
+ 
+ 
 def buscar_top_temas_deputado(id_deputado, limite=5):
     conn   = get_connection()
     cursor = conn.cursor(dictionary=True)
-
+ 
     cursor.execute("""
         SELECT t.nome, COUNT(*) AS total
         FROM proposicoes_temas pt
@@ -371,17 +378,17 @@ def buscar_top_temas_deputado(id_deputado, limite=5):
         ORDER BY total DESC
         LIMIT %s
     """, (id_deputado, limite))
-
+ 
     resultados = cursor.fetchall()
     cursor.close()
     conn.close()
     return resultados
-
-
+ 
+ 
 def buscar_resumo_proposicoes_deputado(id_deputado):
     conn   = get_connection()
     cursor = conn.cursor(dictionary=True)
-
+ 
     cursor.execute("""
         SELECT
             sigla_tipo,
@@ -392,58 +399,59 @@ def buscar_resumo_proposicoes_deputado(id_deputado):
         GROUP BY sigla_tipo, ano
         ORDER BY ano DESC, sigla_tipo
     """, (id_deputado,))
-
+ 
     resultados = cursor.fetchall()
     cursor.close()
     conn.close()
     return resultados
-
-
+ 
+ 
 def buscar_anos_proposicoes_deputado(id_deputado):
     conn   = get_connection()
     cursor = conn.cursor()
-
+ 
     cursor.execute("""
         SELECT DISTINCT ano FROM proposicoes
         WHERE id_deputado = %s
         ORDER BY ano DESC
     """, (id_deputado,))
-
+ 
     resultados = [row[0] for row in cursor.fetchall() if row[0]]
     cursor.close()
     conn.close()
     return resultados
-
-
+ 
+ 
 def buscar_situacoes_proposicoes_deputado(id_deputado):
     conn   = get_connection()
     cursor = conn.cursor()
-
+ 
     cursor.execute("""
         SELECT DISTINCT situacao FROM proposicoes
         WHERE id_deputado = %s AND situacao != ''
         ORDER BY situacao
     """, (id_deputado,))
-
+ 
     resultados = [row[0] for row in cursor.fetchall() if row[0]]
     cursor.close()
     conn.close()
     return resultados
-
+ 
+ 
 def buscar_ranking_proposicoes_deputado(id_deputado):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-
+ 
     query = """
         SELECT *
         FROM (
-            SELECT 
+            SELECT
                 d.id,
                 d.nome,
                 d.sigla_uf,
                 COUNT(*) AS total_aprovadas,
                 RANK() OVER (
-                    PARTITION BY d.sigla_uf 
+                    PARTITION BY d.sigla_uf
                     ORDER BY COUNT(*) DESC
                 ) AS posicao
             FROM proposicoes p
@@ -453,19 +461,19 @@ def buscar_ranking_proposicoes_deputado(id_deputado):
         ) ranking
         WHERE id = %s
     """
-
+ 
     cursor.execute(query, (id_deputado,))
     resultado = cursor.fetchone()
-
+ 
     cursor.close()
     conn.close()
     return resultado
-
-
+ 
+ 
 def buscar_total_proposicoes_aprovadas_deputado(id_deputado, ano_minimo=None):
     conn = get_connection()
     cursor = conn.cursor()
-
+ 
     query = """
         SELECT COUNT(*)
         FROM proposicoes p
@@ -476,36 +484,37 @@ def buscar_total_proposicoes_aprovadas_deputado(id_deputado, ano_minimo=None):
           )
     """
     params = [id_deputado]
-
+ 
     if ano_minimo:
         query += " AND p.ano >= %s"
         params.append(ano_minimo)
-
+ 
     cursor.execute(query, params)
     total = cursor.fetchone()[0] or 0
-
+ 
     cursor.close()
     conn.close()
     return total
-
-
+ 
+ 
 def contar_ranking_pl(uf=None):
     conn   = get_connection()
     cursor = conn.cursor()
-
+ 
     query  = "SELECT COUNT(*) FROM deputados d WHERE 1=1"
     params = []
-
+ 
     if uf:
         query += " AND d.sigla_uf = %s"
         params.append(uf)
-
+ 
     cursor.execute(query, params)
     total = cursor.fetchone()[0]
     cursor.close()
     conn.close()
     return total
-
+ 
+ 
 def buscar_indice_coerencia(id_deputado, anos=3):
     conn   = get_connection()
     cursor = conn.cursor(dictionary=True)
@@ -647,3 +656,136 @@ def buscar_resumo_coerencia(id_deputado, anos=3):
         "indice_medio":      indice_medio,
         "temas":             dados,
     }
+ 
+ 
+def contar_discursos_ultimo_ano(id_deputado: int) -> int:
+    """
+    Retorna a contagem total de discursos do deputado
+    no último ano a partir da data atual.
+    """
+    conn   = get_connection()
+    cursor = conn.cursor()
+ 
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM discursos
+        WHERE id_deputado = %s
+          AND data_hora_inicio >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
+    """, (id_deputado,))
+ 
+    total = cursor.fetchone()[0] or 0
+    cursor.close()
+    conn.close()
+    return total
+ 
+ 
+def buscar_ultimos_discursos(id_deputado: int, limite: int = 3) -> list[dict]:
+    """
+    VA-54 — Três últimos discursos com data, tema, sumário e arquivos.
+    Retorna lista de discursos, cada um com lista de temas associados.
+    """
+    conn   = get_connection()
+    cursor = conn.cursor(dictionary=True)
+ 
+    cursor.execute("""
+        SELECT
+            d.id,
+            d.data_hora_inicio,
+            d.data_hora_fim,
+            d.sumario,
+            d.tipo_discurso,
+            d.fase_evento,
+            d.uri_evento,
+            d.keywords
+        FROM discursos d
+        WHERE d.id_deputado = %s
+        ORDER BY d.data_hora_inicio DESC
+        LIMIT %s
+    """, (id_deputado, limite))
+ 
+    discursos = cursor.fetchall()
+ 
+    for disc in discursos:
+        cursor.execute("""
+            SELECT t.nome
+            FROM discursos_temas dt
+            JOIN temas t ON t.cod = dt.cod_tema
+            WHERE dt.id_discurso = %s
+            ORDER BY t.nome
+        """, (disc["id"],))
+        disc["temas"] = [row["nome"] for row in cursor.fetchall()]
+ 
+    cursor.close()
+    conn.close()
+    return discursos
+ 
+ 
+def buscar_discursos_por_ano(id_deputado: int) -> list[dict]:
+    """
+    VA-55 — Contagem de discursos por ano nos últimos 3 anos.
+    Retorna lista com: ano, total.
+    """
+    conn   = get_connection()
+    cursor = conn.cursor(dictionary=True)
+ 
+    cursor.execute("""
+        SELECT
+            ano,
+            COUNT(*) AS total
+        FROM discursos
+        WHERE id_deputado = %s
+          AND ano >= YEAR(CURDATE()) - 2
+        GROUP BY ano
+        ORDER BY ano ASC
+    """, (id_deputado,))
+ 
+    resultados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return resultados
+ 
+ 
+def buscar_discursos_por_palavra_chave(id_deputado: int, palavra_chave: str) -> list[dict]:
+    """
+    VA-56 — Filtra discursos por palavra-chave no sumário ou nas keywords.
+    Retorna lista de discursos com os mesmos campos de buscar_ultimos_discursos.
+    """
+    conn   = get_connection()
+    cursor = conn.cursor(dictionary=True)
+ 
+    termo = f"%{palavra_chave}%"
+ 
+    cursor.execute("""
+        SELECT
+            d.id,
+            d.data_hora_inicio,
+            d.data_hora_fim,
+            d.sumario,
+            d.tipo_discurso,
+            d.fase_evento,
+            d.uri_evento,
+            d.keywords
+        FROM discursos d
+        WHERE d.id_deputado = %s
+          AND (
+              d.keywords LIKE %s
+           OR d.sumario  LIKE %s
+          )
+        ORDER BY d.data_hora_inicio DESC
+    """, (id_deputado, termo, termo))
+ 
+    discursos = cursor.fetchall()
+ 
+    for disc in discursos:
+        cursor.execute("""
+            SELECT t.nome
+            FROM discursos_temas dt
+            JOIN temas t ON t.cod = dt.cod_tema
+            WHERE dt.id_discurso = %s
+            ORDER BY t.nome
+        """, (disc["id"],))
+        disc["temas"] = [row["nome"] for row in cursor.fetchall()]
+ 
+    cursor.close()
+    conn.close()
+    return discursos
